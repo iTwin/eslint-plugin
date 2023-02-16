@@ -1,0 +1,20 @@
+# dependencies
+node_modules
+package-lock.json
+
+# build output
+
+# rush-specific
+
+# pnpm
+
+# docs
+
+# trash
+
+# xcode
+
+# Output of 'npm pack'
+
+# Mac specfic
+
