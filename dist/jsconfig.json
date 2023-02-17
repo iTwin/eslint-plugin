@@ -5,6 +5,7 @@
     "target": "es6", // need for using for...of on iterables
     "lib": ["es6"],
     "strict": true,
+    "useUnknownInCatchVariables": false,
     "noImplicitAny": false,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
