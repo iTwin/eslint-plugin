@@ -1,0 +1,14 @@
+# Lines starting with '#' are comments.
+# Each line defines a file pattern followed by one or more owners.
+
+# Pattern syntax: https://docs.github.com/en/github/administering-a-repository/about-code-owners
+
+# These owners will be the default owners for everything in
+# the repo. Unless a later match takes precedence,
+# @global-owner1 and @global-owner2 will be requested for
+# review when someone opens a pull request.
+
+# Assign ownership of the entire repository to a user or team
+*       @paulius-valiunas @MichaelBelousov @ben-polinsky @aruniverse
+
+
