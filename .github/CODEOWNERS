@@ -8,7 +8,7 @@
 # @global-owner1 and @global-owner2 will be requested for
 # review when someone opens a pull request.
 
-# Assign ownership of the entire repository to a user or team
-*       @paulius-valiunas @MichaelBelousov @ben-polinsky @aruniverse
+# Assign ownership of the entire repository to
+@paulius-valiunas @MichaelBelousov @ben-polinsky @aruniverse
 
 
