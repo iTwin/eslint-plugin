@@ -19,11 +19,7 @@
   },
   "scripts": {
     "build": "",
-    "build:ci": "",
-    "clean": "",
-    "lint": "",
     "test": "mocha \"tests/*.js\"",
-    "docs": "",
     "cover": "npm -s test"
   },
   "author": {
