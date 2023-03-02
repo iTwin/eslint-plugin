@@ -20,7 +20,9 @@
   "scripts": {
     "build": "",
     "test": "mocha \"tests/*.js\"",
-    "cover": "npm -s test"
+    "cover": "npm -s test",
+    "change": "npx changeset",
+    "version": "npx changeset version"
   },
   "author": {
     "name": "Bentley Systems, Inc.",

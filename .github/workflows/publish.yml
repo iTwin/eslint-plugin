@@ -25,8 +25,8 @@ jobs:
       - name: Run Tests
         run: pnpm run cover 
 
-      - name: Publish to NPM
+      - name: Publish Changeset and Package to NPM
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-        run: pnpm publish
+        run: npx changeset publish
 
