@@ -20,7 +20,9 @@
   "scripts": {
     "build": "",
     "test": "mocha \"tests/*.js\"",
-    "cover": "npm -s test"
+    "cover": "npm -s test",
+    "change": "npx changeset",
+    "version": "npx changeset version"
   },
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -46,6 +48,7 @@
     "typescript": "^3.7.0 || ^4.0.0"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.26.0",
     "@types/eslint": "~7.2.13",
     "@types/estree": "~0.0.48",
     "@types/node": "^18.11.5",
