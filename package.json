@@ -1,6 +1,6 @@
 {
   "name": "@itwin/eslint-plugin",
-  "version": "4.0.0-dev.14",
+  "version": "4.0.0-dev.30",
   "description": "ESLint plugin with default configuration and custom rules for iTwin.js projects",
   "license": "MIT",
   "keywords": [
@@ -21,8 +21,12 @@
     "build": "",
     "test": "mocha \"tests/*.js\"",
     "cover": "npm -s test",
-    "change": "npx changeset",
-    "version": "npx changeset version"
+    "change": "beachball change",
+    "check": "beachball check",
+    "version-bump": "beachball bump",
+    "version-bump-dev": "beachball bump --config beachball.config.dev.js --keep-change-files",
+    "publish-packages": "beachball publish",
+    "publish-packages-dev": "beachball publish --config beachball.config.dev.js --keep-change-files"
   },
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -48,11 +52,11 @@
     "typescript": "^3.7.0 || ^4.0.0 || ^5.0.0"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.26.0",
     "@types/eslint": "~7.2.13",
     "@types/estree": "~0.0.48",
     "@types/node": "^18.11.5",
-    "@typescript-eslint/typescript-estree": "~5.55.0",
+    "@typescript-eslint/typescript-estree": "~4.31.0",
+    "beachball": "^2.31.12",
     "eslint": "^7.11.0",
     "mocha": "^10.0.0",
     "typescript": "~5.0.2"

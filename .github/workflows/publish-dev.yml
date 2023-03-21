@@ -1,4 +1,4 @@
-name: Publish itwin/eslint-plugin to NPM
+name: Publish dev pre-release NPM packages
 
 on: workflow_dispatch
 
@@ -31,5 +31,5 @@ jobs:
       - name: Publish packages
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPMJS_PUBLISH_ITWIN }}
-        run: pnpm publish-packages -y --branch ${{ github.ref_name }} --message "Version bump [skip actions]"
+        run: pnpm publish-packages-dev -y --branch ${{ github.ref_name }} --message "Version bump [skip actions]"
 
