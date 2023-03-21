@@ -75,36 +75,23 @@ We welcome contributions, large or small, including:
 - Example code snippets
 - Sample data
 
-## Using Changesets
+## Using beachball
 
-The primary implementation of [changesets](https://github.com/Noviny/changesets). Helps you manage the versioning
-and changelog entries for your packages, with a focus on versioning within a mono-repository (though we support
-single-package repositories too).
-
+This repo uses [beachball](https://github.com/microsoft/beachball) for versioning and publishing. 
 ```
-npx changeset
+pnpm change
 ```
-This command will ask you a series of questions, first about what packages you want to release, then what semver bump type for each package, then it will ask for a summary of the entire changeset. At the final step it will show the changeset it will generate, and confirm that you want to add it.
-
-Once confirmed, the changeset will write a Markdown file that contains the summary and YAML front matter which stores the packages that will be released and the semver bump types for them.
-
-A changeset that major bumps `@changesets/cli` would look like this:
-
-```md
----
-"@changesets/cli": major
----
-
-A description of the major changes.
+This command will prompt you to select the packages that have changed and the new version numbers. It will also update the package dependencies and create a changelog file. 
 ```
+pnpm version-bump
 ```
-npx changeset version
+This command will show the current version of the packages. 
 ```
-Updates the versions for all packages described in changesets since last release along with any dependents inside the repo that are out of range.
+pnpm publish-packages
+```
+This command will publish the changed packages to the registry. 
 
-Will also create/append to a CHANGELOG file for each package using the summaries from the changesets.
-
-We recommend making sure changes made from this command are merged back into the base branch before you run `publish`.
+Note: For pre releases, please use the `pnpm version-bump-dev` and `pnpm publish-packages-dev` commands.
 
 
 
