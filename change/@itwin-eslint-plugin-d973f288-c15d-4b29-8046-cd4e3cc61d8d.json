@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "Added support for TypeScript 5.0",
+  "packageName": "@itwin/eslint-plugin",
+  "email": "yashincontrol@gmail.com",
+  "dependentChangeType": "patch"
+}
