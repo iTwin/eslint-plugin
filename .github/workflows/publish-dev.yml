@@ -6,7 +6,10 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
 
       - name: Use Node.js 18
         uses: actions/setup-node@v3
@@ -27,6 +30,6 @@ jobs:
 
       - name: Publish packages
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPMJS_PUBLISH_ITWIN }}
         run: pnpm publish-packages-dev -y --branch ${{ github.ref_name }} --message "Version bump [skip actions]"
 
