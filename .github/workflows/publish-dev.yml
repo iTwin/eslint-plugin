@@ -28,8 +28,14 @@ jobs:
       - name: Run Tests
         run: pnpm run cover 
 
+      - name: Configure git
+        run: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin 
+
       - name: Publish packages
+        run: |
+          pnpm publish-packages-dev -y --branch ${{ github.ref_name }} --message "Version bump [skip actions]"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPMJS_PUBLISH_ITWIN }}
-        run: pnpm publish-packages-dev -y --branch ${{ github.ref_name }} --message "Version bump [skip actions]"
 
