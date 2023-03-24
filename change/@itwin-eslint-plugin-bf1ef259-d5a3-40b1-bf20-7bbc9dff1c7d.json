@@ -1,0 +1,7 @@
+{
+  "type": "major",
+  "comment": "Update eslint to 8.36.0",
+  "packageName": "@itwin/eslint-plugin",
+  "email": "yashincontrol@users.noreply.github.com",
+  "dependentChangeType": "patch"
+}
