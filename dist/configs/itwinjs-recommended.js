@@ -226,9 +226,9 @@ module.exports = {
     "@typescript-eslint/typedef": "off",
     // TODO: We have assignments of unbound methods all over the place.  There's a github issue open to fix this: https://github.com/typescript-eslint/typescript-eslint/issues/1256
     "@typescript-eslint/unbound-method": [
-      "error",
+      "error"
       {
-        "ignoreStatic": true
+        "ignorestatic": false
       }
     ],
     "@typescript-eslint/unified-signatures": "error",
