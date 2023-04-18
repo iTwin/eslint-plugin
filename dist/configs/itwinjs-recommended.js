@@ -229,7 +229,7 @@ module.exports = {
     "@typescript-eslint/unbound-method": [
       "error",
       {
-        "ignoreStatic": true
+        "ignorestatic": false
       }
     ],
     "@typescript-eslint/unified-signatures": "error",
