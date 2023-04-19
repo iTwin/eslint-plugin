@@ -18,7 +18,6 @@ module.exports = {
   },
   plugins: [
     "@typescript-eslint",
-    "prefer-arrow",
     "deprecation"
   ],
   rules: {
