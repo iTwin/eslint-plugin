@@ -225,7 +225,13 @@ module.exports = {
     "@typescript-eslint/triple-slash-reference": "error",
     "@typescript-eslint/type-annotation-spacing": "error",
     "@typescript-eslint/typedef": "off",
-    "@typescript-eslint/unbound-method": "error",
+    // TODO: We have assignments of unbound methods all over the place.  There's a github issue open to fix this: https://github.com/typescript-eslint/typescript-eslint/issues/1256
+    "@typescript-eslint/unbound-method": [
+      "error",
+      {
+        "ignorestatic": false
+      }
+    ],
     "@typescript-eslint/unified-signatures": "error",
     "arrow-body-style": "off",
     "arrow-parens": "error",
