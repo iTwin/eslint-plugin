@@ -18,6 +18,8 @@ module.exports = {
   },
   plugins: [
     "@typescript-eslint",
+    "import",
+    "prefer-arrow",
     "deprecation"
   ],
   rules: {
@@ -223,7 +225,13 @@ module.exports = {
     "@typescript-eslint/triple-slash-reference": "error",
     "@typescript-eslint/type-annotation-spacing": "error",
     "@typescript-eslint/typedef": "off",
-    "@typescript-eslint/unbound-method": "error",
+    // TODO: We have assignments of unbound methods all over the place.  There's a github issue open to fix this: https://github.com/typescript-eslint/typescript-eslint/issues/1256
+    "@typescript-eslint/unbound-method": [
+      "error",
+      {
+        "ignoreStatic": true
+      }
+    ],
     "@typescript-eslint/unified-signatures": "error",
     "arrow-body-style": "off",
     "arrow-parens": "error",
@@ -263,6 +271,9 @@ module.exports = {
       "Undefined"
     ],
     "id-match": "error",
+    "import/no-deprecated": "off", // using deprecation/deprecation instead
+    "import/no-duplicates": "off", // using no-duplicate-imports instead
+    "import/order": "off",
     "indent": "off",  // note you must disable the base rule as it can report incorrect errors
     "max-classes-per-file": "off",
     "max-len": "off",
@@ -323,14 +334,14 @@ module.exports = {
       "never"
     ],
     // TODO: I'd like to enable this but will cause a lot of breaking changes
-    // "prefer-arrow/prefer-arrow-functions": [
-    //   "off",
-    //   {
-    //     "disallowPrototype": true,
-    //     "singleReturnOnly": false,
-    //     "classPropertiesAllowed": false
-    //   }
-    // ],
+    "prefer-arrow/prefer-arrow-functions": [
+      "off",
+      {
+        "disallowPrototype": true,
+        "singleReturnOnly": false,
+        "classPropertiesAllowed": false
+      }
+    ],
     "prefer-const": "error",
     "prefer-rest-params": "off",
     "prefer-spread": "off",
