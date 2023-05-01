@@ -2,21 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-module.exports = {
-  "extends": [
-    "plugin:jsdoc/recommended"
-  ],
-  "plugins": [
-    "jsdoc"
-  ],
-  "settings": {
+const jsdocPlugin = require("eslint-plugin-jsdoc");
+
+module.exports =
+{
+  ...jsdocPlugin.configs.recommended,
+  files: ["**/*.{ts,tsx,test.ts}"],
+  plugins: {
+    "jsdoc": jsdocPlugin
+  },
+  settings: {
     "jsdoc": {
       "mode": "typescript",
       "ignoreInternal": true,
       "exemptedBy": ["alpha"]
     }
   },
-  "rules": {
+  rules: {
     "jsdoc/newline-after-description": "off",
     "jsdoc/check-alignment": "off",
     "jsdoc/check-tag-names": "off",
@@ -50,3 +52,4 @@ module.exports = {
     "jsdoc/tag-lines": "off",
   }
 }
+

@@ -13,34 +13,44 @@ npm i @itwin/eslint-plugin --save-dev
 
 ## Usage
 
-Add `@itwin` to the plugins section of your eslint configuration and (optionally) extend one of the provided configs. You can omit the `/eslint-plugin` suffix:
+Create an `eslint.config.js` file at the root of your project. Inside this file, import any of the provided configs and add it to the exported modules:
 
-```json
-{
-  "plugins": ["@itwin"],
-  "extends": "plugin:@itwin/itwinjs-recommended"
-}
+```javascript
+const itwinjsRecommended = require("@itwin/eslint-plugin/dist/configs/itwinjs-recommended");
+const itwinJsdoc = require("@itwin/eslint-plugin/dist/configs/jsdoc");
+
+module.exports = [
+  itwinjsRecommended,
+  itwinJsdoc,
+];
 ```
 
-Then configure the rules you want to override under the rules section.
+Then configure the rules you want to override by adding a section with which files to apply the rule overrides to.
 
-```json
-{
-  "rules": {
-    "@itwin/rule-name": "off"
+```javascript
+const itwinjsRecommended = require("@itwin/eslint-plugin/dist/configs/itwinjs-recommended");
+const itwinJsdoc = require("@itwin/eslint-plugin/dist/configs/jsdoc");
+
+module.exports = [
+  itwinjsRecommended,
+  itwinJsdoc,
+  {
+    "files": [
+      "src/test/**/*"
+    ],
+    "rules": {
+      "deprecation/deprecation": "off"
+    }
   }
-}
+];
 ```
 
 ## Using with VSCode
 
-VSCode has an ESLint plugin, but it has some issues with plugin resolution. In order to use this config without errors, it needs to be configured to resolve plugins relative to this package (in `.vscode/settings.json`):
+In order for VSCode to use the config file as it is set up, add the following setting to the the VSCode settings (in `.vscode/settings.json`):
 
 ```json
-"eslint.options": {
-  "resolvePluginsRelativeTo": "./node_modules/@itwin/eslint-plugin",
-  ...
-},
+"eslint.experimental.useFlatConfig": true,
 ```
 
 As a side effect, any additional plugins added in consumer packages won't be loaded. If you want to use another ESLint plugin, there are two options:

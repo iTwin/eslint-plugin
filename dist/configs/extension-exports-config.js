@@ -3,23 +3,47 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-module.exports = {
-  plugins: [
-    "@itwin",
-    "@typescript-eslint",
-    "react-hooks",
-    "import",
-    "prefer-arrow",
-    "deprecation",
-    "react"
-  ],
-  parser: "@typescript-eslint/parser",
-  parserOptions: {
-    "project": "tsconfig.json",
-    "sourceType": "module"
+const reactHooksPlugin = require("eslint-plugin-react-hooks");
+const typescriptEslintPlugin = require("@typescript-eslint/eslint-plugin");
+const importPlugin = require("eslint-plugin-import");
+const preferArrowPlugin = require("eslint-plugin-prefer-arrow");
+const deprecationPlugin = require("eslint-plugin-deprecation");
+const reactPlugin = require("eslint-plugin-react");
+
+const typescriptParser = require("@typescript-eslint/parser");
+
+const publicExtensionExportsRule = require("../rules/public-extension-exports");
+
+module.exports =
+{
+  files: ["**/*.ts"],
+  plugins: {
+    "react-hooks": reactHooksPlugin,
+    "@typescript-eslint/eslint-plugin": typescriptEslintPlugin,
+    "import": importPlugin,
+    "prefer-arrow": preferArrowPlugin,
+    "deprecation": deprecationPlugin,
+    "react": reactPlugin,
+    custom: {
+      rules: {
+        publicExtensionExports: publicExtensionExportsRule
+      }
+    }
+  },
+  languageOptions: {
+    ecmaVersion: "latest",
+    sourceType: "module",
+    parser: typescriptParser,
+    parserOptions: {
+      project: "tsconfig.json",
+      ecmaFeatures: {
+        jsx: true,
+      },
+    },
+
   },
   rules: {
-    "@itwin/public-extension-exports": [
+    "custom/publicExtensionExports": [
       "error",
       {
         "releaseTags": [

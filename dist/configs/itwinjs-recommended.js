@@ -2,27 +2,59 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @type{import("eslint").Linter.BaseConfig} */
-module.exports = {
-  env: {
-    "browser": true
+
+
+const typescriptParser = require("@typescript-eslint/parser");
+
+const typescriptEslintPlugin = require("@typescript-eslint/eslint-plugin");
+const importPlugin = require("eslint-plugin-import");
+const preferArrowPlugin = require("eslint-plugin-prefer-arrow");
+const deprecationPlugin = require("eslint-plugin-deprecation");
+
+const importSpacingRule = require("../rules/import-spacing");
+const importWithinRule = require("../rules/import-within-package");
+const preferGetRule = require("../rules/prefer-get");
+const requireBasicRpcValueRule = require("../rules/require-basic-rpc-values");
+const requireVersionInDeprecationRule = require("../rules/require-version-in-deprecation");
+const noInternalBarrelRule = require("../rules/no-internal-barrel-imports");
+
+const typescriptRecommended = require("@typescript-eslint/eslint-plugin/dist/configs/recommended");
+const typescriptRecommendedRequiringTypes = require("@typescript-eslint/eslint-plugin/dist/configs/recommended-requiring-type-checking");
+
+module.exports =
+{
+  files: ["**/*.{ts,tsx}"],
+  languageOptions: {
+    ecmaVersion: "latest",
+    sourceType: "module",
+    parser: typescriptParser,
+    parserOptions: {
+      project: "tsconfig.json",
+      ecmaFeatures: {
+        jsx: true,
+      },
+    },
+
   },
-  extends: [
-    "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking",
-  ],
-  parser: "@typescript-eslint/parser",
-  parserOptions: {
-    "project": "tsconfig.json",
-    "sourceType": "module"
+  plugins: {
+    "@typescript-eslint": typescriptEslintPlugin,
+    "import": importPlugin,
+    "prefer-arrow": preferArrowPlugin,
+    "deprecation": deprecationPlugin,
+    custom: {
+      rules: {
+        importSpacing: importSpacingRule,
+        importWithin: importWithinRule,
+        preferGet: preferGetRule,
+        requireBasicRpcValue: requireBasicRpcValueRule,
+        requireVersionInDeprecation: requireVersionInDeprecationRule,
+        noInternalBarrel: noInternalBarrelRule
+      }
+    }
   },
-  plugins: [
-    "@typescript-eslint",
-    "import",
-    "prefer-arrow",
-    "deprecation"
-  ],
   rules: {
+    ...typescriptEslintPlugin.configs["recommended"].rules,
+    ...typescriptEslintPlugin.configs["recommended-requiring-type-checking"].rules,
     "@typescript-eslint/adjacent-overload-signatures": "error",
     "@typescript-eslint/array-type": "off", // TODO: May want to turn this on for consistency
     "@typescript-eslint/await-thenable": "error",
@@ -375,7 +407,7 @@ module.exports = {
     ],
     "use-isnan": "error",
     "valid-typeof": "off",
-    "@itwin/import-spacing": ["error", {
+    "custom/importSpacing": ["error", {
       "allow-line-breaks": false, // line breaks not allowed
       "allow-line-breaks-inside-brackets": true, // except inside brackets
       // valid example: import {
@@ -388,18 +420,11 @@ module.exports = {
       // from
       // "module";
     }],
-    "@itwin/import-within-package": "error",
-    "@itwin/prefer-get": "error",
-    "@itwin/require-basic-rpc-values": "off",
-    "@itwin/no-internal-barrel-imports": "error",
-    "@itwin/require-version-in-deprecation": "error",
+    "custom/importWithin": "error",
+    "custom/preferGet": "error",
+    "custom/requireBasicRpcValue": "off",
+    "custom/noInternalBarrel": "error",
+    "custom/requireVersionInDeprecation": "error",
   },
-  overrides: [
-    {
-      files: ["*.test.ts", "*.test.tsx", "**/test/**/*.ts", "**/test/**/*.tsx"],
-      rules: {
-        "@itwin/no-internal-barrel-imports": "off",
-      }
-    }
-  ],
 }
+
