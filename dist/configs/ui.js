@@ -28,6 +28,7 @@ module.exports =
         }
       }
     },
+    files: ["src/**/*.{ts,tsx}"],
     rules: {
       "jam3/no-sanitizer-with-danger": 2,
       "max-statements-per-line": "off", // override itwinjs-recommended

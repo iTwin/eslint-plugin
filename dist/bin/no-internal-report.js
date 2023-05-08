@@ -28,21 +28,39 @@ const distDir = path.join(nodeModules, "@itwin/eslint-plugin/dist")
 if (!fs.existsSync(distDir))
   throw ("Could not find required dir: " + distDir);
 
+const configDir = path.join(nodeModules, "@itwin/eslint-plugin/dist/bin/eslint.config.js")
+if (!fs.existsSync(distDir))
+  throw ("Could not find required dir: " + configDir);
+
+let tags;
+console.log(process.argv.length);
+if (process.argv.length > 3) {
+  tags = process.argv[2].toString();
+}
+
+
 // Run eslint with the appropriate configuration and formatter to get a report of the no-internal rule
-let args = [
-  "--no-eslintrc",
-  "-f", path.join(distDir, "formatters/no-internal-summary.js"),
-  "--plugin", "@itwin",
-  "--rule", "@itwin/no-internal:'error'",
-  "--parser", "@typescript-eslint/parser",
-  "--parser-options", "{project:'tsconfig.json',sourceType:'module'}",
-  ...process.argv.slice(2)
-];
+let args;
+if (tags) {
+  console.log(tags)
+  const custom = "{customRules/noInternalRule:[error,{'tag':" + tags + "}]}";
+  args = [
+    "-f", path.join(distDir, "formatters/no-internal-summary.js"),
+    "-c", configDir,
+    "--rule", custom,
+    ...process.argv.slice(3)
+  ];
+} else
+  args = [
+    "-f", path.join(distDir, "formatters/no-internal-summary.js"),
+    "-c", configDir,
+    ...process.argv.slice(2)
+  ];
 
 let results;
+const child = require('child_process');
 try {
-  const { execFileSync } = require('child_process');
-  results = execFileSync("eslint", args);
+  results = child.execFileSync("eslint", args, { shell: true });
 } catch (error) {
   results = error.stdout;
 }

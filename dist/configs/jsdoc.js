@@ -7,7 +7,7 @@ const jsdocPlugin = require("eslint-plugin-jsdoc");
 module.exports =
 {
   ...jsdocPlugin.configs.recommended,
-  files: ["**/*.{ts,tsx,test.ts}"],
+  files: ["src/**/*.{ts,tsx}"],
   plugins: {
     "jsdoc": jsdocPlugin
   },

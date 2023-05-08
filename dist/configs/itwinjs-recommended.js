@@ -18,12 +18,9 @@ const requireBasicRpcValueRule = require("../rules/require-basic-rpc-values");
 const requireVersionInDeprecationRule = require("../rules/require-version-in-deprecation");
 const noInternalBarrelRule = require("../rules/no-internal-barrel-imports");
 
-const typescriptRecommended = require("@typescript-eslint/eslint-plugin/dist/configs/recommended");
-const typescriptRecommendedRequiringTypes = require("@typescript-eslint/eslint-plugin/dist/configs/recommended-requiring-type-checking");
-
 module.exports =
 {
-  files: ["**/*.{ts,tsx}"],
+  files: ["src/**/*.{ts,tsx}"],
   languageOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
@@ -34,7 +31,6 @@ module.exports =
         jsx: true,
       },
     },
-
   },
   plugins: {
     "@typescript-eslint": typescriptEslintPlugin,
