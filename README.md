@@ -15,8 +15,6 @@ npm i @itwin/eslint-plugin --save-dev
 
 Create an `eslint.config.js` file at the root of your project. Inside this file, import any of the provided configs and add it to the exported modules:
 
-remove eslintConfig from package.json
-
 ```javascript
 const itwinjsRecommended = require("@itwin/eslint-plugin/dist/configs/itwinjs-recommended");
 const itwinJsdoc = require("@itwin/eslint-plugin/dist/configs/jsdoc");
