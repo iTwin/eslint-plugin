@@ -16,7 +16,6 @@ const publicExtensionExportsRule = require("../rules/public-extension-exports");
 
 module.exports =
 {
-  files: ["**/*.ts"],
   plugins: {
     "react-hooks": reactHooksPlugin,
     "@typescript-eslint/eslint-plugin": typescriptEslintPlugin,

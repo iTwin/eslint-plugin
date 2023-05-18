@@ -20,7 +20,6 @@ const noInternalBarrelRule = require("../rules/no-internal-barrel-imports");
 
 module.exports =
 {
-  files: ["src/**/*.{ts,tsx}"],
   languageOptions: {
     ecmaVersion: "latest",
     sourceType: "module",

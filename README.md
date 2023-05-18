@@ -28,8 +28,14 @@ Create an `eslint.config.js` file at the root of your project. To set up the fil
 import eslintPlugin from "@itwin/eslint-plugin";
 
 export default [
-  eslintPlugin.configs["itwinjs-recommended"],
-  eslintPlugin.configs["jsdoc"],
+  {
+    files: ["**/*.{ts,tsx}"],
+    ...eslintPlugin.configs["itwinjs-recommended"],
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    ...eslintPlugin.configs["jsdoc"],
+  },
 ];
 ```
 ### CJS
@@ -37,21 +43,32 @@ export default [
 const eslintPlugin = require("@itwin/eslint-plugin");
 
 module.exports = [
-  eslintPlugin.configs["itwinjs-recommended"],
-  eslintPlugin.configs["jsdoc"],
+  {
+    files: ["**/*.{ts,tsx}"],
+    ...eslintPlugin.configs["itwinjs-recommended"],
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    ...eslintPlugin.configs["jsdoc"],
+  },
 ];
 ```
 
-Then configure the rules you want to override by adding a section with which files to apply the rule overrides to.
+Then configure the rules you want to override, add a section with rules to be overriden and their severity.
 
 ```javascript
 const eslintPlugin = require("@itwin/eslint-plugin");
 
 module.exports = [
-  eslintPlugin.configs["itwinjs-recommended"],
-  eslintPlugin.configs["jsdoc"],
   {
     files: ["**/*.{ts,tsx}"],
+    ...eslintPlugin.configs["itwinjs-recommended"],
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    ...eslintPlugin.configs["jsdoc"],
+  },
+  {
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
     }
@@ -70,9 +87,11 @@ To add rules not set in the recommended configurations, add a plugins section wi
 const eslintPlugin = require("@itwin/eslint-plugin");
 
 module.exports = [
-  eslintPlugin.configs["itwinjs-recommended"],
   {
-    files: ["src/**/*.{ts,tsx}"],
+    files: ["**/*.{ts,tsx}"],
+    ...eslintPlugin.configs["itwinjs-recommended"],
+  },
+  {
     plugins: {
       "@itwin": eslintPlugin
     },

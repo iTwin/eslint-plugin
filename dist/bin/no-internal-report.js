@@ -33,7 +33,6 @@ if (!fs.existsSync(distDir))
   throw ("Could not find required dir: " + configDir);
 
 let tags;
-console.log(process.argv.length);
 if (process.argv.length > 3) {
   tags = process.argv[2].toString();
 }
@@ -42,7 +41,6 @@ if (process.argv.length > 3) {
 // Run eslint with the appropriate configuration and formatter to get a report of the no-internal rule
 let args;
 if (tags) {
-  console.log(tags)
   const custom = "{customRules/noInternalRule:[error,{'tag':" + tags + "}]}";
   args = [
     "-f", path.join(distDir, "formatters/no-internal-summary.js"),
