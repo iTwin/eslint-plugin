@@ -21,7 +21,7 @@ In order for VSCode to use the config file as it is set up, add the following se
 
 ## Usage
 
-Create an `eslint.config.js` file at the root of your project. To set up the file, import `@itwin/eslin-plugin`. Then set the file to export an array of configuration files. This will depend on whether your project uses ESM or CJS.
+Create an `eslint.config.js` file at the root of your project. To set up the file, import `@itwin/eslin-plugin`. Then set the file to export an array of configuration files. This will be done differently depending on whether your project uses ESM or CJS.
 
 ### ESM
 ```javascript
@@ -78,7 +78,7 @@ module.exports = [
 
 ## Rules not in recommended configs
 
-To add rules not set in the recommended configurations, add a plugins section with a custom plugin the specifies the rules you would like. To set the error level, specify the severity in the rules section of the configuration. Below is an example of adding the `no-internal` rule.
+To add rules not set in the recommended configurations, add a plugins section with the `@itwin/eslint-plugin` that was imported. Then, add a rules section with the rule that needs to be added and the severity of error for the rule.
 
 ### `no-internal` - prevents use of internal/alpha APIs. Example configurations
 
