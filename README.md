@@ -74,14 +74,10 @@ module.exports = [
   {
     files: ["src/**/*.{ts,tsx}"],
     plugins: {
-      customRules: {
-        rules: {
-          noInternalRule: eslintPlugin.rules["no-internal"]
-        }
-      }
+      "@itwin": eslintPlugin
     },
     rules: {
-      "customRules/noInternalRule": [
+      "@itwin/no-internal": [
         "error",
           {
             "tag": ["internal", "alpha", "beta"]
@@ -95,7 +91,7 @@ module.exports = [
 ```javascript
 // default config
 rules: {
-  "customRules/noInternalRule": "error"
+  "@itwin/no-internal": "error"
 }
 // tag is set to ["internal", "alpha"] by default
 ```
