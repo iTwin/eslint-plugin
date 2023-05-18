@@ -11,29 +11,45 @@ npm i eslint --save-dev
 npm i @itwin/eslint-plugin --save-dev
 ```
 
+## Using with VSCode
+
+In order for VSCode to use the config file as it is set up, add the following setting to the the VSCode settings (in `.vscode/settings.json`):
+
+```json
+"eslint.experimental.useFlatConfig": true,
+```
+
 ## Usage
 
-Create an `eslint.config.js` file at the root of your project. Inside this file, import any of the provided configs and add it to the exported modules:
+Create an `eslint.config.js` file at the root of your project. To set up the file, import `@itwin/eslin-plugin`. Then set the file to export an array of configuration files. This will depend on whether your project uses ESM or CJS.
 
+### ESM
 ```javascript
-const itwinjsRecommended = require("@itwin/eslint-plugin/dist/configs/itwinjs-recommended");
-const itwinJsdoc = require("@itwin/eslint-plugin/dist/configs/jsdoc");
+import eslintPlugin from "@itwin/eslint-plugin";
+
+export default [
+  eslintPlugin.configs["itwinjs-recommended"],
+  eslintPlugin.configs["jsdoc"],
+];
+```
+### CJS
+```javascript
+const eslintPlugin = require("@itwin/eslint-plugin");
 
 module.exports = [
-  itwinjsRecommended,
-  itwinJsdoc,
+  eslintPlugin.configs["itwinjs-recommended"],
+  eslintPlugin.configs["jsdoc"],
 ];
 ```
 
 Then configure the rules you want to override by adding a section with which files to apply the rule overrides to.
 
 ```javascript
-const itwinjsRecommended = require("@itwin/eslint-plugin/dist/configs/itwinjs-recommended");
-const itwinJsdoc = require("@itwin/eslint-plugin/dist/configs/jsdoc");
+const eslintPlugin = require("@itwin/eslint-plugin");
 
 module.exports = [
-  itwinjsRecommended,
-  itwinJsdoc,
+  eslintPlugin.configs["itwinjs-recommended"],
+  eslintPlugin.configs["jsdoc"],
   {
     files: ["**/*.{ts,tsx}"],
     rules: {
@@ -43,31 +59,24 @@ module.exports = [
 ];
 ```
 
-## Using with VSCode
-
-In order for VSCode to use the config file as it is set up, add the following setting to the the VSCode settings (in `.vscode/settings.json`):
-
-```json
-"eslint.experimental.useFlatConfig": true,
-```
-
 ## Rules not in recommended configs
+
+To add rules not set in the recommended configurations, add a plugins section with a custom plugin the specifies the rules you would like. To set the error level, specify the severity in the rules section of the configuration. Below is an example of adding the `no-internal` rule.
 
 ### `no-internal` - prevents use of internal/alpha APIs. Example configurations
 
 ```javascript
 // custom config
-const itwinjsRecommended = require("@itwin/eslint-plugin/dist/configs/itwinjs-recommended");
-const noInternal = require("@itwin/eslint-plugin/dist/rules/no-internal");
+const eslintPlugin = require("@itwin/eslint-plugin");
 
 module.exports = [
-  itwinjsRecommended,
+  eslintPlugin.configs["itwinjs-recommended"],
   {
     files: ["src/**/*.{ts,tsx}"],
     plugins: {
       customRules: {
         rules: {
-          noInternalRule: noInternal
+          noInternalRule: eslintPlugin.rules["no-internal"]
         }
       }
     },
