@@ -10,24 +10,19 @@ const typescriptEslintPlugin = require("@typescript-eslint/eslint-plugin");
 const importPlugin = require("eslint-plugin-import");
 const preferArrowPlugin = require("eslint-plugin-prefer-arrow");
 const deprecationPlugin = require("eslint-plugin-deprecation");
-
-const importSpacingRule = require("../rules/import-spacing");
-const importWithinRule = require("../rules/import-within-package");
-const preferGetRule = require("../rules/prefer-get");
-const requireBasicRpcValueRule = require("../rules/require-basic-rpc-values");
-const requireVersionInDeprecationRule = require("../rules/require-version-in-deprecation");
-const noInternalBarrelRule = require("../rules/no-internal-barrel-imports");
+const iTwinPlugin = require("../rules/index");
 
 module.exports =
 {
   languageOptions: {
-    ecmaVersion: "latest",
     sourceType: "module",
     parser: typescriptParser,
     parserOptions: {
       project: "tsconfig.json",
+      ecmaVersion: "latest",
       ecmaFeatures: {
         jsx: true,
+        modules: true
       },
     },
   },
@@ -36,16 +31,7 @@ module.exports =
     "import": importPlugin,
     "prefer-arrow": preferArrowPlugin,
     "deprecation": deprecationPlugin,
-    custom: {
-      rules: {
-        importSpacing: importSpacingRule,
-        importWithin: importWithinRule,
-        preferGet: preferGetRule,
-        requireBasicRpcValue: requireBasicRpcValueRule,
-        requireVersionInDeprecation: requireVersionInDeprecationRule,
-        noInternalBarrel: noInternalBarrelRule
-      }
-    }
+    "@itwin": iTwinPlugin
   },
   rules: {
     ...typescriptEslintPlugin.configs["recommended"].rules,
@@ -396,7 +382,7 @@ module.exports =
     ],
     "use-isnan": "error",
     "valid-typeof": "off",
-    "custom/importSpacing": ["error", {
+    "@itwin/import-spacing": ["error", {
       "allow-line-breaks": false, // line breaks not allowed
       "allow-line-breaks-inside-brackets": true, // except inside brackets
       // valid example: import {
@@ -409,11 +395,11 @@ module.exports =
       // from
       // "module";
     }],
-    "custom/importWithin": "error",
-    "custom/preferGet": "error",
-    "custom/requireBasicRpcValue": "off",
-    "custom/noInternalBarrel": "error",
-    "custom/requireVersionInDeprecation": "error",
+    "@itwin/import-within-package": "error",
+    "@itwin/prefer-get": "error",
+    "@itwin/require-basic-rpc-values": "off",
+    "@itwin/no-internal-barrel-imports": "error",
+    "@itwin/require-version-in-deprecation": "error",
   },
 }
 

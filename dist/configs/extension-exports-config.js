@@ -9,10 +9,9 @@ const importPlugin = require("eslint-plugin-import");
 const preferArrowPlugin = require("eslint-plugin-prefer-arrow");
 const deprecationPlugin = require("eslint-plugin-deprecation");
 const reactPlugin = require("eslint-plugin-react");
+const eslintPlugin = require("../rules/index");
 
 const typescriptParser = require("@typescript-eslint/parser");
-
-const publicExtensionExportsRule = require("../rules/public-extension-exports");
 
 module.exports =
 {
@@ -23,11 +22,7 @@ module.exports =
     "prefer-arrow": preferArrowPlugin,
     "deprecation": deprecationPlugin,
     "react": reactPlugin,
-    custom: {
-      rules: {
-        publicExtensionExports: publicExtensionExportsRule
-      }
-    }
+    "@itwin": eslintPlugin
   },
   languageOptions: {
     ecmaVersion: "latest",
@@ -42,7 +37,7 @@ module.exports =
 
   },
   rules: {
-    "custom/publicExtensionExports": [
+    "@itwin/public-extension-exports": [
       "error",
       {
         "releaseTags": [

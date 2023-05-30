@@ -7,10 +7,9 @@ const jam3Plugin = require("eslint-plugin-jam3");
 const jsxA11yPlugin = require("eslint-plugin-jsx-a11y");
 const reactHooksPlugin = require("eslint-plugin-react-hooks");
 const reactPlugin = require("eslint-plugin-react");
+const eslintPlugin = require("../rules/index");
 
 const itwinjsRecommended = require("./itwinjs-recommended");
-
-const reactSetStageUsageRule = require("../rules/react-set-state-usage");
 
 module.exports =
 {
@@ -22,13 +21,8 @@ module.exports =
     "jsx-a11y": jsxA11yPlugin,
     "react-hooks": reactHooksPlugin,
     "react": reactPlugin,
-    custom: {
-      rules: {
-        reactSetStageUsage: reactSetStageUsageRule
-      }
-    }
+    "@itwin": eslintPlugin
   },
-  files: ["src/**/*.{ts,tsx}"],
   rules: {
     "jam3/no-sanitizer-with-danger": 2,
     "max-statements-per-line": "off", // override itwinjs-recommended
@@ -43,7 +37,7 @@ module.exports =
         ]
       }
     ],
-    "custom/reactSetStageUsage": ["error", { "updater-only": false, "allow-object": true }],
+    "@itwin/react-set-stageusage": ["error", { "updater-only": false, "allow-object": true }],
     "@typescript-eslint/unbound-method": "off",
     "react/prop-types": "off",
     "react-hooks/rules-of-hooks": "error",

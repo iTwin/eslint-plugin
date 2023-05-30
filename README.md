@@ -21,57 +21,56 @@ In order for VSCode to use the config file as it is set up, add the following se
 
 ## Usage
 
-Create an `eslint.config.js` file at the root of your project. To set up the file, import `@itwin/eslin-plugin`. Then set the file to export an array of configuration files. This will be done differently depending on whether your project uses ESM or CJS.
+Create an `eslint.config.js` file at the root of your project. To set up the file, import `@itwin/eslint-plugin`. Then set the file to export an array of configuration files. This will be done differently depending on whether your project uses ESM or CJS.
 
 ### ESM
 ```javascript
-import eslintPlugin from "@itwin/eslint-plugin";
+import iTwinPlugin from "@itwin/eslint-plugin";
+const { iTwinjsRecommendedConfig, jsdocConfig } = iTwinPlugin;
 
 export default [
   {
     files: ["**/*.{ts,tsx}"],
-    ...eslintPlugin.configs["itwinjs-recommended"],
+    ...iTwinjsRecommendedConfig,
   },
   {
     files: ["**/*.{ts,tsx}"],
-    ...eslintPlugin.configs["jsdoc"],
+    ...jsdocConfig,
   },
 ];
 ```
 ### CJS
 ```javascript
-const eslintPlugin = require("@itwin/eslint-plugin");
+const { iTwinjsRecommendedConfig, jsdocConfig } = require("@itwin/eslint-plugin");
 
 module.exports = [
   {
     files: ["**/*.{ts,tsx}"],
-    ...eslintPlugin.configs["itwinjs-recommended"],
+    ...iTwinjsRecommendedConfig,
   },
   {
     files: ["**/*.{ts,tsx}"],
-    ...eslintPlugin.configs["jsdoc"],
-  },
+    ...jsdocConfig,
+  }
 ];
 ```
 
 Then configure the rules you want to override, add a section with rules to be overriden and their severity.
 
 ```javascript
-const eslintPlugin = require("@itwin/eslint-plugin");
+const { iTwinjsRecommendedConfig, jsdocConfig } = require("@itwin/eslint-plugin");
 
 module.exports = [
   {
     files: ["**/*.{ts,tsx}"],
-    ...eslintPlugin.configs["itwinjs-recommended"],
-  },
-  {
-    files: ["**/*.{ts,tsx}"],
-    ...eslintPlugin.configs["jsdoc"],
-  },
-  {
+    ...iTwinjsRecommendedConfig,
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
     }
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    ...jsdocConfig,
   }
 ];
 ```
@@ -84,17 +83,12 @@ To add rules not set in the recommended configurations, add a plugins section wi
 
 ```javascript
 // custom config
-const eslintPlugin = require("@itwin/eslint-plugin");
+const { iTwinjsRecommendedConfig, jsdocConfig } = require("@itwin/eslint-plugin");
 
 module.exports = [
   {
     files: ["**/*.{ts,tsx}"],
-    ...eslintPlugin.configs["itwinjs-recommended"],
-  },
-  {
-    plugins: {
-      "@itwin": eslintPlugin
-    },
+    ...iTwinjsRecommendedConfig,
     rules: {
       "@itwin/no-internal": [
         "error",

@@ -41,7 +41,7 @@ if (process.argv.length > 3) {
 // Run eslint with the appropriate configuration and formatter to get a report of the no-internal rule
 let args;
 if (tags) {
-  const custom = "{customRules/noInternalRule:[error,{'tag':" + tags + "}]}";
+  const custom = "{@itwin/no-internal:[error,{'tag':" + tags + "}]}";
   args = [
     "-f", path.join(distDir, "formatters/no-internal-summary.js"),
     "-c", configDir,

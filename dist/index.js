@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-const requireDir = require('require-dir');
-const rules = requireDir("./rules");
-const configs = requireDir("./configs");
+const rules = require("./rules/index.js");
+const configs = require("./configs/index.js");
 
 module.exports = {
-  rules,
-  configs
+  ...configs,
+  ...rules
 };

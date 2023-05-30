@@ -1,29 +1,26 @@
-const noInternal = require("../rules/no-internal");
+const iTwinPlugin = require("../rules/index");
 const typescriptParser = require("@typescript-eslint/parser");
 
 module.exports = [
     {
         plugins: {
-            customRules: {
-                rules: {
-                    noInternalRule: noInternal
-                }
-            }
+            "@itwin": iTwinPlugin
         },
         files: ["src/**/*.{ts,tsx}"],
         languageOptions: {
-            ecmaVersion: "latest",
             sourceType: "module",
             parser: typescriptParser,
             parserOptions: {
                 project: "tsconfig.json",
+                ecmaVersion: "latest",
                 ecmaFeatures: {
                     jsx: true,
+                    modules: true
                 },
             },
         },
         rules: {
-            "customRules/noInternalRule": "error",
+            "@itwin/no-internal": "error",
         }
     }
 ];
