@@ -64,13 +64,15 @@ module.exports = [
   {
     files: ["**/*.{ts,tsx}"],
     ...iTwinjsRecommendedConfig,
-    rules: {
-      "@typescript-eslint/no-explicit-any": "error",
-    }
   },
   {
     files: ["**/*.{ts,tsx}"],
     ...jsdocConfig,
+  },
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "error",
+    }
   }
 ];
 ```
@@ -89,6 +91,8 @@ module.exports = [
   {
     files: ["**/*.{ts,tsx}"],
     ...iTwinjsRecommendedConfig,
+  },
+  {
     rules: {
       "@itwin/no-internal": [
         "error",

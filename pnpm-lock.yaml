@@ -37,9 +37,6 @@ dependencies:
   eslint-plugin-react-hooks:
     specifier: ^4.6.0
     version: 4.6.0(eslint@8.40.0)
-  require-dir:
-    specifier: ^1.2.0
-    version: 1.2.0
 
 devDependencies:
   '@types/eslint':
@@ -2131,10 +2128,6 @@ packages:
       call-bind: 1.0.2
       define-properties: 1.2.0
       functions-have-names: 1.2.3
-    dev: false
-
-  /require-dir@1.2.0:
-    resolution: {integrity: sha512-LY85DTSu+heYgDqq/mK+7zFHWkttVNRXC9NKcKGyuGLdlsfbjEPrIEYdCVrx6hqnJb+xSu3Lzaoo8VnmOhhjNA==}
     dev: false
 
   /require-directory@2.1.1:
