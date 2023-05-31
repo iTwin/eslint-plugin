@@ -3,20 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-
-const typescriptParser = require("@typescript-eslint/parser");
-
 const typescriptEslintPlugin = require("@typescript-eslint/eslint-plugin");
-const importPlugin = require("eslint-plugin-import");
-const preferArrowPlugin = require("eslint-plugin-prefer-arrow");
-const deprecationPlugin = require("eslint-plugin-deprecation");
-const iTwinPlugin = require("../rules/index");
 
 module.exports =
 {
   languageOptions: {
     sourceType: "module",
-    parser: typescriptParser,
+    parser: require("@typescript-eslint/parser"),
     parserOptions: {
       project: "tsconfig.json",
       ecmaVersion: "latest",
@@ -28,10 +21,10 @@ module.exports =
   },
   plugins: {
     "@typescript-eslint": typescriptEslintPlugin,
-    "import": importPlugin,
-    "prefer-arrow": preferArrowPlugin,
-    "deprecation": deprecationPlugin,
-    "@itwin": iTwinPlugin
+    "import": require("eslint-plugin-import"),
+    "prefer-arrow": require("eslint-plugin-prefer-arrow"),
+    "deprecation": require("eslint-plugin-deprecation"),
+    "@itwin": require("../rules/index")
   },
   rules: {
     ...typescriptEslintPlugin.configs["recommended"].rules,

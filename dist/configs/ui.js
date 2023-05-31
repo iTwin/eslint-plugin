@@ -3,12 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-const jam3Plugin = require("eslint-plugin-jam3");
 const jsxA11yPlugin = require("eslint-plugin-jsx-a11y");
-const reactHooksPlugin = require("eslint-plugin-react-hooks");
 const reactPlugin = require("eslint-plugin-react");
-const eslintPlugin = require("../rules/index");
-
 const itwinjsRecommended = require("./itwinjs-recommended");
 
 module.exports =
@@ -17,11 +13,11 @@ module.exports =
   ...jsxA11yPlugin.configs.recommended,
   ...reactPlugin.configs.recommended,
   plugins: {
-    "jam3": jam3Plugin,
+    "jam3": require("eslint-plugin-jam3"),
     "jsx-a11y": jsxA11yPlugin,
-    "react-hooks": reactHooksPlugin,
+    "react-hooks": require("eslint-plugin-react-hooks"),
     "react": reactPlugin,
-    "@itwin": eslintPlugin
+    "@itwin": require("../rules/index")
   },
   rules: {
     "jam3/no-sanitizer-with-danger": 2,
