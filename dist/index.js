@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-const rules = require("./rules/index.js");
-const configs = require("./configs/index.js");
+const rules = require("./rules");
+const configs = require("./configs");
 
 module.exports = {
   ...configs,
