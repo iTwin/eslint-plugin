@@ -7,6 +7,6 @@ const rules = require("./rules");
 const configs = require("./configs");
 
 module.exports = {
-  ...configs,
-  ...rules
+  configs,
+  rules
 };

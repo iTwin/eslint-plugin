@@ -26,7 +26,7 @@ Create an `eslint.config.js` file at the root of your project. To set up the fil
 ### ESM
 ```javascript
 import iTwinPlugin from "@itwin/eslint-plugin";
-const { iTwinjsRecommendedConfig, jsdocConfig } = iTwinPlugin;
+const { iTwinjsRecommendedConfig, jsdocConfig } = iTwinPlugin.configs;
 
 export default [
   {
@@ -41,7 +41,8 @@ export default [
 ```
 ### CJS
 ```javascript
-const { iTwinjsRecommendedConfig, jsdocConfig } = require("@itwin/eslint-plugin");
+const iTwinPlugin = require("@itwin/eslint-plugin");
+const { iTwinjsRecommendedConfig, jsdocConfig } = iTwinPlugin.configs;
 
 module.exports = [
   {
@@ -58,7 +59,8 @@ module.exports = [
 Then configure the rules you want to override, add a section with rules to be overriden and their severity.
 
 ```javascript
-const { iTwinjsRecommendedConfig, jsdocConfig } = require("@itwin/eslint-plugin");
+const iTwinPlugin = require("@itwin/eslint-plugin");
+const { iTwinjsRecommendedConfig, jsdocConfig } = iTwinPlugin.configs;
 
 module.exports = [
   {
@@ -85,7 +87,8 @@ To add rules not set in the recommended configurations, add a plugins section wi
 
 ```javascript
 // custom config
-const { iTwinjsRecommendedConfig, jsdocConfig } = require("@itwin/eslint-plugin");
+const iTwinPlugin = require("@itwin/eslint-plugin");
+const { iTwinjsRecommendedConfig } = iTwinPlugin.configs;
 
 module.exports = [
   {
