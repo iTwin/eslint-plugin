@@ -1,15 +1,12 @@
-const iTwinPlugin = require("../index");
-const typescriptParser = require("@typescript-eslint/parser");
-
 module.exports = [
     {
         plugins: {
-            "@itwin": iTwinPlugin
+            "@itwin": require("../index")
         },
         files: ["src/**/*.{ts,tsx}"],
         languageOptions: {
             sourceType: "module",
-            parser: typescriptParser,
+            parser: require("@typescript-eslint/parser"),
             parserOptions: {
                 project: "tsconfig.json",
                 ecmaVersion: "latest",

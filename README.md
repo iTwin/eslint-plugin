@@ -26,32 +26,30 @@ Create an `eslint.config.js` file at the root of your project. To set up the fil
 ### ESM
 ```javascript
 import iTwinPlugin from "@itwin/eslint-plugin";
-const { iTwinjsRecommendedConfig, jsdocConfig } = iTwinPlugin.configs;
 
 export default [
   {
     files: ["**/*.{ts,tsx}"],
-    ...iTwinjsRecommendedConfig,
+    ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
   },
   {
     files: ["**/*.{ts,tsx}"],
-    ...jsdocConfig,
+    ...iTwinPlugin.configs.jsdocConfig,
   },
 ];
 ```
 ### CJS
 ```javascript
 const iTwinPlugin = require("@itwin/eslint-plugin");
-const { iTwinjsRecommendedConfig, jsdocConfig } = iTwinPlugin.configs;
 
 module.exports = [
   {
     files: ["**/*.{ts,tsx}"],
-    ...iTwinjsRecommendedConfig,
+    ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
   },
   {
     files: ["**/*.{ts,tsx}"],
-    ...jsdocConfig,
+    ...iTwinPlugin.configs.jsdocConfig,
   }
 ];
 ```
@@ -60,16 +58,15 @@ Then configure the rules you want to override, add a section with rules to be ov
 
 ```javascript
 const iTwinPlugin = require("@itwin/eslint-plugin");
-const { iTwinjsRecommendedConfig, jsdocConfig } = iTwinPlugin.configs;
 
 module.exports = [
   {
     files: ["**/*.{ts,tsx}"],
-    ...iTwinjsRecommendedConfig,
+    ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
   },
   {
     files: ["**/*.{ts,tsx}"],
-    ...jsdocConfig,
+    ...iTwinPlugin.configs.jsdocConfig,
   },
   {
     rules: {
@@ -81,28 +78,36 @@ module.exports = [
 
 ## Rules not in recommended configs
 
-To add rules not set in the recommended configurations, add a plugins section with the `@itwin/eslint-plugin` that was imported. Then, add a rules section with the rule that needs to be added and the severity of error for the rule.
+To add rules not set in the recommended configurations, add a plugins section with the `@itwin/eslint-plugin` that was imported. Then, add a rules section with the rule that needs to be added and the severity of error for the rule. 
+
+If a configuration that defines the language parsing options is not used, add a `languageOptions` object. Below is an example of using the `@itwin/no-internal` rule where we define the language options to parse typescript.
 
 ### `no-internal` - prevents use of internal/alpha APIs. Example configurations
 
 ```javascript
 // custom config
 const iTwinPlugin = require("@itwin/eslint-plugin");
-const { iTwinjsRecommendedConfig } = iTwinPlugin.configs;
 
 module.exports = [
   {
+    languageOptions: {
+      sourceType: "module",
+      parser: require("@typescript-eslint/parser"),
+      parserOptions: {
+        project: "tsconfig.json",
+        ecmaVersion: "latest",
+        ecmaFeatures: {
+          jsx: true,
+          modules: true
+        },
+      },
+    },
+    plugins: {
+      "@itwin": iTwinPlugin
+    },
     files: ["**/*.{ts,tsx}"],
-    ...iTwinjsRecommendedConfig,
-  },
-  {
     rules: {
-      "@itwin/no-internal": [
-        "error",
-          {
-            "tag": ["internal", "alpha", "beta"]
-          }
-      ]
+      "@itwin/no-internal": "error",
     }
   }
 ];
