@@ -19,7 +19,7 @@ module.exports =
     "jsx-a11y": jsxA11yPlugin,
     "react-hooks": require("eslint-plugin-react-hooks"),
     "react": reactPlugin,
-    "@itwin": require("../rules/index")
+    "@itwin": require("../plugin")
   },
   rules: {
     "jam3/no-sanitizer-with-danger": 2,
