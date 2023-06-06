@@ -24,7 +24,7 @@ module.exports =
     "import": require("eslint-plugin-import"),
     "prefer-arrow": require("eslint-plugin-prefer-arrow"),
     "deprecation": require("eslint-plugin-deprecation"),
-    "@itwin": require("../rules/index")
+    "@itwin": require("../plugin")
   },
   rules: {
     ...typescriptEslintPlugin.configs["recommended"].rules,

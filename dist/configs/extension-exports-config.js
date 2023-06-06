@@ -12,7 +12,7 @@ module.exports =
     "prefer-arrow": require("eslint-plugin-prefer-arrow"),
     "deprecation": require("eslint-plugin-deprecation"),
     "react": require("eslint-plugin-react"),
-    "@itwin": require("../rules/index")
+    "@itwin": require("../plugin")
   },
   languageOptions: {
     ecmaVersion: "latest",
