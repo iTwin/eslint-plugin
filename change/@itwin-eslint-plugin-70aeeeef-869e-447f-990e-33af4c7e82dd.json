@@ -3,5 +3,5 @@
   "comment": "Converting to using eslint flat config",
   "packageName": "@itwin/eslint-plugin",
   "email": "Jake-Screen@users.noreply.github.com",
-  "dependentChangeType": "patch"
+  "dependentChangeType": "major"
 }
