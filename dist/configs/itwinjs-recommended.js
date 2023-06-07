@@ -2,27 +2,33 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @type{import("eslint").Linter.BaseConfig} */
-module.exports = {
-  env: {
-    "browser": true
+
+const typescriptEslintPlugin = require("@typescript-eslint/eslint-plugin");
+
+module.exports =
+{
+  languageOptions: {
+    sourceType: "module",
+    parser: require("@typescript-eslint/parser"),
+    parserOptions: {
+      project: "tsconfig.json",
+      ecmaVersion: "latest",
+      ecmaFeatures: {
+        jsx: true,
+        modules: true
+      },
+    },
   },
-  extends: [
-    "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking",
-  ],
-  parser: "@typescript-eslint/parser",
-  parserOptions: {
-    "project": "tsconfig.json",
-    "sourceType": "module"
+  plugins: {
+    "@typescript-eslint": typescriptEslintPlugin,
+    "import": require("eslint-plugin-import"),
+    "prefer-arrow": require("eslint-plugin-prefer-arrow"),
+    "deprecation": require("eslint-plugin-deprecation"),
+    "@itwin": require("../plugin")
   },
-  plugins: [
-    "@typescript-eslint",
-    "import",
-    "prefer-arrow",
-    "deprecation"
-  ],
   rules: {
+    ...typescriptEslintPlugin.configs["recommended"].rules,
+    ...typescriptEslintPlugin.configs["recommended-requiring-type-checking"].rules,
     "@typescript-eslint/adjacent-overload-signatures": "error",
     "@typescript-eslint/array-type": "off", // TODO: May want to turn this on for consistency
     "@typescript-eslint/await-thenable": "error",
@@ -388,12 +394,5 @@ module.exports = {
     "@itwin/no-internal-barrel-imports": "error",
     "@itwin/require-version-in-deprecation": "error",
   },
-  overrides: [
-    {
-      files: ["*.test.ts", "*.test.tsx", "**/test/**/*.ts", "**/test/**/*.tsx"],
-      rules: {
-        "@itwin/no-internal-barrel-imports": "off",
-      }
-    }
-  ],
 }
+

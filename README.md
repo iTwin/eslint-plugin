@@ -11,60 +11,113 @@ npm i eslint --save-dev
 npm i @itwin/eslint-plugin --save-dev
 ```
 
-## Usage
-
-Add `@itwin` to the plugins section of your eslint configuration and (optionally) extend one of the provided configs. You can omit the `/eslint-plugin` suffix:
-
-```json
-{
-  "plugins": ["@itwin"],
-  "extends": "plugin:@itwin/itwinjs-recommended"
-}
-```
-
-Then configure the rules you want to override under the rules section.
-
-```json
-{
-  "rules": {
-    "@itwin/rule-name": "off"
-  }
-}
-```
-
 ## Using with VSCode
 
-VSCode has an ESLint plugin, but it has some issues with plugin resolution. In order to use this config without errors, it needs to be configured to resolve plugins relative to this package (in `.vscode/settings.json`):
+In order for VSCode to use the config file as it is set up, add the following setting to the the VSCode settings (in `.vscode/settings.json`):
 
 ```json
-"eslint.options": {
-  "resolvePluginsRelativeTo": "./node_modules/@itwin/eslint-plugin",
-  ...
-},
+"eslint.experimental.useFlatConfig": true,
 ```
 
-As a side effect, any additional plugins added in consumer packages won't be loaded. If you want to use another ESLint plugin, there are two options:
+## Usage
 
-1. Submit a PR to add the ESLint plugin (and an accompanying optional configuration) to this package.
-2. Add all the plugins used in this package along with the new one to your package's devDependencies and remove the above configuration from settings.json.
+Create an `eslint.config.js` file at the root of your project. To set up the file, import `@itwin/eslint-plugin`. Then set the file to export an array of configuration files. This will be done differently depending on whether your project uses ESM or CJS.
+
+### ESM
+```javascript
+import iTwinPlugin from "@itwin/eslint-plugin";
+
+export default [
+  {
+    files: ["**/*.{ts,tsx}"],
+    ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    ...iTwinPlugin.configs.jsdocConfig,
+  },
+];
+```
+### CJS
+```javascript
+const iTwinPlugin = require("@itwin/eslint-plugin");
+
+module.exports = [
+  {
+    files: ["**/*.{ts,tsx}"],
+    ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    ...iTwinPlugin.configs.jsdocConfig,
+  }
+];
+```
+
+Then configure the rules you want to override, add a section with rules to be overriden and their severity.
+
+```javascript
+const iTwinPlugin = require("@itwin/eslint-plugin");
+
+module.exports = [
+  {
+    files: ["**/*.{ts,tsx}"],
+    ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    ...iTwinPlugin.configs.jsdocConfig,
+  },
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "error",
+    }
+  }
+];
+```
 
 ## Rules not in recommended configs
 
+To add rules not set in the recommended configurations, add a plugins section with the `@itwin/eslint-plugin` that was imported. Then, add a rules section with the rule that needs to be added and the severity of error for the rule. 
+
+If a configuration that defines the language parsing options is not used, add a `languageOptions` object. Below is an example of using the `@itwin/no-internal` rule where we define the language options to parse typescript.
+
 ### `no-internal` - prevents use of internal/alpha APIs. Example configurations
 
-```json
+```javascript
 // custom config
-"@itwin/no-internal": [
-"error",
+const iTwinPlugin = require("@itwin/eslint-plugin");
+
+module.exports = [
   {
-    "tag": ["internal", "alpha", "beta"]
+    languageOptions: {
+      sourceType: "module",
+      parser: require("@typescript-eslint/parser"),
+      parserOptions: {
+        project: "tsconfig.json",
+        ecmaVersion: "latest",
+        ecmaFeatures: {
+          jsx: true,
+          modules: true
+        },
+      },
+    },
+    plugins: {
+      "@itwin": iTwinPlugin
+    },
+    files: ["**/*.{ts,tsx}"],
+    rules: {
+      "@itwin/no-internal": "error",
+    }
   }
-]
+];
 ```
 
-```json
+```javascript
 // default config
-"@itwin/no-internal": "error"
+rules: {
+  "@itwin/no-internal": "error"
+}
 // tag is set to ["internal", "alpha"] by default
 ```
 
@@ -79,7 +132,7 @@ This can be run using `npx` or from the scripts section of `package.json`:
 
 ```json
   "scripts": {
-    "no-internal-report": "no-internal-report src/**/*.ts*"
+    "no-internal-report": "no-internal-report \"./src/**/*.ts\""
   },
 
 ```
@@ -88,7 +141,7 @@ This command forwards all arguments to eslint, so it can be further customized a
 
 ```json
   "scripts": {
-    "no-internal-report": "no-internal-report -rule '@itwin/no-internal: ['error', { 'tag': [ 'internal', 'alpha', 'beta' ]}]' src/**/*.ts*"
+    "no-internal-report": "no-internal-report \"['internal','alpha','beta']\" \"src/**/*.ts\""
   },
 
 ```
