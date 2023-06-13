@@ -118,18 +118,24 @@ module.exports = {
           }
     }
 
-    function checkWithParent(declaration, node) {
-      if (!declaration)
+    function checkWithParent(declaration, node, visited = new Set()) {
+      if (!declaration || visited.has(declaration)) {
         return;
+      }
+    
+      visited.add(declaration);
       checkJsDoc(declaration, node);
+    
       if (declaration.parent && [
         ts.SyntaxKind.ClassDeclaration,
         ts.SyntaxKind.EnumDeclaration,
         ts.SyntaxKind.InterfaceDeclaration,
         ts.SyntaxKind.ModuleDeclaration,
-      ].includes(declaration.parent.kind))
-        checkJsDoc(declaration.parent, node);
+      ].includes(declaration.parent.kind)) {
+        checkWithParent(declaration.parent, node, visited);
+      }
     }
+    
 
     return {
       CallExpression(node) {
