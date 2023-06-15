@@ -55,6 +55,9 @@ module.exports = {
           checkedPackagePatterns: {
             type: "array",
             uniqueItems: true,
+            items: {
+              type: "string",
+            }
           }
         }
       }
@@ -63,7 +66,7 @@ module.exports = {
 
   create(context) {
     const bannedTags = (context.options.length > 0 && context.options[0].tag) || ["alpha", "internal"];
-    const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || [/^@itwin\//, /^@bentley\//];
+    const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["@itwin/", "@bentley/"];
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
 
@@ -77,13 +80,17 @@ module.exports = {
       return undefined;
     }
 
-    function isLocalFile(declaration) {
-      if (declaration) {
-        const fileName = getFileName(declaration.parent);
-        if (fileName && typeof fileName === "string" && !fileName.includes("node_modules"))
-          return true;
-      }
-      return false;
+    /** @param {string} fileName */
+    function isLocalFile(fileName) {
+      return fileName && typeof fileName === "string" && !fileName.includes("node_modules");
+    }
+
+    function isCheckedFile(declaration) {
+      if (!declaration)
+        return false;
+      const fileName = getFileName(declaration.parent);
+      const inCheckedPackage = checkedPackagePatterns.some(p => new RegExp("node_modules/"+escapeRegExp(p)).test(fileName));
+      return inCheckedPackage && declaration && !isLocalFile(declaration);
     }
 
     function getParentSymbolName(declaration) {
@@ -99,7 +106,7 @@ module.exports = {
       for (const jsDoc of declaration.jsDoc)
         if (jsDoc.tags)
           for (const tag of jsDoc.tags) {
-            if (bannedTags.includes(tag.tagName.escapedText) && !isLocalFile(declaration)) {
+            if (bannedTags.includes(tag.tagName.escapedText) && isCheckedFile(declaration)) {
               let name;
               if (declaration.kind === ts.SyntaxKind.Constructor)
                 name = declaration.parent.symbol.escapedName;
@@ -223,4 +230,8 @@ module.exports = {
       },
     };
   }
+}
+
+function escapeRegExp(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
