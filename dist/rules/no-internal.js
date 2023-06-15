@@ -51,6 +51,10 @@ module.exports = {
               type: "string",
               enum: ["public", "beta", "alpha", "internal"]
             }
+          },
+          checkedPackagePatterns: {
+            type: "array",
+            uniqueItems: true,
           }
         }
       }
@@ -59,6 +63,7 @@ module.exports = {
 
   create(context) {
     const bannedTags = (context.options.length > 0 && context.options[0].tag) || ["alpha", "internal"];
+    const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || [/^@itwin\//, /^@bentley\//];
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
 
