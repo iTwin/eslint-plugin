@@ -51,6 +51,29 @@ ruleTester.run(
     invalid: [
       {
         code: dedent`
+          import { internal, public, Internal, Public } from "@itwin/test-pkg-2";
+          public();
+          internal();
+          new Internal();
+          new Internal().publicMethod();
+          new Public();
+          new Public().internalMethod();
+        `,
+        errors: [
+          { message: 'function "internal" is internal.' },
+          // FIXME: there is separate work for removing duplicate violations
+          { message: 'class "Internal" is internal.' },
+          { message: 'class "Internal" is internal.' },
+          { message: 'class "Internal" is internal.' },
+          { message: 'class "Internal" is internal.' },
+          { message: 'class "Internal" is internal.' },
+          { message: 'method "Public.internalMethod" is internal.' },
+          { message: 'method "Public.internalMethod" is internal.' },
+          { message: 'method "Public.internalMethod" is internal.' }
+        ]
+      },
+      {
+        code: dedent`
           import { internal, public, Internal, Public } from "test-pkg-1";
           public();
           internal();
