@@ -9,6 +9,7 @@
 
 const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
+const path = require("path");
 
 const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.ClassDeclaration]: "class",
@@ -66,8 +67,8 @@ module.exports = {
 
   create(context) {
     const bannedTags = (context.options.length > 0 && context.options[0].tag) || ["alpha", "internal"];
-    const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["@itwin/", "@bentley/"];
-    const checkedPackageRegexes = checkedPackagePatterns.map((p) => new RegExp("node_modules/" + escapeRegExp(p)));
+    const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["^@itwin/", "^@bentley/"];
+    const checkedPackageRegexes = checkedPackagePatterns.map((p) => new RegExp(p));
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
 
@@ -90,7 +91,11 @@ module.exports = {
       if (!declaration)
         return false;
       const fileName = getFileName(declaration.parent);
-      const inCheckedPackage = checkedPackageRegexes.some((r) => r.test(fileName));
+      const packageSegments = fileName.split("node_modules" + path.sep);
+      // can be undefined
+      const packagePath = packageSegments[packageSegments.length - 1];
+      console.log(packageSegments, packagePath);
+      const inCheckedPackage = packagePath && checkedPackageRegexes.some((r) => r.test(packagePath));
       return inCheckedPackage && !isLocalFile(declaration);
     }
 
@@ -231,15 +236,4 @@ module.exports = {
       },
     };
   }
-}
-
-/** escape a string for usage in regex, i.e. replace all regex metacharacters (e.g. '*') with
- * their escaped counterpart (e.g. '\*')
- * @example
- * escapeRegExp("[ER\ROR]") === "\[ER\\ROR\]"
- * @note the list of standard regex ECMAScript-supported metacharacters is listed in the first argument
- * to replace below
- */
-function escapeRegExp(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
