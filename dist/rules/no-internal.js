@@ -67,6 +67,7 @@ module.exports = {
   create(context) {
     const bannedTags = (context.options.length > 0 && context.options[0].tag) || ["alpha", "internal"];
     const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["@itwin/", "@bentley/"];
+    const checkedPackageRegexes = checkedPackagePatterns.map((p) => new RegExp("node_modules/" + escapeRegExp(p)));
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
 
@@ -89,8 +90,8 @@ module.exports = {
       if (!declaration)
         return false;
       const fileName = getFileName(declaration.parent);
-      const inCheckedPackage = checkedPackagePatterns.some(p => new RegExp("node_modules/"+escapeRegExp(p)).test(fileName));
-      return inCheckedPackage && declaration && !isLocalFile(declaration);
+      const inCheckedPackage = checkedPackageRegexes.some((r) => r.test(fileName));
+      return inCheckedPackage && !isLocalFile(declaration);
     }
 
     function getParentSymbolName(declaration) {
@@ -232,6 +233,13 @@ module.exports = {
   }
 }
 
+/** escape a string for usage in regex, i.e. replace all regex metacharacters (e.g. '*') with
+ * their escaped counterpart (e.g. '\*')
+ * @example
+ * escapeRegExp("[ER\ROR]") === "\[ER\\ROR\]"
+ * @note the list of standard regex ECMAScript-supported metacharacters is listed in the first argument
+ * to replace below
+ */
 function escapeRegExp(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
