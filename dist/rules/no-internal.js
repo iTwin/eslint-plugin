@@ -9,7 +9,6 @@
 
 const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
-const path = require("path");
 
 const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.ClassDeclaration]: "class",
@@ -67,7 +66,7 @@ module.exports = {
 
   create(context) {
     const bannedTags = (context.options.length > 0 && context.options[0].tag) || ["alpha", "internal"];
-    const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["^@itwin[\\/]", "^@bentley[\\/]"];
+    const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["^@itwin/", "^@bentley/"];
     const checkedPackageRegexes = checkedPackagePatterns.map((p) => new RegExp(p));
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
@@ -91,7 +90,8 @@ module.exports = {
       if (!declaration)
         return false;
       const fileName = getFileName(declaration.parent);
-      const packageSegments = fileName.split("node_modules" + path.sep);
+      // eslint fileName always uses unix path separators
+      const packageSegments = fileName.split("node_modules/");
       // can be undefined
       const packagePath = packageSegments[packageSegments.length - 1];
       const inCheckedPackage = packagePath && checkedPackageRegexes.some((r) => r.test(packagePath));
