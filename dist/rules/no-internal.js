@@ -67,7 +67,7 @@ module.exports = {
 
   create(context) {
     const bannedTags = (context.options.length > 0 && context.options[0].tag) || ["alpha", "internal"];
-    const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["^@itwin/", "^@bentley/"];
+    const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["^@itwin[\\/]", "^@bentley[\\/]"];
     const checkedPackageRegexes = checkedPackagePatterns.map((p) => new RegExp(p));
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
@@ -94,7 +94,6 @@ module.exports = {
       const packageSegments = fileName.split("node_modules" + path.sep);
       // can be undefined
       const packagePath = packageSegments[packageSegments.length - 1];
-      console.log(packageSegments, packagePath);
       const inCheckedPackage = packagePath && checkedPackageRegexes.some((r) => r.test(packagePath));
       return inCheckedPackage && !isLocalFile(declaration);
     }
