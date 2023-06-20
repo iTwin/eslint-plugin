@@ -18,5 +18,6 @@ module.exports = {
       "pnpm-lock.yaml",
       "tests/fixtures",
     ],
+    package: "@itwin/eslint-plugin",
     changehint: "Run 'pnpm change' to generate a change file",
   };
