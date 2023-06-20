@@ -1,2 +1,2 @@
 packages:
-- "@itwin/eslint-plugin"
+- .
