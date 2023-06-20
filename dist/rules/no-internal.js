@@ -9,6 +9,7 @@
 
 const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
+const path = require("path");
 
 const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.ClassDeclaration]: "class",
@@ -51,6 +52,13 @@ module.exports = {
               type: "string",
               enum: ["public", "beta", "alpha", "internal"]
             }
+          },
+          checkedPackagePatterns: {
+            type: "array",
+            uniqueItems: true,
+            items: {
+              type: "string",
+            }
           }
         }
       }
@@ -59,6 +67,8 @@ module.exports = {
 
   create(context) {
     const bannedTags = (context.options.length > 0 && context.options[0].tag) || ["alpha", "internal"];
+    const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["^@itwin[\\/]", "^@bentley[\\/]"];
+    const checkedPackageRegexes = checkedPackagePatterns.map((p) => new RegExp(p));
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
 
@@ -72,13 +82,20 @@ module.exports = {
       return undefined;
     }
 
-    function isLocalFile(declaration) {
-      if (declaration) {
-        const fileName = getFileName(declaration.parent);
-        if (fileName && typeof fileName === "string" && !fileName.includes("node_modules"))
-          return true;
-      }
-      return false;
+    /** @param {string} fileName */
+    function isLocalFile(fileName) {
+      return fileName && typeof fileName === "string" && !fileName.includes("node_modules");
+    }
+
+    function isCheckedFile(declaration) {
+      if (!declaration)
+        return false;
+      const fileName = getFileName(declaration.parent);
+      const packageSegments = fileName.split("node_modules" + path.sep);
+      // can be undefined
+      const packagePath = packageSegments[packageSegments.length - 1];
+      const inCheckedPackage = packagePath && checkedPackageRegexes.some((r) => r.test(packagePath));
+      return inCheckedPackage && !isLocalFile(declaration);
     }
 
     function getParentSymbolName(declaration) {
@@ -94,7 +111,7 @@ module.exports = {
       for (const jsDoc of declaration.jsDoc)
         if (jsDoc.tags)
           for (const tag of jsDoc.tags) {
-            if (bannedTags.includes(tag.tagName.escapedText) && !isLocalFile(declaration)) {
+            if (bannedTags.includes(tag.tagName.escapedText) && isCheckedFile(declaration)) {
               let name;
               if (declaration.kind === ts.SyntaxKind.Constructor)
                 name = declaration.parent.symbol.escapedName;
