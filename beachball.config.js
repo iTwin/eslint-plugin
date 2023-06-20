@@ -16,6 +16,7 @@ module.exports = {
       ".github/**",
       ".vscode/**",
       "pnpm-lock.yaml",
+      "tests/fixtures",
     ],
     changehint: "Run 'pnpm change' to generate a change file",
   };
