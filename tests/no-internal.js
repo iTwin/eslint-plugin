@@ -30,7 +30,7 @@ const ruleTester = new ESLintTester({
 });
 
 ruleTester.run(
-  "no-internal-barrel-imports",
+  "no-internal",
   NoInternalESLintRule,
   supportSkippedAndOnlyInTests({
     valid: [
@@ -61,14 +61,7 @@ ruleTester.run(
         `,
         errors: [
           { message: 'function "internal" is internal.' },
-          // FIXME: there is separate work for removing duplicate violations
           { message: 'class "Internal" is internal.' },
-          { message: 'class "Internal" is internal.' },
-          { message: 'class "Internal" is internal.' },
-          { message: 'class "Internal" is internal.' },
-          { message: 'class "Internal" is internal.' },
-          { message: 'method "Public.internalMethod" is internal.' },
-          { message: 'method "Public.internalMethod" is internal.' },
           { message: 'method "Public.internalMethod" is internal.' }
         ]
       },
@@ -85,15 +78,8 @@ ruleTester.run(
         options: [{ "checkedPackagePatterns": ["test-pkg-1"] }],
         errors: [
           { message: 'function "internal" is internal.' },
-          // FIXME: there is separate work for removing duplicate violations
-          { message: 'class "Internal" is internal.' },
-          { message: 'class "Internal" is internal.' },
-          { message: 'class "Internal" is internal.' },
-          { message: 'class "Internal" is internal.' },
           { message: 'class "Internal" is internal.' },
           { message: 'method "Public.internalMethod" is internal.' },
-          { message: 'method "Public.internalMethod" is internal.' },
-          { message: 'method "Public.internalMethod" is internal.' }
         ]
       },
     ],

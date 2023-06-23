@@ -70,6 +70,7 @@ module.exports = {
     const checkedPackageRegexes = checkedPackagePatterns.map((p) => new RegExp(p));
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
+    const visitedDeclarations = new Set();
 
     function getFileName(parent) {
       let currentParent = parent;
@@ -105,8 +106,10 @@ module.exports = {
     }
 
     function checkJsDoc(declaration, node) {
-      if (!declaration || !declaration.jsDoc)
+      if (!declaration || !declaration.jsDoc || visitedDeclarations.has(declaration))
         return undefined;
+
+      visitedDeclarations.add(declaration);
 
       for (const jsDoc of declaration.jsDoc)
         if (jsDoc.tags)
@@ -135,12 +138,11 @@ module.exports = {
           }
     }
 
-    function checkWithParent(declaration, node, visited = new Set()) {
-      if (!declaration || visited.has(declaration)) {
+    function checkWithParent(declaration, node) {
+      if (!declaration) {
         return;
       }
     
-      visited.add(declaration);
       checkJsDoc(declaration, node);
     
       if (declaration.parent && [
@@ -149,7 +151,7 @@ module.exports = {
         ts.SyntaxKind.InterfaceDeclaration,
         ts.SyntaxKind.ModuleDeclaration,
       ].includes(declaration.parent.kind)) {
-        checkWithParent(declaration.parent, node, visited);
+        checkWithParent(declaration.parent, node);
       }
     }
     
