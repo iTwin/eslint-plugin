@@ -177,7 +177,7 @@ module.exports = {
         const resolvedClass = typeChecker.getTypeAtLocation(tsCall);
         if (resolvedClass && resolvedClass.symbol)
           checkWithParent(resolvedClass.symbol.valueDeclaration, node);
-  
+
         const resolvedConstructor = typeChecker.getResolvedSignature(tsCall);
         if (resolvedConstructor)
           checkWithParent(resolvedConstructor.declaration, node);

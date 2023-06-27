@@ -34,10 +34,10 @@ ruleTester.run(
   NoInternalESLintRule,
   supportSkippedAndOnlyInTests({
     valid: [
-      { code: `import { internal, public, Internal, Public } from "test-pkg-1";` }, //not a bentley/itwin scope
-      { code: `import * as Local from "./local-internal"; Local.internal(); new Local.Internal();` }, //local import
+      { code: `import { internal, public, Internal, Public } from "test-pkg-1";` }, // not a bentley/itwin scope
+      { code: `import * as Local from "./local-internal"; Local.internal(); new Local.Internal();` }, // local import
       {
-        //not a bentley/itwin scope
+        // not a bentley/itwin scope
         code: dedent`
           import { internal, public, Internal, Public } from "test-pkg-1";
           public();
@@ -51,7 +51,7 @@ ruleTester.run(
     ],
     invalid: [
       {
-        //itwin scope
+        // itwin scope
         code: dedent`
           import { internal, public, Internal, Public } from "@itwin/test-pkg-2";
           public();
@@ -70,7 +70,7 @@ ruleTester.run(
       },
       {
         code: dedent`
-          import { internal, public, Internal, Public } from "test-pkg-1"; 
+          import { internal, public, Internal, Public } from "test-pkg-1";
           public();
           internal();
           new Internal();
