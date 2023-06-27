@@ -62,6 +62,7 @@ ruleTester.run(
         errors: [
           { message: 'function "internal" is internal.' },
           { message: 'class "Internal" is internal.' },
+          { message: 'class "Internal" is internal.' },
           { message: 'method "Public.internalMethod" is internal.' }
         ]
       },
@@ -78,6 +79,7 @@ ruleTester.run(
         options: [{ "checkedPackagePatterns": ["test-pkg-1"] }],
         errors: [
           { message: 'function "internal" is internal.' },
+          { message: 'class "Internal" is internal.' },
           { message: 'class "Internal" is internal.' },
           { message: 'method "Public.internalMethod" is internal.' },
         ]
