@@ -76,6 +76,7 @@ module.exports = {
     const allowWorkspaceInternal = !(context.options.length > 0 && context.options[0].dontAllowWorkspaceInternal) || false;
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
+    const visitedDeclarations = new Set();
 
     function getFileName(parent) {
       let currentParent = parent;
@@ -176,17 +177,21 @@ module.exports = {
     }
 
     function checkWithParent(declaration, node) {
-      if (!declaration)
+      if (!declaration || visitedDeclarations.has(declaration)) {
         return;
+      }
+      visitedDeclarations.add(declaration);
       checkJsDoc(declaration, node);
       if (declaration.parent && [
         ts.SyntaxKind.ClassDeclaration,
         ts.SyntaxKind.EnumDeclaration,
         ts.SyntaxKind.InterfaceDeclaration,
         ts.SyntaxKind.ModuleDeclaration,
-      ].includes(declaration.parent.kind))
+      ].includes(declaration.parent.kind)) {
         checkJsDoc(declaration.parent, node);
+      }
     }
+    
 
     return {
       CallExpression(node) {
@@ -211,11 +216,11 @@ module.exports = {
 
         const resolvedClass = typeChecker.getTypeAtLocation(tsCall);
         if (resolvedClass && resolvedClass.symbol)
-          checkJsDoc(resolvedClass.symbol.valueDeclaration, node);
+          checkWithParent(resolvedClass.symbol.valueDeclaration, node);
 
         const resolvedConstructor = typeChecker.getResolvedSignature(tsCall);
         if (resolvedConstructor)
-          checkJsDoc(resolvedConstructor.declaration, node);
+          checkWithParent(resolvedConstructor.declaration, node);
       },
 
       MemberExpression(node) {
@@ -237,7 +242,7 @@ module.exports = {
         const resolved = typeChecker.getResolvedSignature(tsCall);
         if (!resolved || !resolved.declaration)
           return;
-        checkJsDoc(resolved.declaration, node);
+        checkWithParent(resolved.declaration, node);
       },
 
       JSXOpeningElement(node) {
@@ -249,9 +254,9 @@ module.exports = {
         if (!resolved)
           return;
         if (resolved.resolvedReturnType && resolved.resolvedReturnType.symbol)
-          checkJsDoc(resolved.resolvedReturnType.symbol.valueDeclaration, node); // class
+          checkWithParent(resolved.resolvedReturnType.symbol.valueDeclaration, node); // class
         if (resolved.declaration)
-          checkJsDoc(resolved.declaration, node); // constructor
+          checkWithParent(resolved.declaration, node); // constructor
       },
 
       TaggedTemplateExpression(node) {
@@ -261,7 +266,7 @@ module.exports = {
 
         const resolved = typeChecker.getResolvedSignature(tsCall);
         if (resolved)
-          checkJsDoc(resolved.declaration, node);
+          checkWithParent(resolved.declaration, node);
       },
 
       TSTypeReference(node) {
@@ -271,7 +276,7 @@ module.exports = {
 
         const resolved = typeChecker.getTypeAtLocation(tsCall);
         if (resolved)
-          checkJsDoc(resolved.declaration, node);
+          checkWithParent(resolved.declaration, node);
       },
     };
   }

@@ -35,9 +35,10 @@ ruleTester.run(
   NoInternalESLintRule,
   supportSkippedAndOnlyInTests({
     valid: [
-      { code: `import { internal, public, Internal, Public } from "test-pkg-1";` },
-      { code: `import * as Local from "./local-internal"; Local.internal(); new Local.Internal();` },
+      { code: `import { internal, public, Internal, Public } from "test-pkg-1";` }, // not a bentley/itwin scope
+      { code: `import * as Local from "./local-internal"; Local.internal(); new Local.Internal();` }, // local import
       {
+        // not a bentley/itwin scope
         code: dedent`
           import { internal, public, Internal, Public } from "test-pkg-1";
           public();
@@ -58,6 +59,7 @@ ruleTester.run(
     ],
     invalid: [
       {
+        // itwin scope
         code: dedent`
           import { internal, public, Internal, Public } from "@itwin/test-pkg-2";
           public();
@@ -69,14 +71,8 @@ ruleTester.run(
         `,
         errors: [
           { message: 'function "internal" is internal.' },
-          // FIXME: there is separate work for removing duplicate violations
           { message: 'class "Internal" is internal.' },
           { message: 'class "Internal" is internal.' },
-          { message: 'class "Internal" is internal.' },
-          { message: 'class "Internal" is internal.' },
-          { message: 'class "Internal" is internal.' },
-          { message: 'method "Public.internalMethod" is internal.' },
-          { message: 'method "Public.internalMethod" is internal.' },
           { message: 'method "Public.internalMethod" is internal.' }
         ]
       },
@@ -93,15 +89,9 @@ ruleTester.run(
         options: [{ "checkedPackagePatterns": ["test-pkg-1"] }],
         errors: [
           { message: 'function "internal" is internal.' },
-          // FIXME: there is separate work for removing duplicate violations
-          { message: 'class "Internal" is internal.' },
-          { message: 'class "Internal" is internal.' },
-          { message: 'class "Internal" is internal.' },
           { message: 'class "Internal" is internal.' },
           { message: 'class "Internal" is internal.' },
           { message: 'method "Public.internalMethod" is internal.' },
-          { message: 'method "Public.internalMethod" is internal.' },
-          { message: 'method "Public.internalMethod" is internal.' }
         ]
       },
       {
