@@ -19,7 +19,9 @@
   },
   "scripts": {
     "build": "",
-    "test": "mocha \"tests/*.js\"",
+    "before-test": "node tests/fixtures/link.js",
+    "test": "npm run before-test && mocha \"tests/*.js\"",
+    "test-no-int": "rm -rf tests/fixtures/no-internal/workspace-pkg-1/node_modules/workspace-pkg-2 && npm run before-test && mocha tests/no-internal.js",
     "cover": "npm -s test",
     "change": "beachball change",
     "check": "beachball check",

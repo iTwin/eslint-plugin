@@ -15,7 +15,8 @@ const { supportSkippedAndOnlyInTests, dedent } = require("./test-utils");
 const fixtureDir = path.join(
   __dirname,
   "fixtures",
-  "no-internal"
+  "no-internal",
+  "workspace-pkg-1"
 );
 
 const ruleTester = new ESLintTester({
@@ -30,7 +31,7 @@ const ruleTester = new ESLintTester({
 });
 
 ruleTester.run(
-  "no-internal-barrel-imports",
+  "no-internal",
   NoInternalESLintRule,
   supportSkippedAndOnlyInTests({
     valid: [
@@ -44,6 +45,13 @@ ruleTester.run(
           new Internal();
           new Internal().publicMethod();
           new Public();
+          new Public().internalMethod();
+        `
+      },
+      {
+        code: dedent`
+          import { internal, Public } from "workspace-pkg-2";
+          internal();
           new Public().internalMethod();
         `
       },
@@ -91,6 +99,20 @@ ruleTester.run(
           { message: 'class "Internal" is internal.' },
           { message: 'class "Internal" is internal.' },
           { message: 'class "Internal" is internal.' },
+          { message: 'method "Public.internalMethod" is internal.' },
+          { message: 'method "Public.internalMethod" is internal.' },
+          { message: 'method "Public.internalMethod" is internal.' }
+        ]
+      },
+      {
+        code: dedent`
+          import { internal, Public } from "workspace-pkg-2";
+          internal();
+          new Public().internalMethod();
+        `,
+        options: [{ "dontAllowWorkspaceInternal": true }],
+        errors: [
+          { message: 'function "internal" is internal.' },
           { message: 'method "Public.internalMethod" is internal.' },
           { message: 'method "Public.internalMethod" is internal.' },
           { message: 'method "Public.internalMethod" is internal.' }

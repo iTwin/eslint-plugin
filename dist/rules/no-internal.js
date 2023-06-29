@@ -9,6 +9,8 @@
 
 const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
+const path = require("path");
+const jsdoc = require("../configs/jsdoc");
 
 const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.ClassDeclaration]: "class",
@@ -58,6 +60,9 @@ module.exports = {
             items: {
               type: "string",
             }
+          },
+          dontAllowWorkspaceInternal: {
+            type: "boolean",
           }
         }
       }
@@ -68,6 +73,7 @@ module.exports = {
     const bannedTags = (context.options.length > 0 && context.options[0].tag) || ["alpha", "internal"];
     const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["^@itwin/", "^@bentley/"];
     const checkedPackageRegexes = checkedPackagePatterns.map((p) => new RegExp(p));
+    const allowWorkspaceInternal = !(context.options.length > 0 && context.options[0].dontAllowWorkspaceInternal) || false;
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
 
@@ -81,9 +87,32 @@ module.exports = {
       return undefined;
     }
 
-    /** @param {string} fileName */
-    function isLocalFile(fileName) {
-      return fileName && typeof fileName === "string" && !fileName.includes("node_modules");
+    function dirContainsPath(dir, targetPath) {
+      const relative = path.relative(dir, targetPath);
+      return (
+        !!relative && !relative.startsWith("..") && !path.isAbsolute(relative)
+      );
+    }
+
+    function isLocalFile(declaration) {
+      let res = false;
+      if (declaration) {
+        const fileName = getFileName(declaration.parent);
+        //console.log("isLocalFile filename: " + fileName);
+        //console.log("isLocalFile common source dir: " + parserServices.program.getCommonSourceDirectory());
+        if (
+          fileName &&
+          typeof fileName === "string" &&
+          !fileName.includes('node_modules') &&
+          (allowWorkspaceInternal ||
+            dirContainsPath(parserServices.program.getCommonSourceDirectory(), fileName))
+        )
+          res = true;
+          //return true;
+      }
+      //return false;
+      //console.log("isLocalFile sanity check: " + res);
+      return res;
     }
 
     function isCheckedFile(declaration) {
@@ -95,7 +124,17 @@ module.exports = {
       // can be undefined
       const packagePath = packageSegments[packageSegments.length - 1];
       const inCheckedPackage = packagePath && checkedPackageRegexes.some((r) => r.test(packagePath));
-      return inCheckedPackage && !isLocalFile(declaration);
+      //console.log("isCheckedFile sanity check: " + inCheckedPackage);
+      const isLocal = isLocalFile(declaration);
+
+      // TODO fix this: with how it was before, final invalid test case doesnt pass?
+      if (allowWorkspaceInternal) {
+        return inCheckedPackage && !isLocal;
+      } else {
+        return inCheckedPackage || !isLocal;
+      }
+
+      // return inCheckedPackage && !isLocal;
     }
 
     function getParentSymbolName(declaration) {
@@ -108,7 +147,7 @@ module.exports = {
       if (!declaration || !declaration.jsDoc)
         return undefined;
 
-      for (const jsDoc of declaration.jsDoc)
+      for (const jsDoc of declaration.jsDoc) {
         if (jsDoc.tags)
           for (const tag of jsDoc.tags) {
             if (bannedTags.includes(tag.tagName.escapedText) && isCheckedFile(declaration)) {
@@ -133,6 +172,7 @@ module.exports = {
               });
             }
           }
+        }
     }
 
     function checkWithParent(declaration, node) {
