@@ -14,18 +14,7 @@ module.exports =
     "react": require("eslint-plugin-react"),
     "@itwin": require("../plugin")
   },
-  languageOptions: {
-    ecmaVersion: "latest",
-    sourceType: "module",
-    parser: require("@typescript-eslint/parser"),
-    parserOptions: {
-      project: "tsconfig.json",
-      ecmaFeatures: {
-        jsx: true,
-      },
-    },
-
-  },
+  languageOptions: require("./utils/language-options"),
   rules: {
     "@itwin/public-extension-exports": [
       "error",

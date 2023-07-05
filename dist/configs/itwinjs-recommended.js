@@ -7,18 +7,7 @@ const typescriptEslintPlugin = require("@typescript-eslint/eslint-plugin");
 
 module.exports =
 {
-  languageOptions: {
-    sourceType: "module",
-    parser: require("@typescript-eslint/parser"),
-    parserOptions: {
-      project: "tsconfig.json",
-      ecmaVersion: "latest",
-      ecmaFeatures: {
-        jsx: true,
-        modules: true
-      },
-    },
-  },
+  languageOptions: require("./utils/language-options"),
   plugins: {
     "@typescript-eslint": typescriptEslintPlugin,
     "import": require("eslint-plugin-import"),
