@@ -95,12 +95,12 @@ module.exports = {
       );
     }
 
+    // Returns true if file is:
+    // - not in node_modules directory AND 
+    // - in the same package within the workspace (OR if @internal is allowed within the workspace)
     function isLocalFile(declaration) {
-      let res = false;
       if (declaration) {
         const fileName = getFileName(declaration.parent);
-        //console.log("isLocalFile filename: " + fileName);
-        //console.log("isLocalFile common source dir: " + parserServices.program.getCommonSourceDirectory());
         if (
           fileName &&
           typeof fileName === "string" &&
@@ -108,14 +108,13 @@ module.exports = {
           (allowWorkspaceInternal ||
             dirContainsPath(parserServices.program.getCommonSourceDirectory(), fileName))
         )
-          res = true;
-          //return true;
+        return true;
       }
-      //return false;
-      //console.log("isLocalFile sanity check: " + res);
-      return res;
+      return false;
     }
 
+    // Returns true if a file is within a package for which @internal is a violation
+    // By default all @itwin and @bentley packages are considered violations to use internal APIs
     function isCheckedFile(declaration) {
       if (!declaration)
         return false;
@@ -125,17 +124,8 @@ module.exports = {
       // can be undefined
       const packagePath = packageSegments[packageSegments.length - 1];
       const inCheckedPackage = packagePath && checkedPackageRegexes.some((r) => r.test(packagePath));
-      //console.log("isCheckedFile sanity check: " + inCheckedPackage);
-      const isLocal = isLocalFile(declaration);
 
-      // TODO fix this: with how it was before, final invalid test case doesnt pass?
-      if (allowWorkspaceInternal) {
-        return inCheckedPackage && !isLocal;
-      } else {
-        return inCheckedPackage || !isLocal;
-      }
-
-      // return inCheckedPackage && !isLocal;
+      return inCheckedPackage && !isLocalFile(declaration);
     }
 
     function getParentSymbolName(declaration) {

@@ -16,14 +16,3 @@ function linkFixtureNoInternal() {
 }
 
 linkFixtureNoInternal();
-
-// console.log("TARGET RELATIVE: " + path.normalize("./no-internal/workspace-pkg-test"));
-// console.log("TARGET ABSOLUTE: " + path.join(
-//   __dirname,
-//   path.normalize("./no-internal/workspace-pkg-test")
-// ));
-// console.log("PATH ABSOLUTE: " + path.join(
-//   __dirname,
-//   "no-internal/node_modules/workspace-pkg-test"
-// ));
-console.log("before tests link.js ran");

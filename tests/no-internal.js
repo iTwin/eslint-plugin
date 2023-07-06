@@ -50,6 +50,7 @@ ruleTester.run(
         `
       },
       {
+        // other package in workspace
         code: dedent`
           import { internal, Public } from "workspace-pkg-2";
           internal();
@@ -77,6 +78,7 @@ ruleTester.run(
         ]
       },
       {
+        // package name is specified to disallow @internal
         code: dedent`
           import { internal, public, Internal, Public } from "test-pkg-1";
           public();
@@ -95,16 +97,18 @@ ruleTester.run(
         ]
       },
       {
+        // other package in workspace & package name is specified to disallow @internal
         code: dedent`
           import { internal, Public } from "workspace-pkg-2";
           internal();
           new Public().internalMethod();
         `,
-        options: [{ "dontAllowWorkspaceInternal": true }],
+        options: [{
+          "dontAllowWorkspaceInternal": true,
+          "checkedPackagePatterns": ["workspace-pkg-2"]
+        }],
         errors: [
           { message: 'function "internal" is internal.' },
-          { message: 'method "Public.internalMethod" is internal.' },
-          { message: 'method "Public.internalMethod" is internal.' },
           { message: 'method "Public.internalMethod" is internal.' }
         ]
       },
