@@ -14,7 +14,6 @@ module.exports =
     "react": require("eslint-plugin-react"),
     "@itwin": require("../plugin")
   },
-  languageOptions: require("./utils/language-options"),
   rules: {
     "@itwin/public-extension-exports": [
       "error",

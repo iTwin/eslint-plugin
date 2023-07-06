@@ -11,7 +11,6 @@ const itwinjsRecommended = require("./itwinjs-recommended");
 
 module.exports =
 {
-  languageOptions: require("./utils/language-options"),
   plugins: {
     ...itwinjsRecommended.plugins,
     "jam3": jam3Plugin,

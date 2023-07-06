@@ -21,7 +21,7 @@ In order for VSCode to use the config file as it is set up, add the following se
 
 ## Usage
 
-Create an `eslint.config.js` file at the root of your project. To set up the file, import `@itwin/eslint-plugin`. Then set the file to export an array of configuration files. This will be done differently depending on whether your project uses ESM or CJS.
+Create an `eslint.config.js` file at the root of your project. To set up the file, import `@itwin/eslint-plugin`. Then set the file to export an array of configuration files. This will be done differently depending on whether your project uses ESM or CJS. 
 
 ### ESM
 ```javascript
@@ -30,6 +30,7 @@ import iTwinPlugin from "@itwin/eslint-plugin";
 export default [
   {
     files: ["**/*.{ts,tsx}"],
+    languageOptions: iTwinPlugin.languageOptions.typescript,
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
   },
   {
@@ -45,6 +46,7 @@ const iTwinPlugin = require("@itwin/eslint-plugin");
 module.exports = [
   {
     files: ["**/*.{ts,tsx}"],
+    languageOptions: iTwinPlugin.languageOptions.typescript,
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
   },
   {
@@ -62,6 +64,7 @@ const iTwinPlugin = require("@itwin/eslint-plugin");
 module.exports = [
   {
     files: ["**/*.{ts,tsx}"],
+    languageOptions: iTwinPlugin.languageOptions.typescript,
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
   },
   {
@@ -76,11 +79,32 @@ module.exports = [
 ];
 ```
 
+In addition, specify the language options for your language of choice. A set of options for typescript is exported by `@itwin/eslint-plugin`. Below is a example setup of
+language options for typescript.
+
+### Language options
+```javascript
+languageOptions: {
+  sourceType: "module",
+  parser: require("@typescript-eslint/parser"),
+  parserOptions: {
+    project: "tsconfig.json",
+    ecmaVersion: "latest",
+    ecmaFeatures: {
+      jsx: true,
+      modules: true
+    },
+  },
+},
+
+```
+
 ## Rules not in recommended configs
 
 To add rules not set in the recommended configurations, add a plugins section with the `@itwin/eslint-plugin` that was imported. Then, add a rules section with the rule that needs to be added and the severity of error for the rule. 
 
 If a configuration that defines the language parsing options is not used, add a `languageOptions` object. Below is an example of using the `@itwin/no-internal` rule where we define the language options to parse typescript.
+
 
 ### `no-internal` - prevents use of internal/alpha APIs. Example configurations
 

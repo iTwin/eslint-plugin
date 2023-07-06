@@ -7,7 +7,6 @@ const typescriptEslintPlugin = require("@typescript-eslint/eslint-plugin");
 
 module.exports =
 {
-  languageOptions: require("./utils/language-options"),
   plugins: {
     "@typescript-eslint": typescriptEslintPlugin,
     "import": require("eslint-plugin-import"),

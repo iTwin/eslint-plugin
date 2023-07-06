@@ -6,7 +6,6 @@ const jsdocPlugin = require("eslint-plugin-jsdoc");
 
 module.exports =
 {
-  languageOptions: require("./utils/language-options"),
   plugins: {
     "jsdoc": jsdocPlugin
   },
