@@ -11,10 +11,9 @@ const itwinjsRecommended = require("./itwinjs-recommended");
 
 module.exports =
 {
-  ...itwinjsRecommended,
-  ...jsxA11yPlugin.configs.recommended,
-  ...reactPlugin.configs.recommended,
+  languageOptions: require("./utils/language-options"),
   plugins: {
+    ...itwinjsRecommended.plugins,
     "jam3": jam3Plugin,
     "jsx-a11y": jsxA11yPlugin,
     "react-hooks": require("eslint-plugin-react-hooks"),
@@ -22,6 +21,9 @@ module.exports =
     "@itwin": require("../plugin")
   },
   rules: {
+    ...itwinjsRecommended.rules,
+    ...jsxA11yPlugin.configs.recommended.rules,
+    ...reactPlugin.configs.recommended.rules,
     "jam3/no-sanitizer-with-danger": 2,
     "max-statements-per-line": "off", // override itwinjs-recommended
     "nonblock-statement-body-position": "off", // override itwinjs-recommended
@@ -35,7 +37,7 @@ module.exports =
         ]
       }
     ],
-    "@itwin/react-set-stageusage": ["error", { "updater-only": false, "allow-object": true }],
+    "@itwin/react-set-stage-usage": ["error", { "updater-only": false, "allow-object": true }],
     "@typescript-eslint/unbound-method": "off",
     "react/prop-types": "off",
     "react-hooks/rules-of-hooks": "error",

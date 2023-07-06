@@ -6,7 +6,7 @@ const jsdocPlugin = require("eslint-plugin-jsdoc");
 
 module.exports =
 {
-  ...jsdocPlugin.configs.recommended,
+  languageOptions: require("./utils/language-options"),
   plugins: {
     "jsdoc": jsdocPlugin
   },
@@ -18,6 +18,7 @@ module.exports =
     }
   },
   rules: {
+    ...jsdocPlugin.configs.recommended.rules,
     "jsdoc/newline-after-description": "off",
     "jsdoc/check-alignment": "off",
     "jsdoc/check-tag-names": "off",
