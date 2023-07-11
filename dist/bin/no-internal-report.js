@@ -19,7 +19,7 @@ try {
 }
 
 const tags = argCount == 3 ? "" : process.argv[2].split(",");
-const custom = {"@itwin/no-internal":["error",{tag: tags }]};
+const custom = tags ? {"@itwin/no-internal":["error",{tag: tags }]} : {"@itwin/no-internal": "error"};
 
 const args = [
   eslintBinPath,
