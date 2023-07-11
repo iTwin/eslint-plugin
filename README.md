@@ -132,7 +132,7 @@ This can be run using `npx` or from the scripts section of `package.json`:
 
 ```json
   "scripts": {
-    "no-internal-report": "no-internal-report src/**/*.ts*"
+    "no-internal-report": "no-internal-report \"src/**/*.ts*\""
   },
 
 ```
@@ -141,7 +141,7 @@ This command forwards all arguments to eslint, so it can be further customized a
 
 ```json
   "scripts": {
-    "no-internal-report": "no-internal-report \"['internal','alpha','beta']\" src/**/*.ts*"
+    "no-internal-report": "no-internal-report internal,alpha,beta \"src/**/*.ts*\""
   },
 
 ```
