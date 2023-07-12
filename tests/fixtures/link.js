@@ -13,6 +13,15 @@ function linkFixtureNoInternal() {
     ),
     "junction"
   );
+
+  fs.symlinkSync(
+    path.normalize("../../../workspace-pkg-3"),
+    path.join(
+      __dirname,
+      "no-internal/workspace-pkg-1/node_modules/@bentley/workspace-pkg-3"
+    ),
+    "junction"
+  );
 }
 
 linkFixtureNoInternal();

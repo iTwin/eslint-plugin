@@ -21,7 +21,7 @@
     "build": "",
     "before-test": "node tests/fixtures/link.js",
     "test": "npm run before-test && mocha \"tests/*.js\"",
-    "test-no-int": "rm -rf tests/fixtures/no-internal/workspace-pkg-1/node_modules/workspace-pkg-2 && npm run before-test && mocha tests/no-internal.js",
+    "test-no-int": "rm -rf tests/fixtures/no-internal/workspace-pkg-1/node_modules/workspace-pkg-2 && rm -rf tests/fixtures/no-internal/workspace-pkg-1/node_modules/@bentley/workspace-pkg-3 && npm run before-test && mocha tests/no-internal.js",
     "cover": "npm -s test",
     "change": "beachball change",
     "check": "beachball check",
@@ -47,7 +47,8 @@
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-react": "^7.32.2",
-    "eslint-plugin-react-hooks": "^4.6.0"
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "workspace-tools": "^0.34.6"
   },
   "peerDependencies": {
     "eslint": "^8.36.0",

@@ -1,0 +1,8 @@
+{
+  "name": "@bentley/workspace-pkg-3",
+  "version": "1.0.0",
+  "description": "workspace package 3",
+  "main": "local.ts",
+  "typings": "local.ts",
+  "license": "MIT"
+  }

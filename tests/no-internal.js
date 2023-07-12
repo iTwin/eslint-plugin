@@ -35,8 +35,10 @@ ruleTester.run(
   NoInternalESLintRule,
   supportSkippedAndOnlyInTests({
     valid: [
-      { code: `import { internal, public, Internal, Public } from "test-pkg-1";` }, // not a bentley/itwin scope
-      { code: `import * as Local from "./local-internal"; Local.internal(); new Local.Internal();` }, // local import
+      {
+        // local import
+        code: `import * as Local from "./local-internal"; Local.internal(); new Local.Internal();`
+      },
       {
         // not a bentley/itwin scope
         code: dedent`
@@ -112,6 +114,19 @@ ruleTester.run(
           { message: 'method "Public.internalMethod" is internal.' }
         ]
       },
+      {
+        // other package in workspace & itwin/bentley scope
+        code: dedent`
+          import { internal, Public } from "@bentley/workspace-pkg-3";
+          internal();
+          new Public().internalMethod();
+        `,
+        options: [{ "dontAllowWorkspaceInternal": true }],
+        errors: [
+          { message: 'function "internal" is internal.' },
+          { message: 'method "Public.internalMethod" is internal.' }
+        ]
+      }
     ],
   })
 );

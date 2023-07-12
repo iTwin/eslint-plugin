@@ -11,6 +11,7 @@ const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
 const path = require("path");
 const jsdoc = require("../configs/jsdoc");
+const workspace = require("workspace-tools");
 
 const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.ClassDeclaration]: "class",
@@ -95,21 +96,23 @@ module.exports = {
       );
     }
 
-    // Returns true if file is:
-    // - not in node_modules directory AND 
-    // - in the same package within the workspace (OR if @internal is allowed within the workspace)
-    function isLocalFile(declaration) {
-      if (declaration) {
-        const fileName = getFileName(declaration.parent);
-        if (
-          fileName &&
-          typeof fileName === "string" &&
-          !fileName.includes('node_modules') &&
-          (allowWorkspaceInternal ||
-            dirContainsPath(parserServices.program.getCommonSourceDirectory(), fileName))
-        )
-        return true;
+    function pathContainsCheckedPackage(packagePath) {
+      return checkedPackageRegexes.some((r) => r.test(packagePath));
+    }
+
+    function packageNameContainsCheckedPackage(packagePath) {
+      const packageList = workspace.getWorkspaces(packagePath);
+      // Look through all package infos to find the one containing our packagePath
+      for (let pkg in packageList) {
+        const packageObj = packageList[pkg];
+        const packageBaseDir = packageObj.packageJson.packageJsonPath.split("package.json")[0];
+
+        // Note: this returns false if packagePath == packageBaseDir
+        if (dirContainsPath(packageBaseDir, packagePath)) {
+          return pathContainsCheckedPackage(packageObj.name);
+        }
       }
+
       return false;
     }
 
@@ -119,13 +122,24 @@ module.exports = {
       if (!declaration)
         return false;
       const fileName = getFileName(declaration.parent);
-      // eslint fileName always uses unix path separators
-      const packageSegments = fileName.split("node_modules/");
-      // can be undefined
-      const packagePath = packageSegments[packageSegments.length - 1];
-      const inCheckedPackage = packagePath && checkedPackageRegexes.some((r) => r.test(packagePath));
 
-      return inCheckedPackage && !isLocalFile(declaration);
+      if (fileName.includes('node_modules')) {
+        // If in node modules (real dependency), check path
+
+        // eslint fileName always uses unix path separators
+        const packageSegments = fileName.split("node_modules/");
+        // can be undefined
+        const packagePath = packageSegments[packageSegments.length - 1];
+        return packagePath && pathContainsCheckedPackage(packagePath);
+
+      } else if (allowWorkspaceInternal && !dirContainsPath(parserServices.program.getCommonSourceDirectory(), fileName)) {
+        // If workspace dependency, refer to allowWorkspaceInternal
+        return false;
+
+      } else {
+        // Else !allowWorkspaceInternal or is a local file, check package name in package.json
+        return packageNameContainsCheckedPackage(fileName);
+      }
     }
 
     function getParentSymbolName(declaration) {
@@ -139,7 +153,7 @@ module.exports = {
         return undefined;
 
       for (const jsDoc of declaration.jsDoc) {
-        if (jsDoc.tags)
+        if (jsDoc.tags) {
           for (const tag of jsDoc.tags) {
             if (bannedTags.includes(tag.tagName.escapedText) && isCheckedFile(declaration)) {
               let name;
@@ -164,6 +178,7 @@ module.exports = {
             }
           }
         }
+      }
     }
 
     function checkWithParent(declaration, node) {
