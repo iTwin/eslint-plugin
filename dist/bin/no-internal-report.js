@@ -14,8 +14,15 @@ for (let i = 2; i < process.argv.length; ++ i) {
     assert(i + 1 < process.argv.length, "tags option requires an argument");
     args.tags = process.argv[i + 1].split(",");
     i += 1; // skip next arg
+  } else if(process.argv[i] == '--files') {
+    assert(i + 1 < process.argv.length, "files option requires an argument");
+    args.files.push(process.argv[i + 1]);
+    i += 1; // skip next arg
   } else {
-   args.files.push(process.argv[i]);
+    console.error("unknown argument: " + process.argv[i]);
+    console.error("Usage: no-internal-report --tags [tags: internal,alpha,beta,public] --files [FILE_GLOBS]");
+    console.error("The 'tag' argument may be one or more comma-separated api tag names");
+    process.exit(1);
   }
 }
 
