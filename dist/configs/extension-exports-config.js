@@ -6,12 +6,10 @@
 module.exports =
 {
   plugins: {
-    "react-hooks": require("eslint-plugin-react-hooks"),
-    "@typescript-eslint/eslint-plugin": require("@typescript-eslint/eslint-plugin"),
+    "@typescript-eslint": require("@typescript-eslint/eslint-plugin"),
     "import": require("eslint-plugin-import"),
     "prefer-arrow": require("eslint-plugin-prefer-arrow"),
     "deprecation": require("eslint-plugin-deprecation"),
-    "react": require("eslint-plugin-react"),
     "@itwin": require("../plugin")
   },
   languageOptions: require("./utils/language-options"),
