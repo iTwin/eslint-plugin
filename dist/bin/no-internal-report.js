@@ -8,32 +8,30 @@ const path = require('path');
 const assert = require('assert');
 const eslintBinPath = path.join(require.resolve("eslint"), "../../bin/eslint.js");
 
-const argCount = process.argv.length;
-try {
-  assert(argCount >= 3 && argCount <= 4);
-} catch(error) {
-  console.error("Incorrect number of arguments");
-  console.error("Usage: no-internal-report [tags: internal,alpha,beta,public] [FILE_GLOBS]");
-  console.error("The 'tag' argument may be one or more comma-separated api tag names")
-  process.exit(1);
+const args = { tags: ["alpha", "internal"], files: [] };
+for (let i = 2; i < process.argv.length; ++ i) {
+  if (process.argv[i] == '--tags') {
+    assert(i + 1 < process.argv.length, "tags option requires an argument");
+    args.tags = process.argv[i + 1].split(",");
+    i += 1; // skip next arg
+  } else {
+   args.files.push(process.argv[i]);
+  }
 }
 
-const tags = argCount == 3 ? "" : process.argv[2].split(",");
-const custom = tags ? {"@itwin/no-internal":["error",{tag: tags }]} : {"@itwin/no-internal": "error"};
-
-const args = [
+const eslintArgs = [
   eslintBinPath,
   "-f", require.resolve("../formatters/no-internal-summary.js"),
   "--parser", "@typescript-eslint/parser",
   "--parser-options", "{project:['tsconfig.json'],sourceType:'module'}",
-  "--rule", JSON.stringify(custom),
-  ...process.argv.slice(argCount - 1)
+  "--rule", JSON.stringify({"@itwin/no-internal":["error",{tag: args.tags }]}),
+  args.files,
 ];
 
 let results;
 try {
   const child = require('child_process');
-  results = child.execFileSync("node", args);
+  results = child.execFileSync("node", eslintArgs);
 } catch (error) {
   results = error.stdout;
 }
