@@ -117,7 +117,7 @@ module.exports = {
     }
 
     // Returns true if a file is within a package for which @internal is a violation
-    // By default all @itwin and @bentley packages are considered violations to use internal APIs
+    // By default, @itwin and @bentley packages are included
     function isCheckedFile(declaration) {
       if (!declaration)
         return false;
