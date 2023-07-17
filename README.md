@@ -132,7 +132,7 @@ This can be run using `npx` or from the scripts section of `package.json`:
 
 ```json
   "scripts": {
-    "no-internal-report": "no-internal-report --files \"src/**/*.ts*\""
+    "no-internal-report": "no-internal-report \"src/**/*.ts*\""
   },
 
 ```
