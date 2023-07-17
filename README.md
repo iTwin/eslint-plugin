@@ -141,7 +141,7 @@ This command forwards all arguments to eslint, so it can be further customized a
 
 ```json
   "scripts": {
-    "no-internal-report": "no-internal-report --tags internal,alpha,beta --files \"src/**/*.ts*\""
+    "no-internal-report": "no-internal-report --tags internal,alpha,beta \"src/**/*.ts*\""
   },
 
 ```
