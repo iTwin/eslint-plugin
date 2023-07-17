@@ -10,12 +10,13 @@ const eslintBinPath = path.join(require.resolve("eslint"), "../../bin/eslint.js"
 
 const args = { tags: ["alpha", "internal"], files: [] };
 for (let i = 2; i < process.argv.length; ++ i) {
-  if (process.argv[i] == '--tags') {
+  const arg = process.argv[i]
+  if (arg == '--tags') {
     assert(i + 1 < process.argv.length, "tags option requires an argument");
     args.tags = process.argv[i + 1].split(",");
     i += 1; // skip next arg
   } else {
-    args.files.push(process.argv[i]);
+    args.files.push(arg);
   }
 }
 
