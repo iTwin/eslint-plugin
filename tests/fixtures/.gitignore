@@ -3,4 +3,4 @@
 
 # do ignore known generated node_module links (see link.js)
 no-internal/workspace-pkg-1/node_modules/workspace-pkg-2
-no-internal/workspace-pkg-1/node_modules/@bentley/workspace-pkg-3
+no-internal/workspace-pkg-1/node_modules/@bentley/

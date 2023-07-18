@@ -14,6 +14,11 @@ function linkFixtureNoInternal() {
     "junction"
   );
 
+  fs.mkdirSync(path.join(
+    __dirname,
+    "no-internal/workspace-pkg-1/node_modules/@bentley"
+  ));
+
   fs.symlinkSync(
     path.normalize("../../../workspace-pkg-3"),
     path.join(
