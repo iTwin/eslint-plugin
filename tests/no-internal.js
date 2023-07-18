@@ -52,12 +52,23 @@ ruleTester.run(
         `
       },
       {
-        // other package in workspace
+        // other package in workspace allowed
         code: dedent`
           import { internal, Public } from "workspace-pkg-2";
           internal();
           new Public().internalMethod();
         `
+      },
+      {
+        // other package in workspace not allowed, but name not specified
+        code: dedent`
+          import { internal, Public } from "workspace-pkg-2";
+          internal();
+          new Public().internalMethod();
+        `,
+        options: [{
+          "dontAllowWorkspaceInternal": true,
+        }],
       },
     ],
     invalid: [
