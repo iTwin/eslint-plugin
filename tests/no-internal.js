@@ -15,7 +15,8 @@ const { supportSkippedAndOnlyInTests, dedent } = require("./test-utils");
 const fixtureDir = path.join(
   __dirname,
   "fixtures",
-  "no-internal"
+  "no-internal",
+  "workspace-pkg-1"
 );
 
 const ruleTester = new ESLintTester({
@@ -34,8 +35,10 @@ ruleTester.run(
   NoInternalESLintRule,
   supportSkippedAndOnlyInTests({
     valid: [
-      { code: `import { internal, public, Internal, Public } from "test-pkg-1";` }, // not a bentley/itwin scope
-      { code: `import * as Local from "./local-internal"; Local.internal(); new Local.Internal();` }, // local import
+      {
+        // local import
+        code: `import * as Local from "./local-internal"; Local.internal(); new Local.Internal();`
+      },
       {
         // not a bentley/itwin scope
         code: dedent`
@@ -47,6 +50,25 @@ ruleTester.run(
           new Public();
           new Public().internalMethod();
         `
+      },
+      {
+        // other package in workspace allowed
+        code: dedent`
+          import { internal, Public } from "workspace-pkg-2";
+          internal();
+          new Public().internalMethod();
+        `
+      },
+      {
+        // other package in workspace not allowed, but name not specified
+        code: dedent`
+          import { internal, Public } from "workspace-pkg-2";
+          internal();
+          new Public().internalMethod();
+        `,
+        options: [{
+          "dontAllowWorkspaceInternal": true,
+        }],
       },
     ],
     invalid: [
@@ -69,6 +91,7 @@ ruleTester.run(
         ]
       },
       {
+        // package name is specified to disallow @internal
         code: dedent`
           import { internal, public, Internal, Public } from "test-pkg-1";
           public();
@@ -86,6 +109,35 @@ ruleTester.run(
           { message: 'method "Public.internalMethod" is internal.' },
         ]
       },
+      {
+        // other package in workspace & package name is specified to disallow @internal
+        code: dedent`
+          import { internal, Public } from "workspace-pkg-2";
+          internal();
+          new Public().internalMethod();
+        `,
+        options: [{
+          "dontAllowWorkspaceInternal": true,
+          "checkedPackagePatterns": ["workspace-pkg-2"]
+        }],
+        errors: [
+          { message: 'function "internal" is internal.' },
+          { message: 'method "Public.internalMethod" is internal.' }
+        ]
+      },
+      {
+        // other package in workspace & itwin/bentley scope
+        code: dedent`
+          import { internal, Public } from "@bentley/workspace-pkg-3";
+          internal();
+          new Public().internalMethod();
+        `,
+        options: [{ "dontAllowWorkspaceInternal": true }],
+        errors: [
+          { message: 'function "internal" is internal.' },
+          { message: 'method "Public.internalMethod" is internal.' }
+        ]
+      }
     ],
   })
 );

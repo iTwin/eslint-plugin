@@ -9,6 +9,8 @@
 
 const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
+const path = require("path");
+const workspace = require("workspace-tools");
 
 const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.ClassDeclaration]: "class",
@@ -58,6 +60,9 @@ module.exports = {
             items: {
               type: "string",
             }
+          },
+          dontAllowWorkspaceInternal: {
+            type: "boolean",
           }
         }
       }
@@ -68,6 +73,7 @@ module.exports = {
     const bannedTags = (context.options.length > 0 && context.options[0].tag) || ["alpha", "internal"];
     const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["^@itwin/", "^@bentley/"];
     const checkedPackageRegexes = checkedPackagePatterns.map((p) => new RegExp(p));
+    const allowWorkspaceInternal = !(context.options.length > 0 && context.options[0].dontAllowWorkspaceInternal) || false;
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
     const visitedDeclarations = new Set();
@@ -82,21 +88,70 @@ module.exports = {
       return undefined;
     }
 
-    /** @param {string} fileName */
-    function isLocalFile(fileName) {
-      return fileName && typeof fileName === "string" && !fileName.includes("node_modules");
+    /**
+     * Checks if a directory contains a certain path.
+     * @note this returns false if `packagePath === packageBaseDir`
+     * @param {string} dir
+     * @param {string} targetPath
+     */
+    function dirContainsPath(dir, targetPath) {
+      const relative = path.relative(dir, targetPath);
+      return (
+        !!relative && !relative.startsWith("..") && !path.isAbsolute(relative)
+      );
     }
 
+    /**
+     * Checks if the path to a package matches a checked package pattern regex.
+     * @param {string} packagePath
+     */
+    function pathContainsCheckedPackage(packagePath) {
+      return checkedPackageRegexes.some((r) => r.test(packagePath));
+    }
+
+    /**
+     * Checks if the package that owns the specified file path matches a checked package pattern regex.s
+     * @param {string} filePath
+     */
+    function owningPackageIsCheckedPackage(filePath) {
+      const packageList = workspace.getWorkspaces(filePath);
+      
+      // Look through all package infos to find the one containing our packagePath
+      let packageObj = packageList.find((pkg) => {
+        const packageBaseDir = path.dirname(pkg.packageJson.packageJsonPath);
+        return dirContainsPath(packageBaseDir, filePath);
+      });
+
+      return (packageObj !== undefined) && pathContainsCheckedPackage(packageObj.name);
+    }
+
+    /**
+     * Returns true if a file is within a package for which the internal tag is a violation.
+     * By default `@itwin` and `@bentley` packages are included, see the `checkedPackagePatterns` option.
+     * @param declaration 
+     */
     function isCheckedFile(declaration) {
       if (!declaration)
         return false;
       const fileName = getFileName(declaration.parent);
-      // eslint fileName always uses unix path separators
-      const packageSegments = fileName.split("node_modules/");
-      // can be undefined
-      const packagePath = packageSegments[packageSegments.length - 1];
-      const inCheckedPackage = packagePath && checkedPackageRegexes.some((r) => r.test(packagePath));
-      return inCheckedPackage && !isLocalFile(declaration);
+
+      if (fileName.includes('node_modules')) {
+        // If in node_modules (installed dependency), check path
+
+        // eslint fileName always uses unix path separators
+        const packageSegments = fileName.split("node_modules/");
+        // can be undefined
+        const packagePath = packageSegments[packageSegments.length - 1];
+        return packagePath && pathContainsCheckedPackage(packagePath);
+      }
+
+      const isWorkspaceLinkedDependency = !dirContainsPath(parserServices.program.getCommonSourceDirectory(), fileName);
+
+      if (allowWorkspaceInternal && isWorkspaceLinkedDependency)
+        return false;
+      
+      // Else !allowWorkspaceInternal or is a local file, check package name in package.json
+      return owningPackageIsCheckedPackage(fileName);
     }
 
     function getParentSymbolName(declaration) {
@@ -109,8 +164,8 @@ module.exports = {
       if (!declaration || !declaration.jsDoc)
         return undefined;
 
-      for (const jsDoc of declaration.jsDoc)
-        if (jsDoc.tags)
+      for (const jsDoc of declaration.jsDoc) {
+        if (jsDoc.tags) {
           for (const tag of jsDoc.tags) {
             if (bannedTags.includes(tag.tagName.escapedText) && isCheckedFile(declaration)) {
               let name;
@@ -134,6 +189,8 @@ module.exports = {
               });
             }
           }
+        }
+      }
     }
 
     function checkWithParent(declaration, node) {

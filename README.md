@@ -121,8 +121,14 @@ rules: {
 // tag is set to ["internal", "alpha"] by default
 ```
 
-The rule will report an error whenever you use anything marked with one of the tags configured in the `tag` option.
-Allowed tags: `internal`, `alpha`, `beta`, `public`.
+The rule has some options:
+
+- `tag` - List of tags where the rule will report on usages of APIs documented as them. Allowed tags: `internal`, `alpha`, `beta`, `public`.
+  - Default: `internal`, `alpha`
+- `checkedPackagePatterns` - List of regex patterns where the rule will only be enforced for APIs that are from a package whose name matches a pattern in the list.
+  - Default: `^@itwin/`, `^@bentley/`
+- `dontAllowWorkspaceInternal` - Flag that if set to `true`, the rule will be enforced on usages of APIs from packages that are part of the same workspace/monorepo. If set to `false`, usages of APIs from workspace dependencies will not report an error.
+  - Default: `false`
 
 ## Helper commands
 
