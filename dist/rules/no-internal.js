@@ -88,7 +88,12 @@ module.exports = {
       return undefined;
     }
 
-    // Note: this returns false if packagePath == packageBaseDir
+    /**
+     * Checks if a directory contains a certain path.
+     * @note this returns false if `packagePath === packageBaseDir`
+     * @param {string} dir
+     * @param {string} targetPath
+     */
     function dirContainsPath(dir, targetPath) {
       const relative = path.relative(dir, targetPath);
       return (
@@ -96,10 +101,18 @@ module.exports = {
       );
     }
 
+    /**
+     * Checks if the path to a package matches a checked package pattern regex.
+     * @param {string} packagePath
+     */
     function pathContainsCheckedPackage(packagePath) {
       return checkedPackageRegexes.some((r) => r.test(packagePath));
     }
 
+    /**
+     * Checks if the package that owns the specified file path matches a checked package pattern regex.s
+     * @param {string} filePath
+     */
     function owningPackageIsCheckedPackage(filePath) {
       const packageList = workspace.getWorkspaces(filePath);
       
@@ -112,8 +125,11 @@ module.exports = {
       return (packageObj !== undefined) && pathContainsCheckedPackage(packageObj.name);
     }
 
-    // Returns true if a file is within a package for which @internal is a violation
-    // By default, @itwin and @bentley packages are included
+    /**
+     * Returns true if a file is within a package for which the internal tag is a violation.
+     * By default `@itwin` and `@bentley` packages are included, see the `checkedPackagePatterns` option.
+     * @param declaration 
+     */
     function isCheckedFile(declaration) {
       if (!declaration)
         return false;
