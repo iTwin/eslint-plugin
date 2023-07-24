@@ -137,7 +137,56 @@ ruleTester.run(
           { message: 'function "internal" is internal.' },
           { message: 'method "Public.internalMethod" is internal.' }
         ]
-      }
+      },
+      {
+        // itwin scope with multiple usages
+        code: dedent`
+          import { internal, public } from "@itwin/test-pkg-2";
+          public();
+          internal();
+          internal();
+          internal();
+        `,
+        errors: [
+          { message: 'function "internal" is internal.' },
+          { message: 'function "internal" is internal.' },
+          { message: 'function "internal" is internal.' },
+        ],
+      },
+      {
+        // package name is specified to disallow @internal with multiple usages
+        code: dedent`
+          import { internal, public } from "test-pkg-1";
+          public();
+          internal();
+          internal();
+          internal();
+        `,
+        options: [{ "checkedPackagePatterns": ["test-pkg-1"] }],
+        errors: [
+          { message: 'function "internal" is internal.' },
+          { message: 'function "internal" is internal.' },
+          { message: 'function "internal" is internal.' },
+        ],
+      },
+      {
+        // other package in workspace & package name is specified to disallow @internal with multiple usages
+        code: dedent`
+          import { internal, Public } from "workspace-pkg-2";
+          internal();
+          new Public().internalMethod();
+          new Public().internalMethod();
+        `,
+        options: [{
+          "dontAllowWorkspaceInternal": true,
+          "checkedPackagePatterns": ["workspace-pkg-2"]
+        }],
+        errors: [
+          { message: 'function "internal" is internal.' },
+          { message: 'method "Public.internalMethod" is internal.' },
+          { message: 'method "Public.internalMethod" is internal.' }
+        ],
+      },
     ],
   })
 );

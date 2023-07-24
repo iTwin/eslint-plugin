@@ -76,7 +76,7 @@ module.exports = {
     const allowWorkspaceInternal = !(context.options.length > 0 && context.options[0].dontAllowWorkspaceInternal) || false;
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
-    const visitedDeclarations = new Set();
+    const reportedViolationsSet = new Set();
 
     function getFileName(parent) {
       let currentParent = parent;
@@ -168,25 +168,30 @@ module.exports = {
         if (jsDoc.tags) {
           for (const tag of jsDoc.tags) {
             if (bannedTags.includes(tag.tagName.escapedText) && isCheckedFile(declaration)) {
-              let name;
-              if (declaration.kind === ts.SyntaxKind.Constructor)
-                name = declaration.parent.symbol.escapedName;
-              else {
-                name = declaration.symbol.escapedName;
-                const parentSymbol = getParentSymbolName(declaration);
-                if (parentSymbol)
-                  name = `${parentSymbol}.${name}`;
-              }
-
-              context.report({
-                node,
-                messageId: "forbidden",
-                data: {
-                  kind: syntaxKindFriendlyNames.hasOwnProperty(declaration.kind) ? syntaxKindFriendlyNames[declaration.kind] : "unknown object type " + declaration.kind,
-                  name,
-                  tag: tag.tagName.escapedText,
+              //Violation key to track and report violations on a per-usage basis
+              const violationKey = `${declaration.kind}_${declaration.symbol.escapedName}_${tag}_${node.range[0]}`;
+              if (!reportedViolationsSet.has(violationKey)) {
+                reportedViolationsSet.add(violationKey);
+                let name;
+                if (declaration.kind === ts.SyntaxKind.Constructor)
+                  name = declaration.parent.symbol.escapedName;
+                else {
+                  name = declaration.symbol.escapedName;
+                  const parentSymbol = getParentSymbolName(declaration);
+                  if (parentSymbol)
+                    name = `${parentSymbol}.${name}`;
                 }
-              });
+
+                context.report({
+                  node,
+                  messageId: "forbidden",
+                  data: {
+                    kind: syntaxKindFriendlyNames.hasOwnProperty(declaration.kind) ? syntaxKindFriendlyNames[declaration.kind] : "unknown object type " + declaration.kind,
+                    name,
+                    tag: tag.tagName.escapedText,
+                  }
+                });
+              }
             }
           }
         }
@@ -194,10 +199,9 @@ module.exports = {
     }
 
     function checkWithParent(declaration, node) {
-      if (!declaration || visitedDeclarations.has(declaration)) {
+      if (!declaration) {
         return;
       }
-      visitedDeclarations.add(declaration);
       checkJsDoc(declaration, node);
       if (declaration.parent && [
         ts.SyntaxKind.ClassDeclaration,
