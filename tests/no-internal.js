@@ -78,12 +78,16 @@ ruleTester.run(
           import { internal, public, Internal, Public } from "@itwin/test-pkg-2";
           public();
           internal();
+          internal();
+          internal();
           new Internal();
           new Internal().publicMethod();
           new Public();
           new Public().internalMethod();
         `,
         errors: [
+          { message: 'function "internal" is internal.' },
+          { message: 'function "internal" is internal.' },
           { message: 'function "internal" is internal.' },
           { message: 'class "Internal" is internal.' },
           { message: 'class "Internal" is internal.' },
@@ -96,6 +100,8 @@ ruleTester.run(
           import { internal, public, Internal, Public } from "test-pkg-1";
           public();
           internal();
+          internal();
+          internal();
           new Internal();
           new Internal().publicMethod();
           new Public();
@@ -103,6 +109,8 @@ ruleTester.run(
         `,
         options: [{ "checkedPackagePatterns": ["test-pkg-1"] }],
         errors: [
+          { message: 'function "internal" is internal.' },
+          { message: 'function "internal" is internal.' },
           { message: 'function "internal" is internal.' },
           { message: 'class "Internal" is internal.' },
           { message: 'class "Internal" is internal.' },
@@ -115,6 +123,7 @@ ruleTester.run(
           import { internal, Public } from "workspace-pkg-2";
           internal();
           new Public().internalMethod();
+          new Public().internalMethod();
         `,
         options: [{
           "dontAllowWorkspaceInternal": true,
@@ -122,6 +131,7 @@ ruleTester.run(
         }],
         errors: [
           { message: 'function "internal" is internal.' },
+          { message: 'method "Public.internalMethod" is internal.' },
           { message: 'method "Public.internalMethod" is internal.' }
         ]
       },
@@ -137,7 +147,7 @@ ruleTester.run(
           { message: 'function "internal" is internal.' },
           { message: 'method "Public.internalMethod" is internal.' }
         ]
-      }
+      },
     ],
   })
 );
