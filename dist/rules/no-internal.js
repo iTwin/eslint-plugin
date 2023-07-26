@@ -167,32 +167,34 @@ module.exports = {
       for (const jsDoc of declaration.jsDoc) {
         if (jsDoc.tags) {
           for (const tag of jsDoc.tags) {
-            if (bannedTags.includes(tag.tagName.escapedText) && isCheckedFile(declaration)) {
-              //Violation key to track and report violations on a per-usage basis
-              const violationKey = `${declaration.kind}_${declaration.symbol.escapedName}_${tag}_${node.range[0]}`;
-              if (!reportedViolationsSet.has(violationKey)) {
-                reportedViolationsSet.add(violationKey);
-                let name;
-                if (declaration.kind === ts.SyntaxKind.Constructor)
-                  name = declaration.parent.symbol.escapedName;
-                else {
-                  name = declaration.symbol.escapedName;
-                  const parentSymbol = getParentSymbolName(declaration);
-                  if (parentSymbol)
-                    name = `${parentSymbol}.${name}`;
-                }
-
-                context.report({
-                  node,
-                  messageId: "forbidden",
-                  data: {
-                    kind: syntaxKindFriendlyNames.hasOwnProperty(declaration.kind) ? syntaxKindFriendlyNames[declaration.kind] : "unknown object type " + declaration.kind,
-                    name,
-                    tag: tag.tagName.escapedText,
-                  }
-                });
-              }
+            if (!bannedTags.includes(tag.tagName.escapedText) || !isCheckedFile(declaration)) {
+              continue;
             }
+            //Violation key to track and report violations on a per-usage basis
+            const violationKey = `${declaration.kind}_${declaration.symbol.escapedName}_${tag}_${node.range[0]}`;
+            if (reportedViolationsSet.has(violationKey)) {
+              continue;
+            }
+            reportedViolationsSet.add(violationKey);
+            let name;
+            if (declaration.kind === ts.SyntaxKind.Constructor)
+              name = declaration.parent.symbol.escapedName;
+            else {
+              name = declaration.symbol.escapedName;
+              const parentSymbol = getParentSymbolName(declaration);
+              if (parentSymbol)
+                name = `${parentSymbol}.${name}`;
+            }
+
+            context.report({
+              node,
+              messageId: "forbidden",
+              data: {
+                kind: syntaxKindFriendlyNames.hasOwnProperty(declaration.kind) ? syntaxKindFriendlyNames[declaration.kind] : "unknown object type " + declaration.kind,
+                name,
+                tag: tag.tagName.escapedText,
+              }
+            });
           }
         }
       }
