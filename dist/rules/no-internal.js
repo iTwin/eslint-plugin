@@ -150,7 +150,7 @@ module.exports = {
      * `checkedPackagePatterns`
      * @param {string} filepath
      */
-    function shouldLintFile(filepath) {
+    async function checkShouldLintFile(filepath) {
       const dir = path.dirname(filepath);
 
       const cachedFileDir = shouldLintDirCache.get(dir);
@@ -163,26 +163,25 @@ module.exports = {
       if (cachedShouldLintPackage !== undefined) return cachedShouldLintPackage;
 
       /** @param {NonNullable<typeof owningPackage>} pkg */
-      function recurseHasCheckedDeps(pkg) {
-        for (const depName of [
+      async function recurseHasCheckedDeps(pkg) {
+        return Promise.all([
           ...Object.keys(pkg.packageJson.dependencies ?? {}),
           ...Object.keys(pkg.packageJson.devDependencies ?? {}),
-        ]) {
+        ].map((depName) => {
           const isCheckedPackage = checkedPackageRegexes.some((r) => r.test(depName));
           if (isCheckedPackage) return true;
 
           // NOTE: this will fail on packages that contain an explicit exports definition in package.json
-          // and do not export their package.json
+          // and do not export their package.json. If we hit those, we will need to be more clever
           const depPkgJsonPath = require.resolve(`${depName}/package.json`, { paths: [pkg.path] })
           const depPath = path.dirname(depPkgJsonPath);
           const depPkgJson = require(depPkgJsonPath);
 
-          if (recurseHasCheckedDeps({ path: depPath, packageJson: depPkgJson, name: depPkgJson.name }))
-            return true;
-        }
+          return recurseHasCheckedDeps({ path: depPath, packageJson: depPkgJson, name: depPkgJson.name });
+        }));
       }
 
-      const hasCheckedDeps = recurseHasCheckedDeps(owningPackage);
+      const hasCheckedDeps = await recurseHasCheckedDeps(owningPackage);
       shouldLintDirCache.set(cachedFileDir, hasCheckedDeps);
       shouldLintDirCache.set(cachedShouldLintPackage, hasCheckedDeps);
       return hasCheckedDeps;
@@ -278,24 +277,22 @@ module.exports = {
       }
     }
 
-    let inCheckedProgram = true;
+    let shouldLintFile = true;
 
     return {
-      onCodePathStart(codePath, node) {
+      async onCodePathStart(codePath, node) {
         if (!enableExperimentalAnalysisSkipping)
           return;
 
-        if (context.filename) {
-
-        }
+        shouldLintFile = await checkShouldLintFile(context.filename);
       },
 
       onCodePathEnd() {
-        inCheckedProgram = true;
+        shouldLintFile = true;
       },
 
       CallExpression(node) {
-        if (!inCheckedProgram) return;
+        if (!shouldLintFile) return;
 
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
@@ -312,7 +309,7 @@ module.exports = {
       },
 
       NewExpression(node) {
-        if (!inCheckedProgram) return;
+        if (!shouldLintFile) return;
 
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
@@ -328,7 +325,7 @@ module.exports = {
       },
 
       MemberExpression(node) {
-        if (!inCheckedProgram) return;
+        if (!shouldLintFile) return;
 
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
@@ -341,7 +338,7 @@ module.exports = {
       },
 
       Decorator(node) {
-        if (!inCheckedProgram) return;
+        if (!shouldLintFile) return;
 
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
@@ -354,7 +351,7 @@ module.exports = {
       },
 
       JSXOpeningElement(node) {
-        if (!inCheckedProgram) return;
+        if (!shouldLintFile) return;
 
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
@@ -370,7 +367,7 @@ module.exports = {
       },
 
       TaggedTemplateExpression(node) {
-        if (!inCheckedProgram) return;
+        if (!shouldLintFile) return;
 
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
@@ -382,7 +379,7 @@ module.exports = {
       },
 
       TSTypeReference(node) {
-        if (!inCheckedProgram) return;
+        if (!shouldLintFile) return;
 
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
