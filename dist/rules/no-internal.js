@@ -29,6 +29,22 @@ const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.EnumMember]: "enum member",
 }
 
+// NOTE: these must be module level because eslint reruns create for each file
+
+// FIXME: is this even useful given the async nature?
+/**
+ * cache of directories to whether we already checked if it should be linted
+ * @type {Map<string, boolean>} cache of directories to whether we already checked if it should be linted
+ */
+const shouldLintDirCache = new Map();
+
+/**
+ * cache of dependency-containing directories to the promise determining whether
+ * that dependency forces its dependents to be linted (it is or transitively depends upon a checked package)
+ * @type {Map<string, Promise<void>>}
+ */
+const dependencyCache = new Map();
+
 /**
  * This rule prevents the use of APIs with specific release tags.
  * @type {import("eslint").Rule.RuleModule}
@@ -143,20 +159,6 @@ module.exports = {
       return owningPackage !== undefined && pathContainsCheckedPackage(owningPackage.name);
     }
 
-    // FIXME: is this even useful given the async nature?
-    /**
-     * cache of directories to whether we already checked if it should be linted
-     * @type {Map<string, boolean>} cache of directories to whether we already checked if it should be linted
-     */
-    const shouldLintDirCache = new Map();
-
-    /**
-     * cache of dependency-containing directories to the promise determining whether
-     * that dependency forces its dependents to be linted (it is or transitively depends upon a checked package)
-     * @type {Map<string, Promise<void>>}
-     */
-    const dependencyCache = new Map();
-
     /**
      * As an optimization, do not bother linting files with no transitive dependencies that match
      * `checkedPackagePatterns`
@@ -183,10 +185,7 @@ module.exports = {
        * @returns {Promise<void>} only returns if
        */
       async function crawlDeps(pkg, depth = 0) {
-        if (depSet.has(pkg.name)) {
-          console.log(`already have dep: ${pkg.name}`);
-          return;
-        }
+        if (depSet.has(pkg.name)) return;
 
         depSet.add(pkg.name);
 
@@ -207,11 +206,8 @@ module.exports = {
 
         let cached = dependencyCache.get(pkg.path);
         if (cached === undefined) {
-          console.log(`not cached: ${"-".repeat(depth)}${pkg.path}`);
           cached = impl();
           dependencyCache.set(pkg.path, cached)
-        } else {
-          console.log(`waiting for cached: ${pkg.path}`);
         }
 
         return cached;
@@ -219,8 +215,6 @@ module.exports = {
 
       let hasCheckedDeps = false;
       try {
-        console.log("file", filepath);
-        console.log("owningPackage", owningPackage.path);
         await crawlDeps(owningPackage);
       } catch (err) {
         if (err !== "hasCheckedDep") throw err;
