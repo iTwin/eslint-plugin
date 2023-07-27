@@ -162,8 +162,12 @@ module.exports = {
       const cachedShouldLintPackage = shouldLintDirCache.get(owningPackage.path);
       if (cachedShouldLintPackage !== undefined) return cachedShouldLintPackage;
 
+      const depSet = new Set();
       /** @param {NonNullable<typeof owningPackage>} pkg */
       async function recurseHasCheckedDeps(pkg) {
+        if (depSet.has(pkg.name)) return false;
+        depSet.add(pkg.name);
+
         return Promise.all([
           ...Object.keys(pkg.packageJson.dependencies ?? {}),
           ...Object.keys(pkg.packageJson.devDependencies ?? {}),
@@ -280,14 +284,14 @@ module.exports = {
     let shouldLintFile = true;
 
     return {
-      async onCodePathStart(codePath, node) {
+      async Program() {
         if (!enableExperimentalAnalysisSkipping)
           return;
 
         shouldLintFile = await checkShouldLintFile(context.filename);
       },
 
-      onCodePathEnd() {
+      "Program:exit"() {
         shouldLintFile = true;
       },
 
