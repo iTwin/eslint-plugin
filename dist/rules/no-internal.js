@@ -143,8 +143,19 @@ module.exports = {
       return owningPackage !== undefined && pathContainsCheckedPackage(owningPackage.name);
     }
 
-    // would be nice to share this cache with other plugins
+    // FIXME: is this even useful given the async nature?
+    /**
+     * cache of directories to whether we already checked if it should be linted
+     * @type {Map<string, boolean>} cache of directories to whether we already checked if it should be linted
+     */
     const shouldLintDirCache = new Map();
+
+    /**
+     * cache of dependency-containing directories to the promise determining whether
+     * that dependency forces its dependents to be linted (it is or transitively depends upon a checked package)
+     * @type {Map<string, Promise<void>>}
+     */
+    const dependencyCache = new Map();
 
     /**
      * As an optimization, do not bother linting files with no transitive dependencies that match
@@ -186,9 +197,19 @@ module.exports = {
           // and do not export their package.json. If we hit those, we will need to be more clever
           const depPkgJsonPath = require.resolve(`${depName}/package.json`, { paths: [pkg.path] })
           const depPath = path.dirname(depPkgJsonPath);
-          const depPkgJson = JSON.parse(await fs.promises.readFile(depPkgJsonPath, { encoding: "utf8" }));
 
-          await crawlDeps({ path: depPath, packageJson: depPkgJson, name: depPkgJson.name });
+          const impl = async () => {
+            const depPkgJson = JSON.parse(await fs.promises.readFile(depPkgJsonPath, { encoding: "utf8" }));
+            await crawlDeps({ path: depPath, packageJson: depPkgJson, name: depPkgJson.name });
+          };
+
+          let cached = dependencyCache.get(depPath);
+          if (cached === undefined) {
+            cached = impl();
+            dependencyCache.set(depPath, cached)
+          }
+
+          return cached;
         }));
       }
 
