@@ -65,10 +65,10 @@ module.exports = {
           dontAllowWorkspaceInternal: {
             type: "boolean",
           },
-          // experimental because most consumers will want to analyze all
-          // their code
-          enableExperimentalSkip: {
+          // experimental because most consumers will want to analyze all their code
+          enableExperimentalAnalysisSkipping: {
             type: "boolean",
+            default: false,
           }
         }
       }
@@ -80,6 +80,7 @@ module.exports = {
     const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["^@itwin/", "^@bentley/"];
     const checkedPackageRegexes = checkedPackagePatterns.map((p) => new RegExp(p));
     const allowWorkspaceInternal = !(context.options.length > 0 && context.options[0].dontAllowWorkspaceInternal) || false;
+    const enableExperimentalAnalysisSkipping = !(context.options.length > 0 && context.options[0].enableExperimentalAnalysisSkipping) || false;
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
     const reportedViolationsSet = new Set();
@@ -161,15 +162,30 @@ module.exports = {
       const cachedShouldLintPackage = shouldLintDirCache.get(owningPackage.path);
       if (cachedShouldLintPackage !== undefined) return cachedShouldLintPackage;
 
-      // NOTE: this will fail on packages that contain no 
-      function recurDeps = 
-      for (const dep of [
-        ...owningPackage.packageJson.dependencies ?? [],
-        ...owningPackage.packageJson.devDependencies ??[]
-      ]) {
+      /** @param {NonNullable<typeof owningPackage>} pkg */
+      function recurseHasCheckedDeps(pkg) {
+        for (const depName of [
+          ...Object.keys(pkg.packageJson.dependencies ?? {}),
+          ...Object.keys(pkg.packageJson.devDependencies ?? {}),
+        ]) {
+          const isCheckedPackage = checkedPackageRegexes.some((r) => r.test(depName));
+          if (isCheckedPackage) return true;
 
+          // NOTE: this will fail on packages that contain an explicit exports definition in package.json
+          // and do not export their package.json
+          const depPkgJsonPath = require.resolve(`${depName}/package.json`, { paths: [pkg.path] })
+          const depPath = path.dirname(depPkgJsonPath);
+          const depPkgJson = require(depPkgJsonPath);
+
+          if (recurseHasCheckedDeps({ path: depPath, packageJson: depPkgJson, name: depPkgJson.name }))
+            return true;
+        }
       }
-      if (owningPackage)
+
+      const hasCheckedDeps = recurseHasCheckedDeps(owningPackage);
+      shouldLintDirCache.set(cachedFileDir, hasCheckedDeps);
+      shouldLintDirCache.set(cachedShouldLintPackage, hasCheckedDeps);
+      return hasCheckedDeps;
     }
 
     /**
@@ -266,6 +282,9 @@ module.exports = {
 
     return {
       onCodePathStart(codePath, node) {
+        if (!enableExperimentalAnalysisSkipping)
+          return;
+
         if (context.filename) {
 
         }
