@@ -10,6 +10,7 @@
 const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
 const path = require("path");
+const fs = require("fs");
 const workspace = require("workspace-tools");
 
 const syntaxKindFriendlyNames = {
@@ -163,29 +164,41 @@ module.exports = {
       if (cachedShouldLintPackage !== undefined) return cachedShouldLintPackage;
 
       const depSet = new Set();
-      /** @param {NonNullable<typeof owningPackage>} pkg */
-      async function recurseHasCheckedDeps(pkg) {
-        if (depSet.has(pkg.name)) return false;
+
+      /**
+       * This function throws as a form of async early return
+       * @param {NonNullable<typeof owningPackage>} pkg
+       * @throws {"hasCheckedDep"} if package is checked
+       * @returns {Promise<void>} only returns if
+       */
+      async function crawlDeps(pkg) {
+        if (depSet.has(pkg.name)) return;
         depSet.add(pkg.name);
 
-        return Promise.all([
+        await Promise.all([
           ...Object.keys(pkg.packageJson.dependencies ?? {}),
           ...Object.keys(pkg.packageJson.devDependencies ?? {}),
-        ].map((depName) => {
+        ].map(async (depName) => {
           const isCheckedPackage = checkedPackageRegexes.some((r) => r.test(depName));
-          if (isCheckedPackage) return true;
+          if (isCheckedPackage) throw "hasCheckedDep";
 
           // NOTE: this will fail on packages that contain an explicit exports definition in package.json
           // and do not export their package.json. If we hit those, we will need to be more clever
           const depPkgJsonPath = require.resolve(`${depName}/package.json`, { paths: [pkg.path] })
           const depPath = path.dirname(depPkgJsonPath);
-          const depPkgJson = require(depPkgJsonPath);
+          const depPkgJson = JSON.parse(await fs.promises.readFile(depPkgJsonPath, { encoding: "utf8" }));
 
-          return recurseHasCheckedDeps({ path: depPath, packageJson: depPkgJson, name: depPkgJson.name });
+          await crawlDeps({ path: depPath, packageJson: depPkgJson, name: depPkgJson.name });
         }));
       }
 
-      const hasCheckedDeps = await recurseHasCheckedDeps(owningPackage);
+      let hasCheckedDeps = false;
+      try {
+        await crawlDeps(owningPackage);
+      } catch (err) {
+        if (err !== "hasCheckedDep") throw err;
+        hasCheckedDeps = true;
+      }
       shouldLintDirCache.set(cachedFileDir, hasCheckedDeps);
       shouldLintDirCache.set(cachedShouldLintPackage, hasCheckedDeps);
       return hasCheckedDeps;
