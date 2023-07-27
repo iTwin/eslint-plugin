@@ -30,6 +30,7 @@ const syntaxKindFriendlyNames = {
 
 /**
  * This rule prevents the use of APIs with specific release tags.
+ * @type {import("eslint").Rule.RuleModule}
  */
 module.exports = {
   meta: {
@@ -63,6 +64,11 @@ module.exports = {
           },
           dontAllowWorkspaceInternal: {
             type: "boolean",
+          },
+          // experimental because most consumers will want to analyze all
+          // their code
+          enableExperimentalSkip: {
+            type: "boolean",
           }
         }
       }
@@ -77,6 +83,7 @@ module.exports = {
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
     const reportedViolationsSet = new Set();
+
 
     function getFileName(parent) {
       let currentParent = parent;
@@ -110,10 +117,10 @@ module.exports = {
     }
 
     /**
-     * Checks if the package that owns the specified file path matches a checked package pattern regex.s
+     * get the package that a specific file belongs to
      * @param {string} filePath
      */
-    function owningPackageIsCheckedPackage(filePath) {
+    function getOwningPackage(filePath) {
       const packageList = workspace.getWorkspaces(filePath);
       
       // Look through all package infos to find the one containing our packagePath
@@ -122,7 +129,47 @@ module.exports = {
         return dirContainsPath(packageBaseDir, filePath);
       });
 
-      return (packageObj !== undefined) && pathContainsCheckedPackage(packageObj.name);
+      return packageObj;
+    }
+
+    /**
+     * Checks if the package that owns the specified file path matches a checked package pattern regex.s
+     * @param {string} filePath
+     */
+    function owningPackageIsCheckedPackage(filePath) {
+      const owningPackage = getOwningPackage(filePath);
+      return owningPackage !== undefined && pathContainsCheckedPackage(owningPackage.name);
+    }
+
+    // would be nice to share this cache with other plugins
+    const shouldLintDirCache = new Map();
+
+    /**
+     * As an optimization, do not bother linting files with no transitive dependencies that match
+     * `checkedPackagePatterns`
+     * @param {string} filepath
+     */
+    function shouldLintFile(filepath) {
+      const dir = path.dirname(filepath);
+
+      const cachedFileDir = shouldLintDirCache.get(dir);
+      if (cachedFileDir !== undefined) return cachedFileDir;
+
+      const owningPackage = getOwningPackage(filepath);
+      if (!owningPackage) return true;
+
+      const cachedShouldLintPackage = shouldLintDirCache.get(owningPackage.path);
+      if (cachedShouldLintPackage !== undefined) return cachedShouldLintPackage;
+
+      // NOTE: this will fail on packages that contain no 
+      function recurDeps = 
+      for (const dep of [
+        ...owningPackage.packageJson.dependencies ?? [],
+        ...owningPackage.packageJson.devDependencies ??[]
+      ]) {
+
+      }
+      if (owningPackage)
     }
 
     /**
@@ -214,10 +261,23 @@ module.exports = {
         checkJsDoc(declaration.parent, node);
       }
     }
-    
+
+    let inCheckedProgram = true;
 
     return {
+      onCodePathStart(codePath, node) {
+        if (context.filename) {
+
+        }
+      },
+
+      onCodePathEnd() {
+        inCheckedProgram = true;
+      },
+
       CallExpression(node) {
+        if (!inCheckedProgram) return;
+
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
@@ -233,6 +293,8 @@ module.exports = {
       },
 
       NewExpression(node) {
+        if (!inCheckedProgram) return;
+
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
@@ -247,6 +309,8 @@ module.exports = {
       },
 
       MemberExpression(node) {
+        if (!inCheckedProgram) return;
+
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
@@ -258,6 +322,8 @@ module.exports = {
       },
 
       Decorator(node) {
+        if (!inCheckedProgram) return;
+
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
@@ -269,6 +335,8 @@ module.exports = {
       },
 
       JSXOpeningElement(node) {
+        if (!inCheckedProgram) return;
+
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
@@ -283,6 +351,8 @@ module.exports = {
       },
 
       TaggedTemplateExpression(node) {
+        if (!inCheckedProgram) return;
+
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
@@ -293,6 +363,8 @@ module.exports = {
       },
 
       TSTypeReference(node) {
+        if (!inCheckedProgram) return;
+
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
