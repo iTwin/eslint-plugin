@@ -81,7 +81,7 @@ module.exports = {
     const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["^@itwin/", "^@bentley/"];
     const checkedPackageRegexes = checkedPackagePatterns.map((p) => new RegExp(p));
     const allowWorkspaceInternal = !(context.options.length > 0 && context.options[0].dontAllowWorkspaceInternal) || false;
-    const enableExperimentalAnalysisSkipping = !(context.options.length > 0 && context.options[0].enableExperimentalAnalysisSkipping) || false;
+    const enableExperimentalAnalysisSkipping = !(context.options.length > 0 && context.options[0].enableExperimentalAnalysisSkipping) || true;
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
     const reportedViolationsSet = new Set();
@@ -182,11 +182,15 @@ module.exports = {
        * @throws {"hasCheckedDep"} if package is checked
        * @returns {Promise<void>} only returns if
        */
-      async function crawlDeps(pkg) {
-        if (depSet.has(pkg.name)) return;
+      async function crawlDeps(pkg, depth = 0) {
+        if (depSet.has(pkg.name)) {
+          console.log(`already have dep: ${pkg.name}`);
+          return;
+        }
+
         depSet.add(pkg.name);
 
-        await Promise.all([
+        const impl = () => Promise.all([
           ...Object.keys(pkg.packageJson.dependencies ?? {}),
           ...Object.keys(pkg.packageJson.devDependencies ?? {}),
         ].map(async (depName) => {
@@ -197,24 +201,26 @@ module.exports = {
           // and do not export their package.json. If we hit those, we will need to be more clever
           const depPkgJsonPath = require.resolve(`${depName}/package.json`, { paths: [pkg.path] })
           const depPath = path.dirname(depPkgJsonPath);
-
-          const impl = async () => {
-            const depPkgJson = JSON.parse(await fs.promises.readFile(depPkgJsonPath, { encoding: "utf8" }));
-            await crawlDeps({ path: depPath, packageJson: depPkgJson, name: depPkgJson.name });
-          };
-
-          let cached = dependencyCache.get(depPath);
-          if (cached === undefined) {
-            cached = impl();
-            dependencyCache.set(depPath, cached)
-          }
-
-          return cached;
+          const depPkgJson = JSON.parse(await fs.promises.readFile(depPkgJsonPath, { encoding: "utf8" }));
+          await crawlDeps({ path: depPath, packageJson: depPkgJson, name: depPkgJson.name }, depth + 1);
         }));
+
+        let cached = dependencyCache.get(pkg.path);
+        if (cached === undefined) {
+          console.log(`not cached: ${"-".repeat(depth)}${pkg.path}`);
+          cached = impl();
+          dependencyCache.set(pkg.path, cached)
+        } else {
+          console.log(`waiting for cached: ${pkg.path}`);
+        }
+
+        return cached;
       }
 
       let hasCheckedDeps = false;
       try {
+        console.log("file", filepath);
+        console.log("owningPackage", owningPackage.path);
         await crawlDeps(owningPackage);
       } catch (err) {
         if (err !== "hasCheckedDep") throw err;
@@ -320,6 +326,10 @@ module.exports = {
     return {
       async Program() {
         if (!enableExperimentalAnalysisSkipping)
+          return;
+
+        const isEslintSpecialPath = context.filename === "<input>" || context.filename === "<text>";
+        if (isEslintSpecialPath)
           return;
 
         shouldLintFile = await checkShouldLintFile(context.filename);
