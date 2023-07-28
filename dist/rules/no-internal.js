@@ -167,6 +167,19 @@ module.exports = {
     }
 
     /**
+     * Resolves the package.json manifest of a dependency from a directory
+     * @param {string} pkgQualifiedName - qualified (scope-included) name of a package
+     * @param {string} fromDir - directroy from which to resolve the package
+     * @returns the path to the manifest (package.json) of the given package
+     */
+    function resolveDependencyPackageJson(pkgQualifiedName, fromDir) {
+      // can't just resolve `${pkgQualifiedName}/package.json` because it may not be exported
+      // if the packages uses the package.json#exports field
+      const packageMainPath = require.resolve(pkgQualifiedName, { paths: [fromDir] })
+      return getOwningPackage(packageMainPath);
+    }
+
+    /**
      * As an optimization, do not bother linting files with no transitive dependencies that match
      * `checkedPackagePatterns`
      * @param {string} filepath
@@ -191,7 +204,7 @@ module.exports = {
 
       /**
        * This function throws as a form of async early return
-       * @param {NonNullable<ReturnType<typeof getOwningPackage>>} pkg
+       * @param {{ name: string, path: string, packageJson: any }} pkg
        * @returns {boolean}
        */
       function crawlDeps(pkg) {
@@ -210,10 +223,9 @@ module.exports = {
 
           // NOTE: this will fail on packages that contain an explicit exports definition in package.json
           // and do not export their package.json. If we hit those, we will need to be more clever
-          const depPkgJsonPath = require.resolve(`${depName}/package.json`, { paths: [pkg.path] })
+          const [depPkgJsonPath, depPkgJson] = resolveDependencyPackageJson(depName, pkg.path);
+          assert(depPkgJsonPath);
           const depPath = path.dirname(depPkgJsonPath);
-          // unfortunately eslint is sync by nature
-          const depPkgJson = JSON.parse(fs.readFileSync(depPkgJsonPath, { encoding: "utf8" }));
 
           isChecked = crawlDeps({ path: depPath, packageJson: depPkgJson, name: depPkgJson.name });
           if (isChecked) break;
