@@ -148,7 +148,7 @@ module.exports = {
         const testPackageJsonPath = path.join(filepath, "package.json");
         try {
           const pkgJson = JSON.parse(fs.readFileSync(testPackageJsonPath, { encoding: "utf8" }));
-          return [testPackageJsonPath, pkgJson]
+          return [filepath, pkgJson]
         } catch (err) {
           if (err.code !== "ENOENT") throw err;
         }
@@ -170,22 +170,29 @@ module.exports = {
      * Resolves the package.json manifest of a dependency from a directory
      * @param {string} pkgQualifiedName - qualified (scope-included) name of a package
      * @param {string} fromDir - directroy from which to resolve the package
-     * @returns the path to the manifest (package.json) of the given package
+     * @returns {[string, any] | [undefined, undefined]} the path to the package and the contents of its package.json
      */
     function resolveDependencyPackageJson(pkgQualifiedName, fromDir) {
       // first try resolve package.json directly. This will throw if package.json#main is empty
       // or package.json#exports does not export itself
-      let packageJsonPath;
       try {
-        packageJsonPath = require.resolve(`${pkgQualifiedName}/package.json`, { paths: [fromDir] })
+        const packageJsonPath = require.resolve(`${pkgQualifiedName}/package.json`, { paths: [fromDir] });
         const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, { encoding: "utf8" }));
         return [path.dirname(packageJsonPath), packageJson];
       } catch (err) {
         if (err.code !== "MODULE_NOT_FOUND") throw err;
       }
-      // find package.json from the path to the main module
-      const packageMainPath = require.resolve(pkgQualifiedName, { paths: [fromDir] })
-      return getOwningPackage(packageMainPath);
+
+      // find package.json traverse out from its main module's path
+      try {
+        const packageMainPath = require.resolve(pkgQualifiedName, { paths: [fromDir] });
+        return getOwningPackage(packageMainPath);
+      } catch (err) {
+        if (err.code !== "MODULE_NOT_FOUND") throw err;
+      }
+
+      // maybe a dev dependency of an installed dependency, so maybe it really isn't there
+      return [undefined, undefined];
     }
 
     /**
@@ -199,7 +206,7 @@ module.exports = {
       const cachedFileDir = shouldLintDirCache.get(dir);
       if (cachedFileDir !== undefined) return cachedFileDir;
 
-      const [owningPackagePath, owningPackageJson]  = getOwningPackage(filepath)
+      const [owningPackagePath, owningPackageJson] = getOwningPackage(filepath)
       if (owningPackagePath === undefined) return true;
 
       const owningPackage = {
@@ -226,15 +233,17 @@ module.exports = {
         for (const depName of [
           ...Object.keys(pkg.packageJson.dependencies ?? {}),
           ...Object.keys(pkg.packageJson.devDependencies ?? {}),
+          ...Object.keys(pkg.packageJson.optionalDependencies ?? {}),
+          // assume peer dependencies were installed as dev/optional,
+          // cuz otherwise we wouldn't get types anyway and this rule can't detect anything
         ]) {
           isChecked = checkedPackageRegexes.some((r) => r.test(depName));
           if (isChecked) break;
 
-          // NOTE: this will fail on packages that contain an explicit exports definition in package.json
-          // and do not export their package.json. If we hit those, we will need to be more clever
-          const [depPkgJsonPath, depPkgJson] = resolveDependencyPackageJson(depName, pkg.path);
-          assert(depPkgJsonPath);
-          const depPath = path.dirname(depPkgJsonPath);
+          const [depPath, depPkgJson] = resolveDependencyPackageJson(depName, pkg.path);
+          // optional or transitive dev deps may not be installed
+          if (depPath === undefined)
+            continue;
 
           isChecked = crawlDeps({ path: depPath, packageJson: depPkgJson, name: depPkgJson.name });
           if (isChecked) break;
