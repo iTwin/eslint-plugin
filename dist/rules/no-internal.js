@@ -39,9 +39,24 @@ const syntaxKindFriendlyNames = {
 const shouldLintDirCache = new Map();
 
 /**
+ * map of "name@version?options" per package to whether it will be checked
+ * if we find this uses too much memory in eslint_d or something, can use an LRU cache
  * @type {Map<string, boolean>}
  */
 const isCheckedDepCache = new Map();
+/**
+ * @param {{name: string, version: string}} pkgObj
+ * @param {string[]} checkedPkgPatterns
+ */
+const getCheckedDep = (pkgObj, checkedPkgPatterns) =>
+  isCheckedDepCache.get(`${pkgObj.name}@${pkgObj.version}?cpp=${checkedPkgPatterns.join("\0")}`);
+/**
+ * @param {{name: string, version: string}} pkgObj
+ * @param {string[]} checkedPkgPatterns
+ * @param {boolean} value
+ */
+const setCheckedDep = (pkgObj, checkedPkgPatterns, value) =>
+  isCheckedDepCache.set(`${pkgObj.name}@${pkgObj.version}?cpp=${checkedPkgPatterns.join("\0")}`, value);
 
 /**
  * This rule prevents the use of APIs with specific release tags.
@@ -245,20 +260,17 @@ module.exports = {
       const cachedShouldLintPackage = shouldLintDirCache.get(owningPackage.path);
       if (cachedShouldLintPackage !== undefined) return cachedShouldLintPackage;
 
-      const alreadyStartedCrawling = new Set();
+      const alreadyCrawledMissingDeps = new Set();
 
       /**
        * @param {{ name: string, path: string, packageJson: any }} pkg
        * @returns {boolean}
        */
       function crawlDeps(pkg) {
-        // handle loops by returning early
-        if (alreadyStartedCrawling.has(pkg.path))
+        if (alreadyCrawledMissingDeps.has(pkg.path))
           return false;
 
-        alreadyStartedCrawling.add(pkg.path);
-
-        let cached = isCheckedDepCache.get(pkg.path);
+        let cached = getCheckedDep(pkg.packageJson, checkedPackagePatterns);
         if (cached)
           return cached;
 
@@ -269,7 +281,7 @@ module.exports = {
 
         for (const depName of [
           ...Object.keys(pkg.packageJson.dependencies ?? {}),
-          // include dev dependencies because we want to know what people build with,
+          // include dev dependencies because they may use them,
           // and we'll skip anyway if it's a transitive devDep that isn't on disk
           ...Object.keys(pkg.packageJson.devDependencies ?? {}),
           ...Object.keys(pkg.packageJson.optionalDependencies ?? {}),
@@ -277,9 +289,16 @@ module.exports = {
           // cuz otherwise we wouldn't get types anyway and this rule can't detect anything
         ]) {
           isChecked = checkedPackageRegexes.some((r) => r.test(depName));
-          if (isChecked) break;
-
           const [depPath, depPkgJson] = resolveDependencyPackageJson(depName, pkg.path);
+
+          if (isChecked) {
+            if (depPkgJson)
+              setCheckedDep(depPkgJson, checkedPackagePatterns, isChecked);
+            else
+              alreadyCrawledMissingDeps.add(pkg.path);
+            break;
+          }
+
           // optional or transitive dev deps may not be installed
           if (depPath === undefined) continue;
 
@@ -287,7 +306,7 @@ module.exports = {
           if (isChecked) break;
         }
 
-        isCheckedDepCache.set(pkg.path, isChecked)
+        setCheckedDep(pkg.packageJson, checkedPackagePatterns, isChecked);
         return isChecked;
       }
 
