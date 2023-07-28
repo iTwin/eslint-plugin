@@ -10,8 +10,8 @@
 const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
 const path = require("path");
+const assert = require("assert");
 const fs = require("fs");
-const workspace = require("workspace-tools");
 
 const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.ClassDeclaration]: "class",
@@ -39,11 +39,9 @@ const syntaxKindFriendlyNames = {
 const shouldLintDirCache = new Map();
 
 /**
- * cache of dependency-containing directories to the promise determining whether
- * that dependency forces its dependents to be linted (it is or transitively depends upon a checked package)
- * @type {Map<string, Promise<void>>}
+ * @type {Map<string, boolean>}
  */
-const dependencyCache = new Map();
+const isCheckedDepCache = new Map();
 
 /**
  * This rule prevents the use of APIs with specific release tags.
@@ -136,18 +134,28 @@ module.exports = {
 
     /**
      * get the package that a specific file belongs to
-     * @param {string} filePath
+     * @param {string} filepath - links are not handled
+     * @returns {[string, any] | [undefined, undefined]}
      */
-    function getOwningPackage(filePath) {
-      const packageList = workspace.getWorkspaces(filePath);
-      
-      // Look through all package infos to find the one containing our packagePath
-      let packageObj = packageList.find((pkg) => {
-        const packageBaseDir = path.dirname(pkg.packageJson.packageJsonPath);
-        return dirContainsPath(packageBaseDir, filePath);
-      });
+    function getOwningPackage(filepath) {
+      const parsed = path.parse(filepath);
+      assert(parsed.root, "path must be absolute");
 
-      return packageObj;
+      const MAX_LOOPS = 1000;
+      for (let i = 0; i < MAX_LOOPS; ++i) {
+        filepath = path.dirname(filepath);
+        if (filepath === parsed.root)
+          return [undefined, undefined];
+        const testPackageJsonPath = path.join(filepath, "package.json");
+        try {
+          const pkgJson = fs.readFileSync(testPackageJsonPath)
+          return [testPackageJsonPath, pkgJson]
+        } catch (err) {
+          if (err.code !== "ENOENT") throw err;
+        }
+      }
+
+      throw Error("exceeded MAX_LOOPS while getting owning package.json");
     }
 
     /**
@@ -164,64 +172,62 @@ module.exports = {
      * `checkedPackagePatterns`
      * @param {string} filepath
      */
-    async function checkShouldLintFile(filepath) {
+    function checkShouldLintFile(filepath) {
       const dir = path.dirname(filepath);
 
       const cachedFileDir = shouldLintDirCache.get(dir);
       if (cachedFileDir !== undefined) return cachedFileDir;
 
-      const owningPackage = getOwningPackage(filepath);
-      if (!owningPackage) return true;
+      const [owningPackagePath, owningPackageJson]  = getOwningPackageJson(filepath)
+      if (owningPackagePath === undefined) return true;
+
+      /** @type {NonNullable<ReturnType<typeof getOwningPackage>>} */
+      const owningPackage = {
+        path: owningPackagePath,
+        name: owningPackageJson.name,
+        packageJson: owningPackageJson,
+      };
 
       const cachedShouldLintPackage = shouldLintDirCache.get(owningPackage.path);
       if (cachedShouldLintPackage !== undefined) return cachedShouldLintPackage;
 
-      const depSet = new Set();
-
       /**
        * This function throws as a form of async early return
-       * @param {NonNullable<typeof owningPackage>} pkg
-       * @throws {"hasCheckedDep"} if package is checked
-       * @returns {Promise<void>} only returns if
+       * @param {NonNullable<ReturnType<typeof getOwningPackage>>} pkg
+       * @returns {boolean}
        */
-      async function crawlDeps(pkg, depth = 0) {
-        if (depSet.has(pkg.name)) return;
+      function crawlDeps(pkg) {
+        let cached = isCheckedDepCache.get(pkg.path);
+        if (cached)
+          return cached;
 
-        depSet.add(pkg.name);
+        let isChecked = false;
 
-        const impl = () => Promise.all([
+        for (const depName of [
           ...Object.keys(pkg.packageJson.dependencies ?? {}),
           ...Object.keys(pkg.packageJson.devDependencies ?? {}),
-        ].map(async (depName) => {
-          const isCheckedPackage = checkedPackageRegexes.some((r) => r.test(depName));
-          if (isCheckedPackage) throw "hasCheckedDep";
+        ]) {
+          isChecked = checkedPackageRegexes.some((r) => r.test(depName));
+          if (isChecked) break;
 
           // NOTE: this will fail on packages that contain an explicit exports definition in package.json
           // and do not export their package.json. If we hit those, we will need to be more clever
           const depPkgJsonPath = require.resolve(`${depName}/package.json`, { paths: [pkg.path] })
           const depPath = path.dirname(depPkgJsonPath);
-          const depPkgJson = JSON.parse(await fs.promises.readFile(depPkgJsonPath, { encoding: "utf8" }));
-          await crawlDeps({ path: depPath, packageJson: depPkgJson, name: depPkgJson.name }, depth + 1);
-        }));
+          // unfortunately eslint is sync by nature
+          const depPkgJson = JSON.parse(fs.readFileSync(depPkgJsonPath, { encoding: "utf8" }));
 
-        let cached = dependencyCache.get(pkg.path);
-        if (cached === undefined) {
-          cached = impl();
-          dependencyCache.set(pkg.path, cached)
+          isChecked = crawlDeps({ path: depPath, packageJson: depPkgJson, name: depPkgJson.name });
+          if (isChecked) break;
         }
 
-        return cached;
+        isCheckedDepCache.set(pkg.path, isChecked)
+        return isChecked;
       }
 
-      let hasCheckedDeps = false;
-      try {
-        await crawlDeps(owningPackage);
-      } catch (err) {
-        if (err !== "hasCheckedDep") throw err;
-        hasCheckedDeps = true;
-      }
-      shouldLintDirCache.set(cachedFileDir, hasCheckedDeps);
-      shouldLintDirCache.set(cachedShouldLintPackage, hasCheckedDeps);
+      const hasCheckedDeps = crawlDeps(owningPackage);
+      shouldLintDirCache.set(dir, hasCheckedDeps);
+      shouldLintDirCache.set(owningPackage.path, hasCheckedDeps);
       return hasCheckedDeps;
     }
 
@@ -318,7 +324,7 @@ module.exports = {
     let shouldLintFile = true;
 
     return {
-      async Program() {
+      Program() {
         if (!enableExperimentalAnalysisSkipping)
           return;
 
@@ -326,7 +332,7 @@ module.exports = {
         if (isEslintSpecialPath)
           return;
 
-        shouldLintFile = await checkShouldLintFile(context.filename);
+        shouldLintFile = checkShouldLintFile(context.filename);
       },
 
       "Program:exit"() {
