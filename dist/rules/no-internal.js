@@ -12,6 +12,7 @@ const ts = require("typescript");
 const path = require("path");
 const assert = require("assert");
 const fs = require("fs");
+const module_ = require("module");
 
 const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.ClassDeclaration]: "class",
@@ -94,7 +95,7 @@ module.exports = {
     const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["^@itwin/", "^@bentley/"];
     const checkedPackageRegexes = checkedPackagePatterns.map((p) => new RegExp(p));
     const allowWorkspaceInternal = !(context.options.length > 0 && context.options[0].dontAllowWorkspaceInternal) || false;
-    const enableExperimentalAnalysisSkipping = context.options.length > 0 && context.options[0].enableExperimentalAnalysisSkipping || false;
+    const enableExperimentalAnalysisSkipping = context.options.length > 0 && context.options[0].enableExperimentalAnalysisSkipping || true;
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
     const reportedViolationsSet = new Set();
@@ -138,7 +139,7 @@ module.exports = {
      */
     function getOwningPackage(filepath) {
       const parsed = path.parse(filepath);
-      assert(parsed.root, "path must be absolute");
+      assert(parsed.root, `path '${filepath}' must be absolute`);
 
       const MAX_LOOPS = 1000;
       for (let i = 0; i < MAX_LOOPS; ++i) {
@@ -173,21 +174,47 @@ module.exports = {
      * @returns {[string, any] | [undefined, undefined]} the path to the package and the contents of its package.json
      */
     function resolveDependencyPackageJson(pkgQualifiedName, fromDir) {
+      /**
+       * @param {string} pkgJsonPath
+       * @returns {[string, any] | [undefined, undefined]}
+       */
+      const resultFromPkgJsonPath = (pkgJsonPath) => [
+        path.dirname(pkgJsonPath),
+        JSON.parse(fs.readFileSync(pkgJsonPath, { encoding: "utf8" })),
+      ];
+
       // first try resolve package.json directly. This will throw if package.json#main is empty
       // or package.json#exports does not export itself
       try {
         const packageJsonPath = require.resolve(`${pkgQualifiedName}/package.json`, { paths: [fromDir] });
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, { encoding: "utf8" }));
-        return [path.dirname(packageJsonPath), packageJson];
+        return resultFromPkgJsonPath(packageJsonPath);
       } catch (err) {
-        if (err.code !== "MODULE_NOT_FOUND") throw err;
+        if (err.code !== "MODULE_NOT_FOUND" && err.code !== "ERR_PACKAGE_PATH_NOT_EXPORTED") throw err;
       }
 
       // find package.json traverse out from its main module's path
       try {
         const packageMainPath = require.resolve(pkgQualifiedName, { paths: [fromDir] });
+        // ignore (often optional) dependencies that are ambiguous to builtin packages (like "assert")
+        if (module_.isBuiltin(packageMainPath))
+          return [undefined, undefined];
         return getOwningPackage(packageMainPath);
       } catch (err) {
+        if (err.code === "ERR_PACKAGE_PATH_NOT_EXPORTED") {
+          // ok so maybe there's no main and package.json isn't exported like @babel/compat-data
+          // I can't find an official way to invoke node's internal require machinery to find
+          // the package.json so let's scrape it from the error because we don't want to rewrite the
+          // require machinery and we're desperate
+          try {
+            const packageJsonPath = /defined in (.*)$/.exec(err.message)[1];
+            return resultFromPkgJsonPath(packageJsonPath);
+          } catch (scrapeErr) {
+            const newErr = Error("Fallback error scrape failed, this is a bug");
+            newErr.originalErr = err;
+            newErr.scrapeErr = scrapeErr;
+            throw newErr;
+          }
+        }
         if (err.code !== "MODULE_NOT_FOUND") throw err;
       }
 
@@ -218,20 +245,32 @@ module.exports = {
       const cachedShouldLintPackage = shouldLintDirCache.get(owningPackage.path);
       if (cachedShouldLintPackage !== undefined) return cachedShouldLintPackage;
 
+      const alreadyStartedCrawling = new Set();
+
       /**
-       * This function throws as a form of async early return
        * @param {{ name: string, path: string, packageJson: any }} pkg
        * @returns {boolean}
        */
       function crawlDeps(pkg) {
+        // handle loops by returning early
+        if (alreadyStartedCrawling.has(pkg.path))
+          return false;
+
+        alreadyStartedCrawling.add(pkg.path);
+
         let cached = isCheckedDepCache.get(pkg.path);
         if (cached)
           return cached;
+
+        if (process.env.DEBUG)
+          console.log("CRAWL DEPS", pkg.name, pkg.path)
 
         let isChecked = false;
 
         for (const depName of [
           ...Object.keys(pkg.packageJson.dependencies ?? {}),
+          // include dev dependencies because we want to know what people build with,
+          // and we'll skip anyway if it's a transitive devDep that isn't on disk
           ...Object.keys(pkg.packageJson.devDependencies ?? {}),
           ...Object.keys(pkg.packageJson.optionalDependencies ?? {}),
           // assume peer dependencies were installed as dev/optional,
@@ -242,8 +281,7 @@ module.exports = {
 
           const [depPath, depPkgJson] = resolveDependencyPackageJson(depName, pkg.path);
           // optional or transitive dev deps may not be installed
-          if (depPath === undefined)
-            continue;
+          if (depPath === undefined) continue;
 
           isChecked = crawlDeps({ path: depPath, packageJson: depPkgJson, name: depPkgJson.name });
           if (isChecked) break;
@@ -349,27 +387,15 @@ module.exports = {
       }
     }
 
-    let shouldLintFile = true;
+    if (enableExperimentalAnalysisSkipping
+      // eslint special paths
+      && context.filename !== "<input>"
+      && context.filename !== "<text>"
+      && checkShouldLintFile(context.filename))
+      return {};
 
     return {
-      Program() {
-        if (!enableExperimentalAnalysisSkipping)
-          return;
-
-        const isEslintSpecialPath = context.filename === "<input>" || context.filename === "<text>";
-        if (isEslintSpecialPath)
-          return;
-
-        shouldLintFile = checkShouldLintFile(context.filename);
-      },
-
-      "Program:exit"() {
-        shouldLintFile = true;
-      },
-
       CallExpression(node) {
-        if (!shouldLintFile) return;
-
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
@@ -385,8 +411,6 @@ module.exports = {
       },
 
       NewExpression(node) {
-        if (!shouldLintFile) return;
-
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
@@ -401,8 +425,6 @@ module.exports = {
       },
 
       MemberExpression(node) {
-        if (!shouldLintFile) return;
-
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
@@ -414,8 +436,6 @@ module.exports = {
       },
 
       Decorator(node) {
-        if (!shouldLintFile) return;
-
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
@@ -427,8 +447,6 @@ module.exports = {
       },
 
       JSXOpeningElement(node) {
-        if (!shouldLintFile) return;
-
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
@@ -443,8 +461,6 @@ module.exports = {
       },
 
       TaggedTemplateExpression(node) {
-        if (!shouldLintFile) return;
-
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
@@ -455,8 +471,6 @@ module.exports = {
       },
 
       TSTypeReference(node) {
-        if (!shouldLintFile) return;
-
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
