@@ -147,7 +147,7 @@ module.exports = {
 
       const isWorkspaceLinkedDependency = !dirContainsPath(parserServices.program.getCommonSourceDirectory(), fileName);
 
-      if (allowWorkspaceInternal && isWorkspaceLinkedDependency)
+      if (allowWorkspaceInternal || !isWorkspaceLinkedDependency)
         return false;
       
       // Else !allowWorkspaceInternal or is a local file, check package name in package.json
