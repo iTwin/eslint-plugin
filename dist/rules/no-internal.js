@@ -179,7 +179,7 @@ module.exports = {
       try {
         packageJsonPath = require.resolve(`${pkgQualifiedName}/package.json`, { paths: [fromDir] })
         const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, { encoding: "utf8" }));
-        return [packageJsonPath, packageJson];
+        return [path.dirname(packageJsonPath), packageJson];
       } catch (err) {
         if (err.code !== "MODULE_NOT_FOUND") throw err;
       }
