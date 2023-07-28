@@ -94,7 +94,7 @@ module.exports = {
     const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["^@itwin/", "^@bentley/"];
     const checkedPackageRegexes = checkedPackagePatterns.map((p) => new RegExp(p));
     const allowWorkspaceInternal = !(context.options.length > 0 && context.options[0].dontAllowWorkspaceInternal) || false;
-    const enableExperimentalAnalysisSkipping = !(context.options.length > 0 && context.options[0].enableExperimentalAnalysisSkipping) || false;
+    const enableExperimentalAnalysisSkipping = context.options.length > 0 && context.options[0].enableExperimentalAnalysisSkipping || false;
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
     const reportedViolationsSet = new Set();
