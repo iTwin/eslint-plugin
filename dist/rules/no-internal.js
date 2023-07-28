@@ -173,8 +173,17 @@ module.exports = {
      * @returns the path to the manifest (package.json) of the given package
      */
     function resolveDependencyPackageJson(pkgQualifiedName, fromDir) {
-      // can't just resolve `${pkgQualifiedName}/package.json` because it may not be exported
-      // if the packages uses the package.json#exports field
+      // first try resolve package.json directly. This will throw if package.json#main is empty
+      // or package.json#exports does not export itself
+      let packageJsonPath;
+      try {
+        packageJsonPath = require.resolve(`${pkgQualifiedName}/package.json`, { paths: [fromDir] })
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, { encoding: "utf8" }));
+        return [packageJsonPath, packageJson];
+      } catch (err) {
+        if (err.code !== "MODULE_NOT_FOUND") throw err;
+      }
+      // find package.json from the path to the main module
       const packageMainPath = require.resolve(pkgQualifiedName, { paths: [fromDir] })
       return getOwningPackage(packageMainPath);
     }
