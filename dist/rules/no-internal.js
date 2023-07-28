@@ -31,7 +31,6 @@ const syntaxKindFriendlyNames = {
 
 // NOTE: these must be module level because eslint reruns create for each file
 
-// FIXME: is this even useful given the async nature?
 /**
  * cache of directories to whether we already checked if it should be linted
  * @type {Map<string, boolean>} cache of directories to whether we already checked if it should be linted
@@ -95,7 +94,7 @@ module.exports = {
     const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["^@itwin/", "^@bentley/"];
     const checkedPackageRegexes = checkedPackagePatterns.map((p) => new RegExp(p));
     const allowWorkspaceInternal = !(context.options.length > 0 && context.options[0].dontAllowWorkspaceInternal) || false;
-    const enableExperimentalAnalysisSkipping = !(context.options.length > 0 && context.options[0].enableExperimentalAnalysisSkipping) || true;
+    const enableExperimentalAnalysisSkipping = !(context.options.length > 0 && context.options[0].enableExperimentalAnalysisSkipping) || false;
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
     const reportedViolationsSet = new Set();
@@ -148,7 +147,7 @@ module.exports = {
           return [undefined, undefined];
         const testPackageJsonPath = path.join(filepath, "package.json");
         try {
-          const pkgJson = fs.readFileSync(testPackageJsonPath)
+          const pkgJson = JSON.parse(fs.readFileSync(testPackageJsonPath, { encoding: "utf8" }));
           return [testPackageJsonPath, pkgJson]
         } catch (err) {
           if (err.code !== "ENOENT") throw err;
@@ -159,12 +158,12 @@ module.exports = {
     }
 
     /**
-     * Checks if the package that owns the specified file path matches a checked package pattern regex.s
+     * Checks if the package that owns the specified file path matches a checked package pattern regex
      * @param {string} filePath
      */
     function owningPackageIsCheckedPackage(filePath) {
-      const owningPackage = getOwningPackage(filePath);
-      return owningPackage !== undefined && pathContainsCheckedPackage(owningPackage.name);
+      const [, owningPkgJson] = getOwningPackage(filePath);
+      return owningPkgJson !== undefined && pathContainsCheckedPackage(owningPkgJson.name);
     }
 
     /**
@@ -178,10 +177,9 @@ module.exports = {
       const cachedFileDir = shouldLintDirCache.get(dir);
       if (cachedFileDir !== undefined) return cachedFileDir;
 
-      const [owningPackagePath, owningPackageJson]  = getOwningPackageJson(filepath)
+      const [owningPackagePath, owningPackageJson]  = getOwningPackage(filepath)
       if (owningPackagePath === undefined) return true;
 
-      /** @type {NonNullable<ReturnType<typeof getOwningPackage>>} */
       const owningPackage = {
         path: owningPackagePath,
         name: owningPackageJson.name,
