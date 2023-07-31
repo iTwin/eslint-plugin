@@ -35,6 +35,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
+    "@pnpm/lockfile-file": "^8.1.2",
     "@typescript-eslint/eslint-plugin": "~5.55.0",
     "@typescript-eslint/parser": "~5.55.0",
     "eslint-import-resolver-node": "0.3.4",
