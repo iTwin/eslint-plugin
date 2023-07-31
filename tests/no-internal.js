@@ -37,6 +37,10 @@ ruleTester.run(
     valid: [
       {
         // local import
+        code: `import * as Local from "./local-internal"; Local.internal(); new Local.Internal();`
+      },
+      {
+        // local import and package name is specified
         code: `import * as Local from "./local-internal"; Local.internal(); new Local.Internal();`,
         options: [{ "checkedPackagePatterns": ["workspace-pkg-1"] }],
       },
