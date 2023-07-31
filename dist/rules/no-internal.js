@@ -62,34 +62,63 @@ const setCheckedDep = (pkgObj, checkedPkgPatterns, value) =>
 /**
  * Preload checked dependencies. Currently only supports pnpm.
  * @param {string} dir
- * @param {RegExp[]} checkedPkgRegexes
+ * @param {string[]} checkedPkgPatterns
  * @returns {Promise<void>}
  */
-async function preloadCheckedDeps(dir, checkedPkgRegexes) {
+async function preloadCheckedDeps(dir, checkedPkgPatterns) {
+  const checkedPkgRegexes = checkedPkgPatterns.map((r) => new RegExp(r));
+
   // TODO: determine what versions of pnpm this works with, seems to be multiple
   // NOTE: the `ignoreIncompatible` option appears to be inverted
   const lockfile = await pnpmLockfiles.readWantedLockfile(dir, { ignoreIncompatible: false });
-  if (!lockfile) return;
-  // FIXME: ignore other importers...
-  for (const importer of Object.values(lockfile.importers)) {
-    for (const [name, resolutionId] of [
-      ...Object.entries(importer.dependencies ?? {}),
-      ...Object.entries(importer.devDependencies ?? {}),
-      ...Object.entries(importer.optionalDependencies ?? {}),
-    ]) {
-      function crawlDeps(packageId) {
-        for (const [depName, depResId] of Object.entries(lockfile.packages[packageId].dependencies ?? {})) {
-          if (depName) ;
-          const depId = `/${depName}/${depResId}`;
-          crawlDeps
-        }
-        setCheckedDep(parsed.groups, checkedPkgRegexes, isChecked);
-      }
-      const packageId = `/${name}/${resolutionId}`;
-      crawlDeps
+  if (lockfile === null) return;
+
+  const alreadyCrawled = new Set();
+
+  /** @param {string} packageId */
+  function crawlDeps(packageId) {
+    const isScopedPkg = packageId[1] === "@";
+    let nameEnd = packageId.indexOf("/", 1);
+    if (isScopedPkg)
+      nameEnd = packageId.indexOf("/", nameEnd + 1);
+    assert(nameEnd !== -1, `unexpected resolved package id format in lockfile: '${packageId}'`)
+    const name = packageId.slice(1, nameEnd);
+    let versionEnd = packageId.indexOf("(", nameEnd);
+    if (versionEnd === -1) versionEnd = undefined;
+    const version = packageId.slice(nameEnd + 1, versionEnd);
+
+    const result = getCheckedDep({ name, version }, checkedPkgPatterns);
+    if (result !== undefined)
+      return result;
+
+    if (alreadyCrawled.has(packageId))
+      return;
+    alreadyCrawled.add(packageId);
+
+    if (checkedPkgRegexes.some((r) => r.test(name))) {
+      setCheckedDep({ name, version }, checkedPkgPatterns, true);
+      return true;
     }
+
+    let value = false;
+    for (const [depName, depResId] of Object.entries(lockfile.packages?.[packageId].dependencies ?? {})) {
+      const depHasCustomResolution = depResId[0] === "/";
+      const depId = depHasCustomResolution ? depResId : `/${depName}/${depResId}`;
+      const depResult = crawlDeps(depId);
+      if (depResult) {
+        setCheckedDep({ name, version }, checkedPkgPatterns, depResult);
+        value = true;
+        break;
+      }
+    }
+
+    setCheckedDep({ name, version }, checkedPkgPatterns, value);
+    return value;
   }
 
+  for (const [id, pkgInfo] of Object.entries(lockfile.packages ?? {})) {
+    crawlDeps(id);
+  }
 }
 
 /**
