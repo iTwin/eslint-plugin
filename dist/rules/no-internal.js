@@ -260,15 +260,17 @@ module.exports = {
       const cachedShouldLintPackage = shouldLintDirCache.get(owningPackage.path);
       if (cachedShouldLintPackage !== undefined) return cachedShouldLintPackage;
 
-      const alreadyCrawledMissingDeps = new Set();
+      const alreadyCrawledDeps = new Set();
 
       /**
        * @param {{ name: string, path: string, packageJson: any }} pkg
        * @returns {boolean}
        */
       function crawlDeps(pkg) {
-        if (alreadyCrawledMissingDeps.has(pkg.path))
+        if (alreadyCrawledDeps.has(pkg.path))
           return false;
+
+        alreadyCrawledDeps.add(pkg.path);
 
         let cached = getCheckedDep(pkg.packageJson, checkedPackagePatterns);
         if (cached)
@@ -294,8 +296,6 @@ module.exports = {
           if (isChecked) {
             if (depPkgJson)
               setCheckedDep(depPkgJson, checkedPackagePatterns, isChecked);
-            else
-              alreadyCrawledMissingDeps.add(pkg.path);
             break;
           }
 
@@ -409,9 +409,13 @@ module.exports = {
     if (enableExperimentalAnalysisSkipping
       // eslint special paths
       && context.filename !== "<input>"
-      && context.filename !== "<text>"
-      && checkShouldLintFile(context.filename))
-      return {};
+      && context.filename !== "<text>") {
+      const before = performance.now();
+      if (!checkShouldLintFile(context.filename))
+        return {};
+      const after = performance.now();
+      console.log(`${after - before}ms performance`, context.filename);
+    }
 
     return {
       CallExpression(node) {
