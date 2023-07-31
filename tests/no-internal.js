@@ -40,6 +40,11 @@ ruleTester.run(
         code: `import * as Local from "./local-internal"; Local.internal(); new Local.Internal();`
       },
       {
+        // local import and package name is specified
+        code: `import * as Local from "./local-internal"; Local.internal(); new Local.Internal();`,
+        options: [{ "checkedPackagePatterns": ["workspace-pkg-1"] }],
+      },
+      {
         // not a bentley/itwin scope
         code: dedent`
           import { internal, public, Internal, Public } from "test-pkg-1";
