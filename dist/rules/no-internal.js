@@ -13,6 +13,7 @@ const path = require("path");
 const assert = require("assert");
 const fs = require("fs");
 const module_ = require("module");
+const child_process = require("child_process");
 
 const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.ClassDeclaration]: "class",
@@ -57,6 +58,39 @@ const getCheckedDep = (pkgObj, checkedPkgPatterns) =>
  */
 const setCheckedDep = (pkgObj, checkedPkgPatterns, value) =>
   isCheckedDepCache.set(`${pkgObj.name}@${pkgObj.version}?cpp=${checkedPkgPatterns.join("\0")}`, value);
+
+/**
+ * Try preload checked dependencies. Currently only supports pnpm.
+ * @param {RegExp[]} checkedPkgRegexes
+ * @returns {void}
+ */
+function tryPreloadCheckedDeps(checkedPkgRegexes) {
+  const onPathRegexes = checkedPkgPatterns.map((pat) =>
+    new RegExp(`[\\/]node_modules[\\/](${pat}):(?<name>[^:]+)@(?<version>[^@]+)$`));
+  try {
+    // unfortunately can't be async and filter duplicate lines as we read from stdout
+    const listDepsOutput = child_process.execSync(
+      "pnpm ls --depth Infinity --parseable --long",
+      { encoding: "utf8" }
+    );
+    for (const line of listDepsOutput.split('\n')) {
+      let value = false;
+      for (const r of onPathRegexes) {
+        const parsed = r.exec(line);
+        if (!parsed) continue;
+        assert(parsed.groups?.name && parsed.groups?.version, "failed to parse `pnpm ls --long output`");
+        value = true;
+        setCheckedDep(parsed.groups, checkedPkgRegexes, true);
+        if (value) break;
+      }
+      if (!value)
+        setCheckedDep(parsed.groups, checkedPkgRegexes, false);
+    }
+  } catch (err) {
+    // ignore ENOENT lookin up pnpm, just do nothing if we couldn't find it
+    if (err.code !== "ENOENT") throw err;
+  }
+}
 
 /**
  * This rule prevents the use of APIs with specific release tags.
