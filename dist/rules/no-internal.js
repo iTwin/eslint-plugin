@@ -34,17 +34,15 @@ const syntaxKindFriendlyNames = {
 // NOTE: these must be module level because eslint reruns create for each file
 
 /**
- * cache of directories to whether we already checked if it should be linted
- * @type {Map<string, boolean>} cache of directories to whether we already checked if it should be linted
- */
-const shouldLintDirCache = new Map();
-
-/**
- * map of "name@version?options" per package to whether it will be checked
- * if we find this uses too much memory in eslint_d or something, can use an LRU cache
+ * map of "name@version?options" per package to whether it will be checked,
+ * used with `preloadCheckedDeps` as a performance optimization. Currently only
+ * exposed for custom users due to using a faster lock-file based async api for
+ * speed, which is not compatible with eslint which is sync
  * @type {Map<string, boolean>}
  */
 const isCheckedDepCache = new Map();
+let _usingCheckedDepCache = false;
+
 /**
  * @param {{name: string, version: string}} pkgObj
  * @param {string[]} checkedPkgPatterns
@@ -66,6 +64,7 @@ const setCheckedDep = (pkgObj, checkedPkgPatterns, value) =>
  * @returns {Promise<void>}
  */
 async function preloadCheckedDeps(dir, checkedPkgPatterns) {
+  _usingCheckedDepCache = true;
   const checkedPkgRegexes = checkedPkgPatterns.map((r) => new RegExp(r));
 
   // TODO: determine what versions of pnpm this works with, seems to be multiple
@@ -126,7 +125,7 @@ async function preloadCheckedDeps(dir, checkedPkgPatterns) {
  * @type {import("eslint").Rule.RuleModule}
  */
 module.exports = {
-  [Symbol.for("preloadCheckedDeps")]: preloadCheckedDeps,
+  _preloadCheckedDeps: preloadCheckedDeps,
   meta: {
     type: "problem",
     docs: {
@@ -159,11 +158,6 @@ module.exports = {
           dontAllowWorkspaceInternal: {
             type: "boolean",
           },
-          // experimental because most consumers will want to analyze all their code
-          enableExperimentalAnalysisSkipping: {
-            type: "boolean",
-            default: false,
-          }
         }
       }
     ]
@@ -174,7 +168,6 @@ module.exports = {
     const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["^@itwin/", "^@bentley/"];
     const checkedPackageRegexes = checkedPackagePatterns.map((p) => new RegExp(p));
     const allowWorkspaceInternal = !(context.options.length > 0 && context.options[0].dontAllowWorkspaceInternal) || false;
-    const enableExperimentalAnalysisSkipping = context.options.length > 0 && context.options[0].enableExperimentalAnalysisSkipping || true;
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
     const reportedViolationsSet = new Set();
@@ -246,139 +239,6 @@ module.exports = {
       return owningPkgJson !== undefined && pathContainsCheckedPackage(owningPkgJson.name);
     }
 
-    /**
-     * Resolves the package.json manifest of a dependency from a directory
-     * @param {string} pkgQualifiedName - qualified (scope-included) name of a package
-     * @param {string} fromDir - directroy from which to resolve the package
-     * @returns {[string, any] | [undefined, undefined]} the path to the package and the contents of its package.json
-     */
-    function resolveDependencyPackageJson(pkgQualifiedName, fromDir) {
-      /**
-       * @param {string} pkgJsonPath
-       * @returns {[string, any] | [undefined, undefined]}
-       */
-      const resultFromPkgJsonPath = (pkgJsonPath) => [
-        path.dirname(pkgJsonPath),
-        JSON.parse(fs.readFileSync(pkgJsonPath, { encoding: "utf8" })),
-      ];
-
-      // first try resolve package.json directly. This will throw if package.json#main is empty
-      // or package.json#exports does not export itself
-      try {
-        const packageJsonPath = require.resolve(`${pkgQualifiedName}/package.json`, { paths: [fromDir] });
-        return resultFromPkgJsonPath(packageJsonPath);
-      } catch (err) {
-        if (err.code !== "MODULE_NOT_FOUND" && err.code !== "ERR_PACKAGE_PATH_NOT_EXPORTED") throw err;
-      }
-
-      // find package.json traverse out from its main module's path
-      try {
-        const packageMainPath = require.resolve(pkgQualifiedName, { paths: [fromDir] });
-        // ignore (often optional) dependencies that are ambiguous to builtin packages (like "assert")
-        if (module_.isBuiltin(packageMainPath))
-          return [undefined, undefined];
-        return getOwningPackage(packageMainPath);
-      } catch (err) {
-        if (err.code === "ERR_PACKAGE_PATH_NOT_EXPORTED") {
-          // ok so maybe there's no main and package.json isn't exported like @babel/compat-data
-          // I can't find an official way to invoke node's internal require machinery to find
-          // the package.json so let's scrape it from the error because we don't want to rewrite the
-          // require machinery and we're desperate
-          try {
-            const packageJsonPath = /defined in (.*)$/.exec(err.message)[1];
-            return resultFromPkgJsonPath(packageJsonPath);
-          } catch (scrapeErr) {
-            const newErr = Error("Fallback error scrape failed, this is a bug");
-            newErr.originalErr = err;
-            newErr.scrapeErr = scrapeErr;
-            throw newErr;
-          }
-        }
-        if (err.code !== "MODULE_NOT_FOUND") throw err;
-      }
-
-      // maybe a dev dependency of an installed dependency, so maybe it really isn't there
-      return [undefined, undefined];
-    }
-
-    /**
-     * As an optimization, do not bother linting files with no transitive dependencies that match
-     * `checkedPackagePatterns`
-     * @param {string} filepath
-     */
-    function checkShouldLintFile(filepath) {
-      const dir = path.dirname(filepath);
-
-      const cachedFileDir = shouldLintDirCache.get(dir);
-      if (cachedFileDir !== undefined) return cachedFileDir;
-
-      const [owningPackagePath, owningPackageJson] = getOwningPackage(filepath)
-      if (owningPackagePath === undefined) return true;
-
-      const owningPackage = {
-        path: owningPackagePath,
-        name: owningPackageJson.name,
-        packageJson: owningPackageJson,
-      };
-
-      const cachedShouldLintPackage = shouldLintDirCache.get(owningPackage.path);
-      if (cachedShouldLintPackage !== undefined) return cachedShouldLintPackage;
-
-      const alreadyCrawledDeps = new Set();
-
-      /**
-       * @param {{ name: string, path: string, packageJson: any }} pkg
-       * @returns {boolean}
-       */
-      function crawlDeps(pkg) {
-        if (alreadyCrawledDeps.has(pkg.path))
-          return false;
-
-        alreadyCrawledDeps.add(pkg.path);
-
-        let cached = getCheckedDep(pkg.packageJson, checkedPackagePatterns);
-        if (cached)
-          return cached;
-
-        if (process.env.DEBUG)
-          console.log("CRAWL DEPS", pkg.name, pkg.path)
-
-        let isChecked = false;
-
-        for (const depName of [
-          ...Object.keys(pkg.packageJson.dependencies ?? {}),
-          // include dev dependencies because they may use them,
-          // and we'll skip anyway if it's a transitive devDep that isn't on disk
-          ...Object.keys(pkg.packageJson.devDependencies ?? {}),
-          ...Object.keys(pkg.packageJson.optionalDependencies ?? {}),
-          // assume peer dependencies were installed as dev/optional,
-          // cuz otherwise we wouldn't get types anyway and this rule can't detect anything
-        ]) {
-          isChecked = checkedPackageRegexes.some((r) => r.test(depName));
-          const [depPath, depPkgJson] = resolveDependencyPackageJson(depName, pkg.path);
-
-          if (isChecked) {
-            if (depPkgJson)
-              setCheckedDep(depPkgJson, checkedPackagePatterns, isChecked);
-            break;
-          }
-
-          // optional or transitive dev deps may not be installed
-          if (depPath === undefined) continue;
-
-          isChecked = crawlDeps({ path: depPath, packageJson: depPkgJson, name: depPkgJson.name });
-          if (isChecked) break;
-        }
-
-        setCheckedDep(pkg.packageJson, checkedPackagePatterns, isChecked);
-        return isChecked;
-      }
-
-      const hasCheckedDeps = crawlDeps(owningPackage);
-      shouldLintDirCache.set(dir, hasCheckedDeps);
-      shouldLintDirCache.set(owningPackage.path, hasCheckedDeps);
-      return hasCheckedDeps;
-    }
 
     /**
      * Returns true if a file is within a package for which the internal tag is a violation.
@@ -470,15 +330,15 @@ module.exports = {
       }
     }
 
-    if (enableExperimentalAnalysisSkipping
-      // eslint special paths
-      && context.filename !== "<input>"
-      && context.filename !== "<text>") {
-      const before = performance.now();
-      if (!checkShouldLintFile(context.filename))
+    const isSpecialEslintFile = context.getFilename() === "<text>" || context.getFilename() === "<input>";
+    if (_usingCheckedDepCache && !isSpecialEslintFile) {
+      const [, owningPkgJson] = getOwningPackage(context.getFilename());
+      const isChecked = isCheckedDepCache.get({ name: owningPkgJson.name, version: owningPkgJson.version }, checkedPackagePatterns);
+      if (!isChecked) {
+        if (process.env.DEBUG)
+          console.log("skipping", context.getFilename());
         return {};
-      const after = performance.now();
-      console.log(`${after - before}ms performance`, context.filename);
+      }
     }
 
     return {
