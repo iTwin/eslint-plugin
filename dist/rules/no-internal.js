@@ -335,8 +335,6 @@ module.exports = {
       const [, owningPkgJson] = getOwningPackage(context.getFilename());
       const isChecked = isCheckedDepCache.get({ name: owningPkgJson.name, version: owningPkgJson.version }, checkedPackagePatterns);
       if (!isChecked) {
-        if (process.env.DEBUG)
-          console.log("skipping", context.getFilename());
         return {};
       }
     }
