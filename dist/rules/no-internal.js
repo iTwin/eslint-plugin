@@ -64,13 +64,15 @@ const setCheckedDep = (pkgObj, checkedPkgPatterns, value) =>
  * @returns {Promise<void>}
  */
 async function preloadCheckedDeps(dir, checkedPkgPatterns) {
-  _usingCheckedDepCache = true;
-  const checkedPkgRegexes = checkedPkgPatterns.map((r) => new RegExp(r));
-
+  // FIXME: don't just use env var
   // TODO: determine what versions of pnpm this works with, seems to be multiple
   // NOTE: the `ignoreIncompatible` option appears to be inverted
-  const lockfile = await pnpmLockfiles.readWantedLockfile(dir, { ignoreIncompatible: false });
-  if (lockfile === null) return;
+  const lockfile = await pnpmLockfiles.readWantedLockfile(process.env.PRELOAD_WORKSPACE_DIR ?? dir, { ignoreIncompatible: false });
+  if (lockfile === null)
+    return;
+
+  _usingCheckedDepCache = true;
+  const checkedPkgRegexes = checkedPkgPatterns.map((r) => new RegExp(r));
 
   const alreadyCrawled = new Set();
 
@@ -334,7 +336,7 @@ module.exports = {
     if (_usingCheckedDepCache && !isSpecialEslintFile) {
       const [, owningPkgJson] = getOwningPackage(context.getFilename());
       const isChecked = isCheckedDepCache.get({ name: owningPkgJson.name, version: owningPkgJson.version }, checkedPackagePatterns);
-      if (!isChecked) {
+      if (isChecked === false) {
         return {};
       }
     }
