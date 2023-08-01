@@ -58,16 +58,41 @@ const setCheckedDep = (pkgObj, checkedPkgPatterns, value) =>
   isCheckedDepCache.set(`${pkgObj.name}@${pkgObj.version}?cpp=${checkedPkgPatterns.join("\0")}`, value);
 
 /**
+ * find a file starting in a directory and backing out to parent dirs until we find it
+ * @param {string} dir - links are not handled
+ * @param {string} file
+ * @returns {string | undefined} undefined when not found, string path otherwise
+ */
+function backoutFind(dir, file) {
+  const parsed = path.parse(dir);
+  assert(parsed.root, `path '${dir}' must be absolute`);
+
+  const MAX_LOOPS = 1000;
+  for (let i = 0; i < MAX_LOOPS; ++i) {
+    dir = path.dirname(dir);
+    if (dir === parsed.root)
+      return undefined;
+    const testPath = path.join(dir, file);
+    if (fs.existsSync(testPath))
+      return dir;
+  }
+
+  throw Error("exceeded MAX_LOOPS while getting owning package.json");
+}
+
+/**
  * Preload checked dependencies. Currently only supports pnpm.
  * @param {string} dir
  * @param {string[]} checkedPkgPatterns
  * @returns {Promise<void>}
  */
 async function preloadCheckedDeps(dir, checkedPkgPatterns) {
-  // FIXME: don't just use env var
+  const lockfilePath = backoutFind(dir, "pnpm-lock.yaml");
+  if (!lockfilePath)
+    return;
   // TODO: determine what versions of pnpm this works with, seems to be multiple
   // NOTE: the `ignoreIncompatible` option appears to be inverted
-  const lockfile = await pnpmLockfiles.readWantedLockfile(process.env.PRELOAD_WORKSPACE_DIR ?? dir, { ignoreIncompatible: false });
+  const lockfile = await pnpmLockfiles.readWantedLockfile(path.dirname(lockfilePath), { ignoreIncompatible: false });
   if (lockfile === null)
     return;
 
@@ -204,29 +229,6 @@ module.exports = {
      */
     function pathContainsCheckedPackage(packagePath) {
       return checkedPackageRegexes.some((r) => r.test(packagePath));
-    }
-
-    /**
-     * find a file starting in a directory and backing out to parent dirs until we find it
-     * @param {string} dir - links are not handled
-     * @param {string} file
-     * @returns {string | undefined} undefined when not found, string path otherwise
-     */
-    function backoutFind(dir, file) {
-      const parsed = path.parse(dir);
-      assert(parsed.root, `path '${dir}' must be absolute`);
-
-      const MAX_LOOPS = 1000;
-      for (let i = 0; i < MAX_LOOPS; ++i) {
-        dir = path.dirname(dir);
-        if (dir === parsed.root)
-          return undefined;
-        const testPath = path.join(dir, file);
-        if (fs.existsSync(testPath))
-          return dir;
-      }
-
-      throw Error("exceeded MAX_LOOPS while getting owning package.json");
     }
 
     /**
