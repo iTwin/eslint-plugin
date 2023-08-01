@@ -207,29 +207,38 @@ module.exports = {
     }
 
     /**
+     * find a file starting in a directory and backing out to parent dirs until we find it
+     * @param {string} dir - links are not handled
+     * @param {string} file
+     * @returns {string | undefined} undefined when not found, string path otherwise
+     */
+    function backoutFind(dir, file) {
+      const parsed = path.parse(dir);
+      assert(parsed.root, `path '${dir}' must be absolute`);
+
+      const MAX_LOOPS = 1000;
+      for (let i = 0; i < MAX_LOOPS; ++i) {
+        dir = path.dirname(dir);
+        if (dir === parsed.root)
+          return undefined;
+        const testPath = path.join(dir, file);
+        if (fs.existsSync(testPath))
+          return dir;
+      }
+
+      throw Error("exceeded MAX_LOOPS while getting owning package.json");
+    }
+
+    /**
      * get the package that a specific file belongs to
      * @param {string} filepath - links are not handled
      * @returns {[string, any] | [undefined, undefined]}
      */
     function getOwningPackage(filepath) {
-      const parsed = path.parse(filepath);
-      assert(parsed.root, `path '${filepath}' must be absolute`);
-
-      const MAX_LOOPS = 1000;
-      for (let i = 0; i < MAX_LOOPS; ++i) {
-        filepath = path.dirname(filepath);
-        if (filepath === parsed.root)
-          return [undefined, undefined];
-        const testPackageJsonPath = path.join(filepath, "package.json");
-        try {
-          const pkgJson = JSON.parse(fs.readFileSync(testPackageJsonPath, { encoding: "utf8" }));
-          return [filepath, pkgJson]
-        } catch (err) {
-          if (err.code !== "ENOENT") throw err;
-        }
-      }
-
-      throw Error("exceeded MAX_LOOPS while getting owning package.json");
+      const pkgJsonPath = backoutFind(path.dirname(filepath), "package.json");
+      if (pkgJsonPath === undefined) return [undefined, undefined];
+      const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, { encoding: "utf8" }));
+      return [pkgJsonPath, pkgJson]
     }
 
     /**
