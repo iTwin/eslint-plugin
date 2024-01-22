@@ -6,19 +6,10 @@
 module.exports =
 {
   plugins: {
-    "@itwin": require("../plugin")
+    "import": require("eslint-plugin-import"),
   },
   languageOptions: require("./utils/language-options"),
   rules: {
-    "@itwin/public-extension-exports": [
-      "error",
-      {
-        "releaseTags": [
-          "public",
-          "preview"
-        ],
-        "outputApiFile": true
-      }
-    ]
+    "import/no-nodejs-modules": "error",
   }
 }
