@@ -141,6 +141,24 @@ const rule = {
           return fileToImportPath(thisModule.fileName, fileOfExport.fileName);
         }
 
+        /** 
+        * @param {ts.SourceFile} sourceFile 
+        * @param {string} moduleSpecifierText 
+        * @returns {ts.ResolvedModuleFull | undefined}
+        */
+        function getImportInfo(sourceFile, moduleSpecifierText) {
+          // For ts v5.3.0 and up `ts.getResolvedModule` was removed in https://github.com/microsoft/TypeScript/pull/55790
+          // Hence this check is needed to support all ts versions
+          return ts.getResolvedModule ? ts.getResolvedModule(
+            sourceFile,
+            moduleSpecifierText
+          ) :
+            program.getResolvedModule(
+              sourceFile,
+              moduleSpecifierText
+            ).resolvedModule;
+        }
+
         if (typeof node.source.value !== "string")
           throw Error("Invalid input source");
 
@@ -153,16 +171,8 @@ const rule = {
           return;
 
         const thisModule = importNodeTs.getSourceFile();
-        // For ts v5.3.0 and up `ts.getResolvedModule` was removed in https://github.com/microsoft/TypeScript/pull/55790
-        // Hence this check is needed to support all ts versions
-        const importInfo = ts.getResolvedModule ? ts.getResolvedModule(
-          thisModule,
-          importNodeTs.moduleSpecifier.text
-        ) :
-          program.getResolvedModule(
-            thisModule,
-            importNodeTs.moduleSpecifier.text
-          ).resolvedModule;
+
+        const importInfo = getImportInfo(thisModule, importNodeTs.moduleSpecifier.text);
 
         const importIsPackage =
           importInfo === undefined || importInfo.isExternalLibraryImport;
@@ -229,17 +239,7 @@ const rule = {
             child.moduleSpecifier !== undefined &&
             !child.isTypeOnly;
           if (!potentialReExport) return;
-          // For ts v5.3.0 and up `ts.getResolvedModule` was removed in https://github.com/microsoft/TypeScript/pull/55790
-          // Hence this check is needed to support all ts versions
-          const transitiveImportInfo = ts.getResolvedModule ?
-            ts.getResolvedModule(
-              importedModule,
-              child.moduleSpecifier.text
-            ) :
-            program.getResolvedModule(
-              importedModule,
-              child.moduleSpecifier.text
-            ).resolvedModule;
+          const transitiveImportInfo = getImportInfo(importedModule, child.moduleSpecifier.text);
           const reExportsExternalPackage =
             transitiveImportInfo === undefined ||
             transitiveImportInfo.isExternalLibraryImport;
