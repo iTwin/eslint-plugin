@@ -154,10 +154,10 @@ const rule = {
 
         const thisModule = importNodeTs.getSourceFile();
 
-        const importInfo = ts.getResolvedModule(
+        const importInfo = program.getResolvedModule(
           thisModule,
           importNodeTs.moduleSpecifier.text
-        );
+        ).resolvedModule;
 
         const importIsPackage =
           importInfo === undefined || importInfo.isExternalLibraryImport;
@@ -224,10 +224,10 @@ const rule = {
             child.moduleSpecifier !== undefined &&
             !child.isTypeOnly;
           if (!potentialReExport) return;
-          const transitiveImportInfo = ts.getResolvedModule(
+          const transitiveImportInfo = program.getResolvedModule(
             importedModule,
             child.moduleSpecifier.text
-          );
+          ).resolvedModule;
           const reExportsExternalPackage =
             transitiveImportInfo === undefined ||
             transitiveImportInfo.isExternalLibraryImport;
