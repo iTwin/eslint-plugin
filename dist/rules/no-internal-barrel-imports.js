@@ -116,19 +116,19 @@ const rule = {
     const { ignoredBarrelModules = [], requiredBarrelModules = [] } =
       typeof maybeTsConfig === "string" && extraOpts
         ? {
-            ignoredBarrelModules:
-              extraOpts[OPTION_IGNORED_BARREL_MODULES] &&
-              resolvePathsOption(
-                extraOpts[OPTION_IGNORED_BARREL_MODULES],
-                maybeTsConfig
-              ),
-            requiredBarrelModules:
-              extraOpts[OPTION_REQUIRED_BARREL_MODULES] &&
-              resolvePathsOption(
-                extraOpts[OPTION_REQUIRED_BARREL_MODULES],
-                maybeTsConfig
-              ),
-          }
+          ignoredBarrelModules:
+            extraOpts[OPTION_IGNORED_BARREL_MODULES] &&
+            resolvePathsOption(
+              extraOpts[OPTION_IGNORED_BARREL_MODULES],
+              maybeTsConfig
+            ),
+          requiredBarrelModules:
+            extraOpts[OPTION_REQUIRED_BARREL_MODULES] &&
+            resolvePathsOption(
+              extraOpts[OPTION_REQUIRED_BARREL_MODULES],
+              maybeTsConfig
+            ),
+        }
         : {};
 
     return {
@@ -153,11 +153,16 @@ const rule = {
           return;
 
         const thisModule = importNodeTs.getSourceFile();
-
-        const importInfo = program.getResolvedModule(
+        // For ts v5.3.0 and up `ts.getResolvedModule` was removed in https://github.com/microsoft/TypeScript/pull/55790
+        // Hence this check is needed to support all ts versions
+        const importInfo = ts.getResolvedModule ? ts.getResolvedModule(
           thisModule,
           importNodeTs.moduleSpecifier.text
-        ).resolvedModule;
+        ) :
+          program.getResolvedModule(
+            thisModule,
+            importNodeTs.moduleSpecifier.text
+          ).resolvedModule;
 
         const importIsPackage =
           importInfo === undefined || importInfo.isExternalLibraryImport;
@@ -224,10 +229,17 @@ const rule = {
             child.moduleSpecifier !== undefined &&
             !child.isTypeOnly;
           if (!potentialReExport) return;
-          const transitiveImportInfo = program.getResolvedModule(
-            importedModule,
-            child.moduleSpecifier.text
-          ).resolvedModule;
+          // For ts v5.3.0 and up `ts.getResolvedModule` was removed in https://github.com/microsoft/TypeScript/pull/55790
+          // Hence this check is needed to support all ts versions
+          const transitiveImportInfo = ts.getResolvedModule ?
+            ts.getResolvedModule(
+              importedModule,
+              child.moduleSpecifier.text
+            ) :
+            program.getResolvedModule(
+              importedModule,
+              child.moduleSpecifier.text
+            ).resolvedModule;
           const reExportsExternalPackage =
             transitiveImportInfo === undefined ||
             transitiveImportInfo.isExternalLibraryImport;
@@ -239,7 +251,7 @@ const rule = {
           importNodeTs.importClause &&
           importNodeTs.importClause.namedBindings &&
           importNodeTs.importClause.namedBindings.kind ===
-            ts.SyntaxKind.NamespaceImport;
+          ts.SyntaxKind.NamespaceImport;
 
         // there may be some situations where not reporting this is preferable
         const isSideEffectImport =
@@ -256,8 +268,8 @@ const rule = {
 
         const namedImports =
           importNodeTs.importClause &&
-          importNodeTs.importClause.namedBindings &&
-          ts.isNamedImports(importNodeTs.importClause.namedBindings)
+            importNodeTs.importClause.namedBindings &&
+            ts.isNamedImports(importNodeTs.importClause.namedBindings)
             ? importNodeTs.importClause.namedBindings.elements
             : [];
 
@@ -295,14 +307,14 @@ const rule = {
             .map(
               ([importPath, namedImports], i) =>
                 // prettier-ignore
-                `${ i === 0 ? "" : "\n" /* separate all imported modules with a new line*/
-                  }import { ${namedImports
-                    .map(({ namedImport }) =>
-                      namedImport.propertyName !== undefined
-                        ? `${namedImport.propertyName.escapedText} as ${namedImport.name.escapedText}`
-                        : namedImport.name.escapedText
-                    )
-                    .join(", ")} } from "${importPath}";`
+                `${i === 0 ? "" : "\n" /* separate all imported modules with a new line*/
+                }import { ${namedImports
+                  .map(({ namedImport }) =>
+                    namedImport.propertyName !== undefined
+                      ? `${namedImport.propertyName.escapedText} as ${namedImport.name.escapedText}`
+                      : namedImport.name.escapedText
+                  )
+                  .join(", ")} } from "${importPath}";`
             )
             .join("");
           return fixer.replaceText(node, newImportStmtsText);
