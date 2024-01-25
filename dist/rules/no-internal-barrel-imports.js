@@ -147,7 +147,7 @@ const rule = {
         * @returns {ts.ResolvedModuleFull | undefined}
         */
         function getImportInfo(sourceFile, moduleSpecifierText) {
-          // For ts v5.3.0 and up `ts.getResolvedModule` was removed in https://github.com/microsoft/TypeScript/pull/55790
+          // For ts v5.3.0 and up `ts.getResolvedModule` was removed in https://github.com/microsoft/TypeScript/pull/55790 but was added to `ts.program` in https://github.com/microsoft/TypeScript/pull/55818
           // Hence this check is needed to support all ts versions
           return ts.getResolvedModule ? ts.getResolvedModule(
             sourceFile,
