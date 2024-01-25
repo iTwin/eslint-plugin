@@ -20,7 +20,7 @@
   "scripts": {
     "build": "",
     "before-test": "node tests/fixtures/link.js",
-    "test": "npm run before-test && mocha \"tests/*.js\"",
+    "test": "mocha \"tests/*.js\"",
     "cover": "npm -s test",
     "change": "beachball change",
     "check": "beachball check",
@@ -37,8 +37,6 @@
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "~6.19.1",
     "@typescript-eslint/parser": "~6.19.1",
-    "eslint-import-resolver-node": "0.3.9",
-    "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-deprecation": "^2.0.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jam3": "^0.2.3",
@@ -50,14 +48,11 @@
     "workspace-tools": "^0.36.4"
   },
   "peerDependencies": {
-    "eslint": "^8.36.0",
+    "eslint": "^8.56.0",
     "typescript": "^3.7.0 || ^4.0.0 || ^5.0.0"
   },
   "devDependencies": {
     "@types/eslint": "~8.56.2",
-    "@types/estree": "~1.0.5",
-    "@types/node": "^20.11.6",
-    "@typescript-eslint/typescript-estree": "~6.19.1",
     "beachball": "^2.39.0",
     "eslint": "^8.56.0",
     "husky": "^9.0.5",
