@@ -20,7 +20,7 @@
   "scripts": {
     "build": "",
     "before-test": "node tests/fixtures/link.js",
-    "test": "mocha \"tests/*.js\"",
+    "test": "npm run before-test && mocha \"tests/*.js\"",
     "cover": "npm -s test",
     "change": "beachball change",
     "check": "beachball check",
