@@ -10,7 +10,10 @@
 const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
 const path = require("path");
-const workspace = require("workspace-tools");
+const assert = require("assert");
+const fs = require("fs");
+const module_ = require("module");
+const pnpmLockfiles = require("@pnpm/lockfile-file");
 
 const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.ClassDeclaration]: "class",
@@ -28,10 +31,128 @@ const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.EnumMember]: "enum member",
 }
 
+// NOTE: these must be module level because eslint reruns create for each file
+
+/**
+ * map of "name@version?options" per package to whether it will be checked,
+ * used with `preloadCheckedDeps` as a performance optimization. Currently only
+ * exposed for custom users due to using a faster lock-file based async api for
+ * speed, which is not compatible with eslint which is sync
+ * @type {Map<string, boolean>}
+ */
+const isCheckedDepCache = new Map();
+let _usingCheckedDepCache = false;
+
+/**
+ * @param {{name: string, version: string}} pkgObj
+ * @param {string[]} checkedPkgPatterns
+ */
+const getCheckedDep = (pkgObj, checkedPkgPatterns) =>
+  isCheckedDepCache.get(`${pkgObj.name}@${pkgObj.version}?cpp=${checkedPkgPatterns.join("\0")}`);
+/**
+ * @param {{name: string, version: string}} pkgObj
+ * @param {string[]} checkedPkgPatterns
+ * @param {boolean} value
+ */
+const setCheckedDep = (pkgObj, checkedPkgPatterns, value) =>
+  isCheckedDepCache.set(`${pkgObj.name}@${pkgObj.version}?cpp=${checkedPkgPatterns.join("\0")}`, value);
+
+/**
+ * find a file starting in a directory and backing out to parent dirs until we find it
+ * @param {string} dir - links are not handled
+ * @param {string} file
+ * @returns {string | undefined} undefined when not found, string path otherwise
+ */
+function backoutFind(dir, file) {
+  const parsed = path.parse(dir);
+  assert(parsed.root, `path '${dir}' must be absolute`);
+
+  const MAX_LOOPS = 1000;
+  for (let i = 0; i < MAX_LOOPS; ++i) {
+    dir = path.dirname(dir);
+    if (dir === parsed.root)
+      return undefined;
+    const testPath = path.join(dir, file);
+    if (fs.existsSync(testPath))
+      return dir;
+  }
+
+  throw Error("exceeded MAX_LOOPS while getting owning package.json");
+}
+
+/**
+ * Preload checked dependencies. Currently only supports pnpm.
+ * @param {string} dir
+ * @param {string[]} checkedPkgPatterns
+ * @returns {Promise<void>}
+ */
+async function preloadCheckedDeps(dir, checkedPkgPatterns) {
+  const lockfilePath = backoutFind(dir, "pnpm-lock.yaml");
+  if (!lockfilePath)
+    return;
+  // TODO: determine what versions of pnpm this works with, seems to be multiple
+  // NOTE: the `ignoreIncompatible` option appears to be inverted
+  const lockfile = await pnpmLockfiles.readWantedLockfile(path.dirname(lockfilePath), { ignoreIncompatible: false });
+  if (lockfile === null)
+    return;
+
+  _usingCheckedDepCache = true;
+  const checkedPkgRegexes = checkedPkgPatterns.map((r) => new RegExp(r));
+
+  const alreadyCrawled = new Set();
+
+  /** @param {string} packageId */
+  function crawlDeps(packageId) {
+    const isScopedPkg = packageId[1] === "@";
+    let nameEnd = packageId.indexOf("/", 1);
+    if (isScopedPkg)
+      nameEnd = packageId.indexOf("/", nameEnd + 1);
+    assert(nameEnd !== -1, `unexpected resolved package id format in lockfile: '${packageId}'`)
+    const name = packageId.slice(1, nameEnd);
+    let versionEnd = packageId.indexOf("(", nameEnd);
+    if (versionEnd === -1) versionEnd = undefined;
+    const version = packageId.slice(nameEnd + 1, versionEnd);
+
+    const result = getCheckedDep({ name, version }, checkedPkgPatterns);
+    if (result !== undefined)
+      return result;
+
+    if (alreadyCrawled.has(packageId))
+      return;
+    alreadyCrawled.add(packageId);
+
+    if (checkedPkgRegexes.some((r) => r.test(name))) {
+      setCheckedDep({ name, version }, checkedPkgPatterns, true);
+      return true;
+    }
+
+    let value = false;
+    for (const [depName, depResId] of Object.entries(lockfile.packages?.[packageId].dependencies ?? {})) {
+      const depHasCustomResolution = depResId[0] === "/";
+      const depId = depHasCustomResolution ? depResId : `/${depName}/${depResId}`;
+      const depResult = crawlDeps(depId);
+      if (depResult) {
+        setCheckedDep({ name, version }, checkedPkgPatterns, depResult);
+        value = true;
+        break;
+      }
+    }
+
+    setCheckedDep({ name, version }, checkedPkgPatterns, value);
+    return value;
+  }
+
+  for (const [id, pkgInfo] of Object.entries(lockfile.packages ?? {})) {
+    crawlDeps(id);
+  }
+}
+
 /**
  * This rule prevents the use of APIs with specific release tags.
+ * @type {import("eslint").Rule.RuleModule}
  */
 module.exports = {
+  _preloadCheckedDeps: preloadCheckedDeps,
   meta: {
     type: "problem",
     docs: {
@@ -63,7 +184,7 @@ module.exports = {
           },
           dontAllowWorkspaceInternal: {
             type: "boolean",
-          }
+          },
         }
       }
     ]
@@ -77,6 +198,7 @@ module.exports = {
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
     const reportedViolationsSet = new Set();
+
 
     function getFileName(parent) {
       let currentParent = parent;
@@ -110,20 +232,26 @@ module.exports = {
     }
 
     /**
-     * Checks if the package that owns the specified file path matches a checked package pattern regex.s
+     * get the package that a specific file belongs to
+     * @param {string} filepath - links are not handled
+     * @returns {[string, any] | [undefined, undefined]}
+     */
+    function getOwningPackage(filepath) {
+      const pkgJsonPath = backoutFind(path.dirname(filepath), "package.json");
+      if (pkgJsonPath === undefined) return [undefined, undefined];
+      const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, { encoding: "utf8" }));
+      return [pkgJsonPath, pkgJson]
+    }
+
+    /**
+     * Checks if the package that owns the specified file path matches a checked package pattern regex
      * @param {string} filePath
      */
     function owningPackageIsCheckedPackage(filePath) {
-      const packageList = workspace.getWorkspaces(filePath);
-      
-      // Look through all package infos to find the one containing our packagePath
-      let packageObj = packageList.find((pkg) => {
-        const packageBaseDir = path.dirname(pkg.packageJson.packageJsonPath);
-        return dirContainsPath(packageBaseDir, filePath);
-      });
-
-      return (packageObj !== undefined) && pathContainsCheckedPackage(packageObj.name);
+      const [, owningPkgJson] = getOwningPackage(filePath);
+      return owningPkgJson !== undefined && pathContainsCheckedPackage(owningPkgJson.name);
     }
+
 
     /**
      * Returns true if a file is within a package for which the internal tag is a violation.
@@ -214,7 +342,15 @@ module.exports = {
         checkJsDoc(declaration.parent, node);
       }
     }
-    
+
+    const isSpecialEslintFile = context.getFilename() === "<text>" || context.getFilename() === "<input>";
+    if (_usingCheckedDepCache && !isSpecialEslintFile) {
+      const [, owningPkgJson] = getOwningPackage(context.getFilename());
+      const isChecked = isCheckedDepCache.get({ name: owningPkgJson.name, version: owningPkgJson.version }, checkedPackagePatterns);
+      if (isChecked === false) {
+        return {};
+      }
+    }
 
     return {
       CallExpression(node) {

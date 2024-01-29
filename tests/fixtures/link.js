@@ -4,8 +4,18 @@
 const path = require("path");
 const fs = require("fs");
 
+function tryLink(src, dest, type) {
+  try {
+    fs.symlinkSync(src, dest, type);
+  } catch (err) {
+    if (err.code !== "EEXIST")
+      throw err;
+    console.warn("Ignoring link already exists error", err.message);
+  }
+}
+
 function linkFixtureNoInternal() {
-  fs.symlinkSync(
+  tryLink(
     path.normalize("../../workspace-pkg-2"),
     path.join(
       __dirname,
@@ -17,9 +27,9 @@ function linkFixtureNoInternal() {
   fs.mkdirSync(path.join(
     __dirname,
     "no-internal/workspace-pkg-1/node_modules/@bentley"
-  ));
+  ), { recursive: true });
 
-  fs.symlinkSync(
+  tryLink(
     path.normalize("../../../workspace-pkg-3"),
     path.join(
       __dirname,

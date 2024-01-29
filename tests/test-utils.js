@@ -12,11 +12,7 @@ module.exports = {
       obj.valid.some((test) => Boolean(test.only)) ||
       obj.invalid.some((test) => Boolean(test.only));
     const keepTest = (test) => (hasOnly ? test.only : !test.skip);
-    const stripExtraTags = (test) => {
-      delete test.skip;
-      delete test.only;
-      return test;
-    };
+    const stripExtraTags = ({skip: _1, only: _2, ...test}) => test;
     return {
       valid: obj.valid.filter(keepTest).map(stripExtraTags),
       invalid: obj.invalid.filter(keepTest).map(stripExtraTags),
