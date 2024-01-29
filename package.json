@@ -35,7 +35,6 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@types/eslint": "~8.56.2",
     "@typescript-eslint/eslint-plugin": "~6.19.1",
     "@typescript-eslint/parser": "~6.19.1",
     "eslint-plugin-deprecation": "^2.0.0",
