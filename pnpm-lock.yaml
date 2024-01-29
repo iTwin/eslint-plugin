@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@types/eslint':
-        specifier: ~8.56.2
-        version: 8.56.2
       '@typescript-eslint/eslint-plugin':
         specifier: ~6.19.1
         version: 6.19.1(@typescript-eslint/parser@6.19.1)(eslint@8.56.0)(typescript@5.3.3)
@@ -45,6 +42,9 @@ importers:
         specifier: ^0.36.4
         version: 0.36.4
     devDependencies:
+      '@types/eslint':
+        specifier: ~8.56.2
+        version: 8.56.2
       beachball:
         specifier: ^2.39.0
         version: 2.39.0(typescript@5.3.3)
@@ -178,15 +178,14 @@ packages:
     dependencies:
       '@types/estree': 1.0.5
       '@types/json-schema': 7.0.15
-    dev: false
+    dev: true
 
   /@types/estree@1.0.5:
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
-    dev: false
+    dev: true
 
   /@types/json-schema@7.0.15:
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
-    dev: false
 
   /@types/json5@0.0.29:
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
