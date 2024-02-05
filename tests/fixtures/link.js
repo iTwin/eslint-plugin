@@ -28,5 +28,9 @@ function linkFixtureNoInternal() {
     "junction"
   );
 }
-
-linkFixtureNoInternal();
+try{
+  linkFixtureNoInternal();
+} catch(err) {
+  if(err.code === "EEXIST")
+  console.log("[INFO] Symlink already exists, no additional work required.");
+}

@@ -17,4 +17,4 @@ package-lock.json
 # Output of 'npm pack'
 
 # Mac specfic
-
+**/.DS_Store
