@@ -4,62 +4,63 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-importers:
+dependencies:
+  '@typescript-eslint/eslint-plugin':
+    specifier: ~6.19.1
+    version: 6.19.1(@typescript-eslint/parser@6.19.1)(eslint@8.56.0)(typescript@5.3.3)
+  '@typescript-eslint/parser':
+    specifier: ~6.19.1
+    version: 6.19.1(eslint@8.56.0)(typescript@5.3.3)
+  eslint-plugin-deprecation:
+    specifier: ^2.0.0
+    version: 2.0.0(eslint@8.56.0)(typescript@5.3.3)
+  eslint-plugin-import:
+    specifier: ^2.29.1
+    version: 2.29.1(@typescript-eslint/parser@6.19.1)(eslint@8.56.0)
+  eslint-plugin-jam3:
+    specifier: ^0.2.3
+    version: 0.2.3
+  eslint-plugin-jsdoc:
+    specifier: ^48.0.3
+    version: 48.0.3(eslint@8.56.0)
+  eslint-plugin-jsx-a11y:
+    specifier: ^6.8.0
+    version: 6.8.0(eslint@8.56.0)
+  eslint-plugin-prefer-arrow:
+    specifier: ^1.2.3
+    version: 1.2.3(eslint@8.56.0)
+  eslint-plugin-react:
+    specifier: ^7.33.2
+    version: 7.33.2(eslint@8.56.0)
+  eslint-plugin-react-hooks:
+    specifier: ^4.6.0
+    version: 4.6.0(eslint@8.56.0)
+  workspace-tools:
+    specifier: ^0.36.4
+    version: 0.36.4
 
-  .:
-    dependencies:
-      '@typescript-eslint/eslint-plugin':
-        specifier: ~6.19.1
-        version: 6.19.1(@typescript-eslint/parser@6.19.1)(eslint@8.56.0)(typescript@5.3.3)
-      '@typescript-eslint/parser':
-        specifier: ~6.19.1
-        version: 6.19.1(eslint@8.56.0)(typescript@5.3.3)
-      eslint-plugin-deprecation:
-        specifier: ^2.0.0
-        version: 2.0.0(eslint@8.56.0)(typescript@5.3.3)
-      eslint-plugin-import:
-        specifier: ^2.29.1
-        version: 2.29.1(@typescript-eslint/parser@6.19.1)(eslint@8.56.0)
-      eslint-plugin-jam3:
-        specifier: ^0.2.3
-        version: 0.2.3
-      eslint-plugin-jsdoc:
-        specifier: ^48.0.3
-        version: 48.0.3(eslint@8.56.0)
-      eslint-plugin-jsx-a11y:
-        specifier: ^6.8.0
-        version: 6.8.0(eslint@8.56.0)
-      eslint-plugin-prefer-arrow:
-        specifier: ^1.2.3
-        version: 1.2.3(eslint@8.56.0)
-      eslint-plugin-react:
-        specifier: ^7.33.2
-        version: 7.33.2(eslint@8.56.0)
-      eslint-plugin-react-hooks:
-        specifier: ^4.6.0
-        version: 4.6.0(eslint@8.56.0)
-      workspace-tools:
-        specifier: ^0.36.4
-        version: 0.36.4
-    devDependencies:
-      '@types/eslint':
-        specifier: ~8.56.2
-        version: 8.56.2
-      beachball:
-        specifier: ^2.39.0
-        version: 2.39.0(typescript@5.3.3)
-      eslint:
-        specifier: ^8.56.0
-        version: 8.56.0
-      husky:
-        specifier: ^9.0.5
-        version: 9.0.5
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
-      typescript:
-        specifier: ~5.3.3
-        version: 5.3.3
+devDependencies:
+  '@types/eslint':
+    specifier: ~8.56.2
+    version: 8.56.2
+  '@types/node':
+    specifier: 20.11.16
+    version: 20.11.16
+  beachball:
+    specifier: ^2.39.0
+    version: 2.39.0(typescript@5.3.3)
+  eslint:
+    specifier: ^8.56.0
+    version: 8.56.0
+  husky:
+    specifier: ^9.0.5
+    version: 9.0.5
+  mocha:
+    specifier: ^10.2.0
+    version: 10.2.0
+  typescript:
+    specifier: ~5.3.3
+    version: 5.3.3
 
 packages:
 
@@ -190,6 +191,12 @@ packages:
   /@types/json5@0.0.29:
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
     dev: false
+
+  /@types/node@20.11.16:
+    resolution: {integrity: sha512-gKb0enTmRCzXSSUJDq6/sPcqrfCv2mkkG6Jt/clpn5eiCbKTY+SgZUxo+p8ZKMof5dCp9vHQUAB7wOUTod22wQ==}
+    dependencies:
+      undici-types: 5.26.5
+    dev: true
 
   /@types/semver@7.5.6:
     resolution: {integrity: sha512-dn1l8LaMea/IjDoHNd9J52uBbInB796CDffS6VdIxvqYCPSG0V0DzHp76GpaWnlhg88uYyPbXCDIowa86ybd5A==}
@@ -2460,6 +2467,10 @@ packages:
       has-symbols: 1.0.3
       which-boxed-primitive: 1.0.2
     dev: false
+
+  /undici-types@5.26.5:
+    resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
+    dev: true
 
   /universalify@2.0.1:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
