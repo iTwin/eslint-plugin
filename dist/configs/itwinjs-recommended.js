@@ -121,7 +121,7 @@ module.exports =
         "leadingUnderscore": "forbid"
       },
       {
-        "selector": "enumMember",
+        "selector": ["enumMember", "import"],
         "format": null,
         "leadingUnderscore": "allow"
       },
@@ -170,12 +170,14 @@ module.exports =
       }
     ],
     "@typescript-eslint/return-await": "error",
+    "@typescript-eslint/no-duplicate-type-constituents": "off",
     "@typescript-eslint/no-this-alias": "error",
     "@typescript-eslint/no-use-before-define": "off",
     "@typescript-eslint/no-unnecessary-type-assertion": "error",
     "@typescript-eslint/no-unsafe-argument": "off",
     "@typescript-eslint/no-unsafe-assignment": "off",
     "@typescript-eslint/no-unsafe-call": "off",
+    "@typescript-eslint/no-unsafe-enum-comparison": "off",
     "@typescript-eslint/no-unsafe-member-access": "off",
     "@typescript-eslint/no-unsafe-return": "off",
     "@typescript-eslint/no-unused-vars": [
