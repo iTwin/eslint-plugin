@@ -32,13 +32,9 @@ jobs:
 
       - name: Run Tests
         run: pnpm run cover
-      
-      - name: Dummy add
-        run: |
-          echo "tester" > tester.txt
-          git add .
 
-      - name: Git Commit action
+      - name: Publish packages
         run: |
-          git commit -m "Version bump [skip actions]"
-        
+          pnpm publish-packages-dev -y --branch ${{ github.ref_name }} --message "Version bump [skip actions]"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPMJS_PUBLISH_ITWIN }}
