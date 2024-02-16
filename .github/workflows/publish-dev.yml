@@ -35,5 +35,5 @@ jobs:
 
       - name: Git Commit action
         run: |
-          git commit -m "Version bump (skip actions)"
+          git commit -m "Version bump -- skip actions"
         
