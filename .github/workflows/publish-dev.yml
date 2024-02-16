@@ -33,7 +33,7 @@ jobs:
       - name: Run Tests
         run: pnpm run cover
 
-      - name: Publish packages
+      - name: Git Commit action
         run: |
           git commit -m Version bump [skip actions]
         
