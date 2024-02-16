@@ -2,7 +2,10 @@
 emailPattern="[^@]+@users\\.noreply\\.github\\.com"
 email=$(git config user.email)
 
-if ! [[ "$email" =~ $emailPattern ]]; then
+if [[ "$email" =~ $emailPattern ]]; then
+  echo "User email is configured correctly"
+  exit 0;
+else
   echo "Git commits should be using an e-mail like this pattern: \"$emailPattern\""
   echo "But yours is configured like this: $email"
   echo "To fix it, you can use command like this:"
