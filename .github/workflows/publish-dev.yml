@@ -32,6 +32,11 @@ jobs:
 
       - name: Run Tests
         run: pnpm run cover
+      
+      - name: Dummy add
+        run: |
+          git checkout main package.json
+          git add .
 
       - name: Git Commit action
         run: |
