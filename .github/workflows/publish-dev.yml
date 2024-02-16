@@ -35,7 +35,5 @@ jobs:
 
       - name: Publish packages
         run: |
-          pnpm publish-packages-dev -y --branch ${{ github.ref_name }} --message "Version bump [skip actions]"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPMJS_PUBLISH_ITWIN }}
-
+          git commit -m Version bump [skip actions]
+        
