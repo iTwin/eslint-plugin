@@ -2,6 +2,5 @@
   "type": "major",
   "comment": "Modify extensions rule to accept @beta tags instead of @preview tags.",
   "packageName": "@itwin/eslint-plugin",
-  "email": "ben-polinsky@users.noreply.github.com",
-  "dependentChangeType": "patch"
+  "email": "ben-polinsky@users.noreply.github.com"
 }

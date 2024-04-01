@@ -1,20 +1,24 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
-module.exports = {
+module.exports =
+{
   plugins: {
-    "@itwin": require("../plugin"),
+    "@itwin": require("../plugin")
   },
   languageOptions: require("./utils/language-options"),
   rules: {
     "@itwin/public-extension-exports": [
       "error",
       {
-        releaseTags: ["public", "beta"],
-        outputApiFile: true,
-      },
-    ],
-  },
-};
+        "releaseTags": [
+          "public",
+          "beta"
+        ],
+        "outputApiFile": true
+      }
+    ]
+  }
+}
