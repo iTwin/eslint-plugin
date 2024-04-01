@@ -33,6 +33,7 @@ const syntaxKindFriendlyNames = {
  */
 module.exports = {
   meta: {
+    /** @type {'problem' | 'suggestion' | 'layout' | undefined} */
     type: "problem",
     docs: {
       description: "Prevent the use of APIs with specific release tags.",

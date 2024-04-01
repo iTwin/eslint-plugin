@@ -26,17 +26,18 @@ const getSyntaxKindFriendlyName = (syntaxKind) => {
 let firstRun = true;
 
 /**
- * This rule prevents the exporting of extension APIs that not not meet certain release tags.
+ * This rule prevents the exporting of extension APIs without denoted release tags.
  */
 module.exports = {
   meta: {
+    /** @type {'problem' | 'suggestion' | 'layout' | undefined} */
     type: "problem",
     docs: {
       description: "Prevent the exporting of extension APIs that do not meet certain release tags.",
       category: "TypeScript",
     },
     messages: {
-      forbidden: `{{kind}} "{{name}}" without one of the release tags "{{releaseTags}}".`,
+      forbidden: `Public extension exports must be annotated with both an @extensions tag and one of the following: {{releaseTags}}. Check the "{{name}}" type.`,
       namespace: `Namespace "{{name}}" is without an @extensions tag but one of its members has one.`,
     },
     schema: [
@@ -49,8 +50,8 @@ module.exports = {
             uniqueItems: true,
             items: {
               type: "string",
-              enum: ["public", "beta", "alpha", "internal", "preview"]
-            }
+              enum: ["public", "beta", "alpha", "internal"],
+            },
           },
           outputApiFile: {
             type: "boolean"
@@ -65,7 +66,7 @@ module.exports = {
 
     const releaseTags = (context.options.length > 0 && context.options[0].releaseTags) || ["public"];
     const extensionsTag = "extensions";
-    const previewTag = "preview";
+    const betaTag = "beta";
 
     const outputApiFile = (context.options.length > 0 && context.options[0].outputApiFile) || false;
     const apiFilePath = "./lib/GeneratedExtensionApi.csv";
@@ -78,12 +79,13 @@ module.exports = {
       }
     }
 
-    function addToApiList(declaration, isPreview) {
+    function addToApiList(declaration, isBeta) {
       if (!outputApiFile) {
         return;
       }
 
-      const createCsvString = (name, kind) => `${name},${kind},${isPreview ? 'preview' : 'public'}\n`;
+      const createCsvString = (name, kind) =>
+        `${name},${kind},${isBeta ? "beta" : "public"}\n`;
 
       const names = declaration.kind === ts.SyntaxKind.VariableStatement ?
         declaration.declarationList.declarations.map(d => d.symbol.escapedName) :
@@ -138,11 +140,11 @@ module.exports = {
       }
 
       const jsDocExtensionTag = tags.find(tag => tagEscapedText(tag) === extensionsTag);
-      const jsDocPreviewTag = tags.find(tag => tagEscapedText(tag) === previewTag);
+      const jsDocBetaTag = tags.find((tag) => tagEscapedText(tag) === betaTag);
 
       // Has extension API tag
       if (jsDocExtensionTag) {
-        addToApiList(declaration, jsDocPreviewTag);
+        addToApiList(declaration, jsDocBetaTag);
         const validReleaseTag = tags.some(tag => releaseTags.includes(tagEscapedText(tag)));
         if (validReleaseTag) {
           return true;
