@@ -22,27 +22,17 @@ const tester = new RuleTester({
 });
 
 tester.run("exports-require-release-tags", RequireReleaseTags, {
+  // extensions can only be public
   valid: [
     {
       code: `
       /**
        * @extensions
-       * @beta
+       * @public
        */
       export function destroyAllIModels(): void{
       }
       `,
-      options: [{ releaseTags: ["public", "beta"] }],
-    },
-    {
-      code: `
-        /**
-         * @extensions
-         * @public
-         */
-        export function destroyAllIModels(): void{
-        }
-        `,
       options: [{ releaseTags: ["public", "beta"] }],
     },
     // test defaults
@@ -50,7 +40,7 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
       code: `
         /**
          * @extensions
-         * @alpha
+         * @public
          */
         export function destroyAllIModels(): void{
         }
@@ -87,7 +77,7 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
     {
       code: `
         /**
-         * @alpha
+         * @internal
          */
         export function destroyAllIModels(): void{
         }
@@ -109,7 +99,7 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
       code: `
         /**
          * @extensions
-         * @alpha
+         * @public
          */
         export function destroyAllIModels(): void{
         }
@@ -118,7 +108,7 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
     },
   ],
   invalid: [
-    // default valid release tags
+    // extensions require public tag.
     {
       code: `
         /**
@@ -130,7 +120,7 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
         `,
       errors: [
         {
-          message: `Public extension exports must be annotated with both an @extensions tag and one of the following: public, beta, alpha. Check the "destroyAllIModels" type.`,
+          message: `Extension exports must be annotated with both an @extensions and @public tag. Check the "destroyAllIModels" type.`,
         },
       ],
     },
@@ -147,11 +137,11 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
       `,
       errors: [
         {
-          message: `Public extension exports must be annotated with both an @extensions tag and one of the following: public, beta, alpha. Check the "destroyAllIModels" type.`,
+          message: `Extension exports must be annotated with both an @extensions and @public tag. Check the "destroyAllIModels" type.`,
         },
       ],
     },
-    // restrict to added options
+    // added options do nothing for extensions
     {
       code: `
       /**
@@ -163,12 +153,12 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
       `,
       errors: [
         {
-          message: `Public extension exports must be annotated with both an @extensions tag and one of the following: public, beta. Check the "destroyAllIModels" type.`,
+          message: `Extension exports must be annotated with both an @extensions and @public tag. Check the "destroyAllIModels" type.`,
         },
       ],
-      options: [{ releaseTags: ["public", "beta"] }],
+      options: [{ releaseTags: ["beta", "alpha", "internal"] }],
     },
-    // no internal for extensions even if added to releaseTags
+    // no internal for extensions
     {
       code: `
           /**
@@ -181,10 +171,81 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
           `,
       errors: [
         {
-          message: `Public extension exports must be annotated with both an @extensions tag and one of the following: public, beta. Check the "destroyAllIModels" type.`,
+          message: `Extension exports must be annotated with both an @extensions and @public tag. Check the "destroyAllIModels" type.`,
         },
       ],
       options: [{ releaseTags: ["public", "beta", "internal"] }],
+    },
+    // no alpha for extensions
+    {
+      code: `
+          /**
+           * @extensions
+           * @alpha
+           */
+          export function destroyAllIModels(): void {
+    
+          }
+          `,
+      errors: [
+        {
+          message: `Extension exports must be annotated with both an @extensions and @public tag. Check the "destroyAllIModels" type.`,
+        },
+      ],
+      options: [{ releaseTags: ["public", "alpha", "beta", "internal"] }],
+    },
+    // no beta for extensions
+    {
+      code: `
+          /**
+           * @extensions
+           * @beta
+           */
+          export function destroyAllIModels(): void {
+    
+          }
+          `,
+      errors: [
+        {
+          message: `Extension exports must be annotated with both an @extensions and @public tag. Check the "destroyAllIModels" type.`,
+        },
+      ],
+      options: [{ releaseTags: ["public", "beta", "internal"] }],
+    },
+    // no multiple tags w/ extensions
+    {
+      code: `
+        /**
+         * @extensions
+         * @public
+         * @beta
+         */
+        export function destroyAllIModels(): void {
+
+        }
+        `,
+      errors: [
+        {
+          message: `Only one release tag per export is allowed. Check the "destroyAllIModels" type.`,
+        },
+      ],
+    },
+    // no multiple tags w/o extensions
+    {
+      code: `
+            /**
+             * @public
+             * @beta
+             */
+            export function destroyAllIModels(): void {
+    
+            }
+            `,
+      errors: [
+        {
+          message: `Only one release tag per export is allowed. Check the "destroyAllIModels" type.`,
+        },
+      ],
     },
     // non-extension exports
     {

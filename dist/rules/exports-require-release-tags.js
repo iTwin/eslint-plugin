@@ -38,7 +38,8 @@ module.exports = {
     },
     messages: {
       missingReleaseTag: `Exports must be annotated with one of the following: {{releaseTags}}. Check the "{{name}}" type.`,
-      missingExtensionReleaseTag: `Public extension exports must be annotated with both an @extensions tag and one of the following: {{releaseTags}}. Check the "{{name}}" type.`,
+      missingExtensionReleaseTag: `Extension exports must be annotated with both an @extensions and @public tag. Check the "destroyAllIModels" type.`,
+      tooManyReleaseTags: `Only one release tag per export is allowed. Check the "{{name}}" type.`,
       namespace: `Namespace "{{name}}" is without an @extensions tag but one of its members has one.`,
     },
     schema: [
@@ -73,6 +74,7 @@ module.exports = {
       "internal",
     ];
     const extensionsTag = "extensions";
+    const publicTag = "public";
 
     const outputApiFile =
       (context.options.length > 0 && context.options[0].outputApiFile) || false;
@@ -143,6 +145,7 @@ module.exports = {
 
       const declarationName = ts.getNameOfDeclaration(declaration.parent);
       const name = declarationName ? declarationName.getFullText() : "";
+
       context.report({
         node,
         messageId: "namespace",
@@ -162,45 +165,52 @@ module.exports = {
         return tag?.tagName?.escapedText;
       }
 
-      const jsDocExtensionTag = tags.find(
+      const hasExtensionTag = tags.find(
         (tag) => tagEscapedText(tag) === extensionsTag
       );
+      const hasPublicTag = tags.some(
+        (tag) => tagEscapedText(tag) === publicTag
+      );
 
-      const validTags = jsDocExtensionTag
+      const validTags = hasExtensionTag
         ? releaseTags.filter((t) => t !== "internal")
         : [...releaseTags];
 
-      const hasValidReleaseTag = tags.some((tag) =>
+      const includedReleaseTags = tags.filter((tag) =>
         validTags.includes(tagEscapedText(tag))
       );
+
       const name = getName(declaration);
+      const commonReport = {
+        node,
+        data: {
+          kind: getSyntaxKindFriendlyName(declaration.kind),
+          name,
+          releaseTags: validTags.join(", "),
+        },
+      };
 
-      if (jsDocExtensionTag) {
+      if (includedReleaseTags.length > 1)
+        return context.report({
+          ...commonReport,
+          messageId: "tooManyReleaseTags",
+        });
+
+      if (hasExtensionTag) {
         addToApiList(declaration, tags);
-        if (hasValidReleaseTag) return true;
-
-        context.report({
-          node,
-          messageId: "missingExtensionReleaseTag",
-          data: {
-            kind: getSyntaxKindFriendlyName(declaration.kind),
-            name,
-            releaseTags: validTags.join(", "),
-          },
-        });
+        if (!hasPublicTag)
+          return context.report({
+            ...commonReport,
+            messageId: "missingExtensionReleaseTag",
+          });
       } else {
-        if (hasValidReleaseTag) return true;
-
-        context.report({
-          node,
-          messageId: "missingReleaseTag",
-          data: {
-            kind: getSyntaxKindFriendlyName(declaration.kind),
-            name,
-            releaseTags: validTags.join(", "),
-          },
-        });
+        if (includedReleaseTags.length === 0)
+          return context.report({
+            ...commonReport,
+            messageId: "missingReleaseTag",
+          });
       }
+      return true;
     }
 
     function isNamespace(declaration) {
