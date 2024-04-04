@@ -37,10 +37,10 @@ module.exports = {
       category: "TypeScript",
     },
     messages: {
-      missingReleaseTag: `Exports must be annotated with one of the following: {{releaseTags}}. Check the "{{name}}" type.`,
-      missingExtensionReleaseTag: `Extension exports must be annotated with both an @extensions and @public tag. Check the "destroyAllIModels" type.`,
-      tooManyReleaseTags: `Only one release tag per export is allowed. Check the "{{name}}" type.`,
-      namespace: `Namespace "{{name}}" is without an @extensions tag but one of its members has one.`,
+      missingReleaseTag: `Exports must be annotated with one of the following: {{releaseTags}}. Please review the tags for "{{name}}".`,
+      missingExtensionReleaseTag: `Extension exports must be annotated with both an @extensions and @public tag. Please review the tags for "{{name}}".`,
+      tooManyReleaseTags: `Only one release tag per export is allowed. Please review the tags for "{{name}}".`,
+      namespace: `Namespace "{{name}}" requires an @extensions tag because one of its members is tagged for @extensions.`,
     },
     schema: [
       {
@@ -127,7 +127,7 @@ module.exports = {
 
     function getParentSymbolName(declaration) {
       const escapedName = declaration.parent?.symbol?.escapedName;
-      if (!escapedName.startsWith('"')) return escapedName;
+      if (!escapedName?.startsWith('"')) return escapedName;
 
       return undefined;
     }
@@ -135,7 +135,6 @@ module.exports = {
     // reports an error if namespace doesn't have a valid @extensions tag but a member does
     function checkNamespaceTags(declaration, node) {
       const tags = ts.getJSDocTags(declaration.parent);
-      if (!tags || tags.length === 0) return;
 
       for (const tag of tags) {
         if (tag.tagName.escapedText === extensionsTag) {
@@ -150,7 +149,7 @@ module.exports = {
         node,
         messageId: "namespace",
         data: {
-          name,
+          name: name.trim(), // namespace name is parsed with extra whitespace
         },
       });
     }
@@ -191,7 +190,7 @@ module.exports = {
       };
 
       if (includedReleaseTags.length > 1)
-        return context.report({
+        context.report({
           ...commonReport,
           messageId: "tooManyReleaseTags",
         });
@@ -199,13 +198,13 @@ module.exports = {
       if (hasExtensionTag) {
         addToApiList(declaration, tags);
         if (!hasPublicTag)
-          return context.report({
+          context.report({
             ...commonReport,
             messageId: "missingExtensionReleaseTag",
           });
       } else {
         if (includedReleaseTags.length === 0)
-          return context.report({
+          context.report({
             ...commonReport,
             messageId: "missingReleaseTag",
           });
@@ -223,8 +222,10 @@ module.exports = {
     function check(declaration, node) {
       if (!declaration) return;
       if (checkJsDoc(declaration, node)) {
-        if (declaration.parent && isNamespace(declaration.parent))
+        if (declaration.parent && isNamespace(declaration.parent)) {
+          console.log("Should check namespace");
           checkNamespaceTags(declaration.parent, node);
+        }
       }
     }
 

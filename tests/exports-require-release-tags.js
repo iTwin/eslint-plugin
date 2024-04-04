@@ -106,6 +106,23 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
         `,
       options: [{}],
     },
+    // namespace rule
+    {
+      code: `
+        /**
+         * @public
+         * @extensions
+         */
+        export namespace Dangerous {
+          /**
+           * @public
+           * @extensions
+           */
+          export function destroyAllIModels(): void{
+          }
+        }
+        `,
+    },
   ],
   invalid: [
     // extensions require public tag.
@@ -120,7 +137,7 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
         `,
       errors: [
         {
-          message: `Extension exports must be annotated with both an @extensions and @public tag. Check the "destroyAllIModels" type.`,
+          message: `Extension exports must be annotated with both an @extensions and @public tag. Please review the tags for "destroyAllIModels".`,
         },
       ],
     },
@@ -137,7 +154,7 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
       `,
       errors: [
         {
-          message: `Extension exports must be annotated with both an @extensions and @public tag. Check the "destroyAllIModels" type.`,
+          message: `Extension exports must be annotated with both an @extensions and @public tag. Please review the tags for "destroyAllIModels".`,
         },
       ],
     },
@@ -153,7 +170,7 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
       `,
       errors: [
         {
-          message: `Extension exports must be annotated with both an @extensions and @public tag. Check the "destroyAllIModels" type.`,
+          message: `Extension exports must be annotated with both an @extensions and @public tag. Please review the tags for "destroyAllIModels".`,
         },
       ],
       options: [{ releaseTags: ["beta", "alpha", "internal"] }],
@@ -171,7 +188,7 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
           `,
       errors: [
         {
-          message: `Extension exports must be annotated with both an @extensions and @public tag. Check the "destroyAllIModels" type.`,
+          message: `Extension exports must be annotated with both an @extensions and @public tag. Please review the tags for "destroyAllIModels".`,
         },
       ],
       options: [{ releaseTags: ["public", "beta", "internal"] }],
@@ -189,7 +206,7 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
           `,
       errors: [
         {
-          message: `Extension exports must be annotated with both an @extensions and @public tag. Check the "destroyAllIModels" type.`,
+          message: `Extension exports must be annotated with both an @extensions and @public tag. Please review the tags for "destroyAllIModels".`,
         },
       ],
       options: [{ releaseTags: ["public", "alpha", "beta", "internal"] }],
@@ -207,7 +224,7 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
           `,
       errors: [
         {
-          message: `Extension exports must be annotated with both an @extensions and @public tag. Check the "destroyAllIModels" type.`,
+          message: `Extension exports must be annotated with both an @extensions and @public tag. Please review the tags for "destroyAllIModels".`,
         },
       ],
       options: [{ releaseTags: ["public", "beta", "internal"] }],
@@ -226,7 +243,7 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
         `,
       errors: [
         {
-          message: `Only one release tag per export is allowed. Check the "destroyAllIModels" type.`,
+          message: `Only one release tag per export is allowed. Please review the tags for "destroyAllIModels".`,
         },
       ],
     },
@@ -243,7 +260,7 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
             `,
       errors: [
         {
-          message: `Only one release tag per export is allowed. Check the "destroyAllIModels" type.`,
+          message: `Only one release tag per export is allowed. Please review the tags for "destroyAllIModels".`,
         },
       ],
     },
@@ -258,7 +275,7 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
       `,
       errors: [
         {
-          message: `Exports must be annotated with one of the following: public, beta, alpha, internal. Check the "destroyAllIModels" type.`,
+          message: `Exports must be annotated with one of the following: public, beta, alpha, internal. Please review the tags for "destroyAllIModels".`,
         },
       ],
     },
@@ -273,10 +290,55 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
       `,
       errors: [
         {
-          message: `Exports must be annotated with one of the following: public, beta. Check the "destroyAllIModels" type.`,
+          message: `Exports must be annotated with one of the following: public, beta. Please review the tags for "destroyAllIModels".`,
         },
       ],
       options: [{ releaseTags: ["public", "beta"] }],
+    },
+
+    // namespace must have extensions tag if child has it
+    {
+      code: `
+        /**
+         * @public
+         */
+        export namespace Dangerous{
+          /**
+           * @public
+           * @extensions
+           */
+          export function destroyAllIModels(): void{
+          }
+        }
+        `,
+      errors: [
+        {
+          message: `Namespace "Dangerous" requires an @extensions tag because one of its members is tagged for @extensions.`,
+        },
+      ],
+    },
+    // no tags on namespace, but child has @extensions
+    {
+      code: `
+        /**
+         */
+        export namespace Dangerous{
+          /**
+           * @public
+           * @extensions
+           */
+          export function destroyAllIModels(): void{
+          }
+        }
+        `,
+      errors: [
+        {
+          message: `Exports must be annotated with one of the following: public, beta, alpha, internal. Please review the tags for "Dangerous".`,
+        },
+        {
+          message: `Namespace "Dangerous" requires an @extensions tag because one of its members is tagged for @extensions.`,
+        },
+      ],
     },
   ],
 });
