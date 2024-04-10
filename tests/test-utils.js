@@ -23,12 +23,13 @@ module.exports = {
     };
   },
 
-  /** @param {string[]} strings */
+  /** @param {TemplateStringsArray} strings */
   dedent(strings) {
     const textAssumingNoInterpolations = strings[0];
     const codeLines = textAssumingNoInterpolations.split("\n");
     if (codeLines.length <= 1) return textAssumingNoInterpolations;
-    const leftPadding = codeLines[1].match(/[\t ]+/)[0];
+    const leftPadding = codeLines[1].match(/[\t ]+/)?.[0];
+    if (!leftPadding) return codeLines.slice(1, -1).join("\n");
     return codeLines
       .slice(1, -1)
       .map((l) => l.substring(leftPadding.length))
