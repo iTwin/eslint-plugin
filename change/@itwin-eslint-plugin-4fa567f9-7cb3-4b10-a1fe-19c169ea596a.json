@@ -1,7 +1,0 @@
-{
-  "type": "prerelease",
-  "comment": "Disable some of the newer lint rules.",
-  "packageName": "@itwin/eslint-plugin",
-  "email": "33036725+wgoehrig@users.noreply.github.com",
-  "dependentChangeType": "patch"
-}

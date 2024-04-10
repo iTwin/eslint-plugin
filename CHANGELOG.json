@@ -2,6 +2,55 @@
   "name": "@itwin/eslint-plugin",
   "entries": [
     {
+      "date": "Wed, 10 Apr 2024 15:31:15 GMT",
+      "version": "4.0.0",
+      "tag": "@itwin/eslint-plugin_v4.0.0",
+      "comments": {
+        "minor": [
+          {
+            "author": " 48823762+yashincontrol@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "c989b2f77b45a90ff202a8a9d92d44cd31bcc2d9",
+            "comment": "Added support for TypeScript 5.0"
+          },
+          {
+            "author": "24278440+saskliutas@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "c989b2f77b45a90ff202a8a9d92d44cd31bcc2d9",
+            "comment": "Bumped plugins versions"
+          }
+        ],
+        "prerelease": [
+          {
+            "author": "33036725+wgoehrig@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "c989b2f77b45a90ff202a8a9d92d44cd31bcc2d9",
+            "comment": "Disable some of the newer lint rules."
+          }
+        ],
+        "major": [
+          {
+            "author": "ben-polinsky@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "c989b2f77b45a90ff202a8a9d92d44cd31bcc2d9",
+            "comment": "Modify extensions rule to accept @beta tags instead of @preview tags."
+          },
+          {
+            "author": "Jake-Screen@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "c989b2f77b45a90ff202a8a9d92d44cd31bcc2d9",
+            "comment": "Converting to using eslint flat config"
+          },
+          {
+            "author": "yashincontrol@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "c989b2f77b45a90ff202a8a9d92d44cd31bcc2d9",
+            "comment": "Update eslint to 8.36.0"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.6.0",
       "tag": "@itwin/eslint-plugin_v3.6.0",
       "date": "Wed, 08 Feb 2023 14:58:40 GMT",

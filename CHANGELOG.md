@@ -1,6 +1,27 @@
 # Change Log - @itwin/eslint-plugin
 
-This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+This log was last generated on Wed, 10 Apr 2024 15:31:15 GMT and should not be manually modified.
+
+<!-- Start content -->
+
+## 4.0.0
+
+Wed, 10 Apr 2024 15:31:15 GMT
+
+### Major changes
+
+- Modify extensions rule to accept @beta tags instead of @preview tags. (ben-polinsky@users.noreply.github.com)
+- Converting to using eslint flat config (Jake-Screen@users.noreply.github.com)
+- Update eslint to 8.36.0 (yashincontrol@users.noreply.github.com)
+
+### Minor changes
+
+- Added support for TypeScript 5.0 ( 48823762+yashincontrol@users.noreply.github.com)
+- Bumped plugins versions (24278440+saskliutas@users.noreply.github.com)
+
+### Changes
+
+- Disable some of the newer lint rules. (33036725+wgoehrig@users.noreply.github.com)
 
 ## 3.6.0
 Wed, 08 Feb 2023 14:58:40 GMT
@@ -729,4 +750,3 @@ Thu, 17 Sep 2020 13:16:12 GMT
 ### Updates
 
 - Moved ESLint configuration to a plugin
-
