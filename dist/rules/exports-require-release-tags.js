@@ -209,7 +209,7 @@ module.exports = {
             messageId: "missingReleaseTag",
           });
       }
-      return true;
+      return declaration.parent && isNamespace(declaration.parent);
     }
 
     function isNamespace(declaration) {
@@ -221,11 +221,9 @@ module.exports = {
 
     function check(declaration, node) {
       if (!declaration) return;
+
       if (checkJsDoc(declaration, node)) {
-        if (declaration.parent && isNamespace(declaration.parent)) {
-          console.log("Should check namespace");
-          checkNamespaceTags(declaration.parent, node);
-        }
+        checkNamespaceTags(declaration.parent, node);
       }
     }
 
