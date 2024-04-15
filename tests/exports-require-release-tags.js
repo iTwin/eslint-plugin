@@ -123,6 +123,22 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
         }
         `,
     },
+    // Namespace rule, no false positive
+    {
+      code: `
+      /**
+       * @public
+       */
+        export namespace Tileset3dSchema {
+          /**
+           * @public
+           */
+          export interface asdkljas {
+            [key: string]: any;
+          }
+        }
+        `,
+    },
   ],
   invalid: [
     // extensions require public tag.
@@ -132,7 +148,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
          * @extensions
          */
         export function destroyAllIModels(): void {
-
         }
         `,
       errors: [
@@ -149,7 +164,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
        * @preview
        */
       export function destroyAllIModels(): void {
-
       }
       `,
       errors: [
@@ -165,7 +179,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
        * @extensions
        */
       export function destroyAllIModels(): void {
-
       }
       `,
       errors: [
@@ -183,7 +196,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
            * @internal
            */
           export function destroyAllIModels(): void {
-    
           }
           `,
       errors: [
@@ -201,7 +213,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
            * @alpha
            */
           export function destroyAllIModels(): void {
-    
           }
           `,
       errors: [
@@ -219,7 +230,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
            * @beta
            */
           export function destroyAllIModels(): void {
-    
           }
           `,
       errors: [
@@ -238,7 +248,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
          * @beta
          */
         export function destroyAllIModels(): void {
-
         }
         `,
       errors: [
@@ -255,7 +264,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
              * @beta
              */
             export function destroyAllIModels(): void {
-    
             }
             `,
       errors: [
@@ -270,7 +278,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
       /**
        */
       export function destroyAllIModels(): void {
-        
       }
       `,
       errors: [
@@ -279,13 +286,11 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
         },
       ],
     },
-
     // non-extension exports with custom options:
     {
       code: `
       /** @alpha */
       export function destroyAllIModels(): void {
-        
       }
       `,
       errors: [
@@ -295,7 +300,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
       ],
       options: [{ releaseTags: ["public", "beta"] }],
     },
-
     // namespace must have extensions tag if child has it
     {
       code: `
@@ -337,6 +341,48 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
         },
         {
           message: `Namespace "Dangerous" requires an @extensions tag because one of its members is tagged for @extensions.`,
+        },
+      ],
+    },
+    // Namespaces rule, parent still triggers if no public
+    {
+      code: `
+        /**
+         * Silly me.
+         */
+          export namespace Tileset3dSchema {
+            /**
+             * @public
+             */
+            export interface Innerface {
+              [key: string]: any;
+            }
+          }
+          `,
+      errors: [
+        {
+          message: `Exports must be annotated with one of the following: public, beta, alpha, internal. Please review the tags for "Tileset3dSchema".`,
+        },
+      ],
+    },
+    // Namespaces rule, child still triggers if no public
+    {
+      code: `
+        /**
+         * @public
+         */
+          export namespace Tileset3dSchema {
+            /**
+             * silly me.
+             */
+            export interface Innerface {
+              [key: string]: any;
+            }
+          }
+          `,
+      errors: [
+        {
+          message: `Exports must be annotated with one of the following: public, beta, alpha, internal. Please review the tags for "Innerface".`,
         },
       ],
     },

@@ -202,6 +202,7 @@ module.exports = {
             ...commonReport,
             messageId: "missingExtensionReleaseTag",
           });
+        return true;
       } else {
         if (includedReleaseTags.length === 0)
           context.report({
@@ -209,7 +210,7 @@ module.exports = {
             messageId: "missingReleaseTag",
           });
       }
-      return declaration.parent && isNamespace(declaration.parent);
+      return false;
     }
 
     function isNamespace(declaration) {
@@ -223,7 +224,8 @@ module.exports = {
       if (!declaration) return;
 
       if (checkJsDoc(declaration, node)) {
-        checkNamespaceTags(declaration.parent, node);
+        if (declaration.parent && isNamespace(declaration.parent))
+          checkNamespaceTags(declaration.parent, node);
       }
     }
 
