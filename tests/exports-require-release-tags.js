@@ -46,54 +46,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
         }
         `,
     },
-    // non-extensions
-    {
-      code: `
-        /**
-         * @alpha
-         */
-        export function destroyAllIModels(): void{
-        }
-        `,
-    },
-    {
-      code: `
-        /**
-         * @beta
-         */
-        export function destroyAllIModels(): void{
-        }
-        `,
-    },
-    {
-      code: `
-        /**
-         * @public
-         */
-        export function destroyAllIModels(): void{
-        }
-        `,
-    },
-    {
-      code: `
-        /**
-         * @internal
-         */
-        export function destroyAllIModels(): void{
-        }
-        `,
-    },
-    // custom options for non-extensions
-    {
-      code: `
-        /**
-         * @alpha
-         */
-        export function destroyAllIModels(): void{
-        }
-        `,
-      options: [{ releaseTags: ["public", "alpha"] }],
-    },
     // empty options triggers default
     {
       code: `
@@ -239,67 +191,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
       ],
       options: [{ releaseTags: ["public", "beta", "internal"] }],
     },
-    // no multiple tags w/ extensions
-    {
-      code: `
-        /**
-         * @extensions
-         * @public
-         * @beta
-         */
-        export function destroyAllIModels(): void {
-        }
-        `,
-      errors: [
-        {
-          message: `Only one release tag per export is allowed. Please review the tags for "destroyAllIModels".`,
-        },
-      ],
-    },
-    // no multiple tags w/o extensions
-    {
-      code: `
-            /**
-             * @public
-             * @beta
-             */
-            export function destroyAllIModels(): void {
-            }
-            `,
-      errors: [
-        {
-          message: `Only one release tag per export is allowed. Please review the tags for "destroyAllIModels".`,
-        },
-      ],
-    },
-    // non-extension exports
-    {
-      code: `
-      /**
-       */
-      export function destroyAllIModels(): void {
-      }
-      `,
-      errors: [
-        {
-          message: `Exports must be annotated with one of the following: public, beta, alpha, internal. Please review the tags for "destroyAllIModels".`,
-        },
-      ],
-    },
-    // non-extension exports with custom options:
-    {
-      code: `
-      /** @alpha */
-      export function destroyAllIModels(): void {
-      }
-      `,
-      errors: [
-        {
-          message: `Exports must be annotated with one of the following: public, beta. Please review the tags for "destroyAllIModels".`,
-        },
-      ],
-      options: [{ releaseTags: ["public", "beta"] }],
-    },
     // namespace must have extensions tag if child has it
     {
       code: `
@@ -337,52 +228,7 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
         `,
       errors: [
         {
-          message: `Exports must be annotated with one of the following: public, beta, alpha, internal. Please review the tags for "Dangerous".`,
-        },
-        {
           message: `Namespace "Dangerous" requires an @extensions tag because one of its members is tagged for @extensions.`,
-        },
-      ],
-    },
-    // Namespaces rule, parent still triggers if no public
-    {
-      code: `
-        /**
-         * Silly me.
-         */
-          export namespace Tileset3dSchema {
-            /**
-             * @public
-             */
-            export interface Innerface {
-              [key: string]: any;
-            }
-          }
-          `,
-      errors: [
-        {
-          message: `Exports must be annotated with one of the following: public, beta, alpha, internal. Please review the tags for "Tileset3dSchema".`,
-        },
-      ],
-    },
-    // Namespaces rule, child still triggers if no public
-    {
-      code: `
-        /**
-         * @public
-         */
-          export namespace Tileset3dSchema {
-            /**
-             * silly me.
-             */
-            export interface Innerface {
-              [key: string]: any;
-            }
-          }
-          `,
-      errors: [
-        {
-          message: `Exports must be annotated with one of the following: public, beta, alpha, internal. Please review the tags for "Innerface".`,
         },
       ],
     },

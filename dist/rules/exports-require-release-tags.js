@@ -37,9 +37,7 @@ module.exports = {
       category: "TypeScript",
     },
     messages: {
-      missingReleaseTag: `Exports must be annotated with one of the following: {{releaseTags}}. Please review the tags for "{{name}}".`,
       missingExtensionReleaseTag: `Extension exports must be annotated with both an @extensions and @public tag. Please review the tags for "{{name}}".`,
-      tooManyReleaseTags: `Only one release tag per export is allowed. Please review the tags for "{{name}}".`,
       namespace: `Namespace "{{name}}" requires an @extensions tag because one of its members is tagged for @extensions.`,
     },
     schema: [
@@ -175,10 +173,6 @@ module.exports = {
         ? releaseTags.filter((t) => t !== "internal")
         : [...releaseTags];
 
-      const includedReleaseTags = tags.filter((tag) =>
-        validTags.includes(tagEscapedText(tag))
-      );
-
       const name = getName(declaration);
       const commonReport = {
         node,
@@ -189,12 +183,6 @@ module.exports = {
         },
       };
 
-      if (includedReleaseTags.length > 1)
-        context.report({
-          ...commonReport,
-          messageId: "tooManyReleaseTags",
-        });
-
       if (hasExtensionTag) {
         addToApiList(declaration, tags);
         if (!hasPublicTag)
@@ -203,12 +191,6 @@ module.exports = {
             messageId: "missingExtensionReleaseTag",
           });
         return true;
-      } else {
-        if (includedReleaseTags.length === 0)
-          context.report({
-            ...commonReport,
-            messageId: "missingReleaseTag",
-          });
       }
       return false;
     }
