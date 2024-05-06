@@ -1,8 +1,16 @@
 # Change Log - @itwin/eslint-plugin
 
-This log was last generated on Wed, 10 Apr 2024 15:31:15 GMT and should not be manually modified.
+This log was last generated on Mon, 06 May 2024 15:27:56 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 4.0.1
+
+Mon, 06 May 2024 15:27:56 GMT
+
+### Patches
+
+- remove console.log; simplify logic a tad (ben-polinsky@users.noreply.github.com)
 
 ## 4.0.0
 

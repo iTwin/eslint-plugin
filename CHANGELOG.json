@@ -2,6 +2,21 @@
   "name": "@itwin/eslint-plugin",
   "entries": [
     {
+      "date": "Mon, 06 May 2024 15:27:56 GMT",
+      "version": "4.0.1",
+      "tag": "@itwin/eslint-plugin_v4.0.1",
+      "comments": {
+        "patch": [
+          {
+            "author": "ben-polinsky@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "abcfe90c50d1329772789d26b96a6542684dfcb3",
+            "comment": "remove console.log; simplify logic a tad"
+          }
+        ]
+      }
+    },
+    {
       "date": "Wed, 10 Apr 2024 15:31:15 GMT",
       "version": "4.0.0",
       "tag": "@itwin/eslint-plugin_v4.0.0",
