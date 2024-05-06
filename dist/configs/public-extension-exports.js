@@ -9,7 +9,7 @@ module.exports = {
   },
   languageOptions: require("./utils/language-options"),
   rules: {
-    "@itwin/exports-require-release-tag": [
+    "@itwin/public-extension-exports": [
       "error",
       {
         releaseTags: ["public"],

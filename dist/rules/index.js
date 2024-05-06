@@ -4,7 +4,7 @@ module.exports = {
   "no-internal-barrel-imports": require("./no-internal-barrel-imports"),
   "no-internal": require("./no-internal"),
   "prefer-get": require("./prefer-get"),
-  "exports-require-release-tags": require("./exports-require-release-tags"),
+  "public-extension-exports": require("./public-extension-exports"),
   "react-set-stage-usage": require("./react-set-state-usage"),
   "require-basic-rpc-values": require("./require-basic-rpc-values"),
   "require-version-in-deprecation": require("./require-version-in-deprecation"),

@@ -1,8 +1,8 @@
 const path = require("path");
 const { RuleTester } = require("eslint");
 const BentleyESLintPlugin = require("../dist");
-const RequireReleaseTags =
-  BentleyESLintPlugin.rules["exports-require-release-tags"];
+const PublicExtensionsExports =
+  BentleyESLintPlugin.rules["public-extension-exports"];
 
 const fixtureDir = path.join(
   __dirname,
@@ -21,7 +21,7 @@ const tester = new RuleTester({
   },
 });
 
-tester.run("exports-require-release-tags", RequireReleaseTags, {
+tester.run("public-extension-exports", PublicExtensionsExports, {
   // extensions can only be public
   valid: [
     {
@@ -45,54 +45,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
         export function destroyAllIModels(): void{
         }
         `,
-    },
-    // non-extensions
-    {
-      code: `
-        /**
-         * @alpha
-         */
-        export function destroyAllIModels(): void{
-        }
-        `,
-    },
-    {
-      code: `
-        /**
-         * @beta
-         */
-        export function destroyAllIModels(): void{
-        }
-        `,
-    },
-    {
-      code: `
-        /**
-         * @public
-         */
-        export function destroyAllIModels(): void{
-        }
-        `,
-    },
-    {
-      code: `
-        /**
-         * @internal
-         */
-        export function destroyAllIModels(): void{
-        }
-        `,
-    },
-    // custom options for non-extensions
-    {
-      code: `
-        /**
-         * @alpha
-         */
-        export function destroyAllIModels(): void{
-        }
-        `,
-      options: [{ releaseTags: ["public", "alpha"] }],
     },
     // empty options triggers default
     {
@@ -123,6 +75,22 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
         }
         `,
     },
+    // Namespace rule, no false positive
+    {
+      code: `
+      /**
+       * @public
+       */
+        export namespace Tileset3dSchema {
+          /**
+           * @public
+           */
+          export interface asdkljas {
+            [key: string]: any;
+          }
+        }
+        `,
+    },
   ],
   invalid: [
     // extensions require public tag.
@@ -132,7 +100,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
          * @extensions
          */
         export function destroyAllIModels(): void {
-
         }
         `,
       errors: [
@@ -149,7 +116,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
        * @preview
        */
       export function destroyAllIModels(): void {
-
       }
       `,
       errors: [
@@ -165,7 +131,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
        * @extensions
        */
       export function destroyAllIModels(): void {
-
       }
       `,
       errors: [
@@ -183,7 +148,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
            * @internal
            */
           export function destroyAllIModels(): void {
-    
           }
           `,
       errors: [
@@ -201,7 +165,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
            * @alpha
            */
           export function destroyAllIModels(): void {
-    
           }
           `,
       errors: [
@@ -219,7 +182,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
            * @beta
            */
           export function destroyAllIModels(): void {
-    
           }
           `,
       errors: [
@@ -229,73 +191,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
       ],
       options: [{ releaseTags: ["public", "beta", "internal"] }],
     },
-    // no multiple tags w/ extensions
-    {
-      code: `
-        /**
-         * @extensions
-         * @public
-         * @beta
-         */
-        export function destroyAllIModels(): void {
-
-        }
-        `,
-      errors: [
-        {
-          message: `Only one release tag per export is allowed. Please review the tags for "destroyAllIModels".`,
-        },
-      ],
-    },
-    // no multiple tags w/o extensions
-    {
-      code: `
-            /**
-             * @public
-             * @beta
-             */
-            export function destroyAllIModels(): void {
-    
-            }
-            `,
-      errors: [
-        {
-          message: `Only one release tag per export is allowed. Please review the tags for "destroyAllIModels".`,
-        },
-      ],
-    },
-    // non-extension exports
-    {
-      code: `
-      /**
-       */
-      export function destroyAllIModels(): void {
-        
-      }
-      `,
-      errors: [
-        {
-          message: `Exports must be annotated with one of the following: public, beta, alpha, internal. Please review the tags for "destroyAllIModels".`,
-        },
-      ],
-    },
-
-    // non-extension exports with custom options:
-    {
-      code: `
-      /** @alpha */
-      export function destroyAllIModels(): void {
-        
-      }
-      `,
-      errors: [
-        {
-          message: `Exports must be annotated with one of the following: public, beta. Please review the tags for "destroyAllIModels".`,
-        },
-      ],
-      options: [{ releaseTags: ["public", "beta"] }],
-    },
-
     // namespace must have extensions tag if child has it
     {
       code: `
@@ -332,9 +227,6 @@ tester.run("exports-require-release-tags", RequireReleaseTags, {
         }
         `,
       errors: [
-        {
-          message: `Exports must be annotated with one of the following: public, beta, alpha, internal. Please review the tags for "Dangerous".`,
-        },
         {
           message: `Namespace "Dangerous" requires an @extensions tag because one of its members is tagged for @extensions.`,
         },
