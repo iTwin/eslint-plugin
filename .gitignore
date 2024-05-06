@@ -18,3 +18,6 @@ package-lock.json
 
 # Mac specfic
 **/.DS_Store
+
+# tests - when testing for csv output, we write the actual file because we cannot mock in eslint tests
+lib/*.csv

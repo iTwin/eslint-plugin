@@ -91,6 +91,22 @@ tester.run("public-extension-exports", PublicExtensionsExports, {
         }
         `,
     },
+    /**
+     * CSV Output:
+     * NOTE: There's not a great way to test this programmatically from within the eslint test runner.
+     * Please check that the lib/GeneratedExtensionApi.csv file is created and contains the expected data after your test runs.
+     */
+    {
+      code: `
+        /**
+         * @extensions
+         * @public
+         */
+        export function destroyAllIModels(): void{
+        }
+        `,
+      options: [{ outputApiFile: true }],
+    },
   ],
   invalid: [
     // extensions require public tag.

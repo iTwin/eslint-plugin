@@ -86,16 +86,12 @@ module.exports = {
       }
     }
 
-    function addToApiList(declaration, tags) {
+    function addToApiList(declaration) {
       if (!outputApiFile) {
         return;
       }
-      const validReleaseTag = tags.find((tag) =>
-        releaseTags.includes(tag.tagName.escapedText)
-      );
 
-      const createCsvString = (name, kind) =>
-        `${name},${kind},${validReleaseTag}\n`;
+      const createCsvString = (name, kind) => `${name},${kind},Public\n`;
 
       const names =
         declaration.kind === ts.SyntaxKind.VariableStatement
@@ -184,12 +180,13 @@ module.exports = {
       };
 
       if (hasExtensionTag) {
-        addToApiList(declaration, tags);
-        if (!hasPublicTag)
+        if (!hasPublicTag) {
           context.report({
             ...commonReport,
             messageId: "missingExtensionReleaseTag",
           });
+        }
+        addToApiList(declaration);
         return true;
       }
       return false;
