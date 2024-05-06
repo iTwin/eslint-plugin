@@ -1,8 +1,8 @@
 const path = require("path");
 const { RuleTester } = require("eslint");
 const BentleyESLintPlugin = require("../dist");
-const RequireReleaseTags =
-  BentleyESLintPlugin.rules["exports-require-release-tags"];
+const PublicExtensionsExports =
+  BentleyESLintPlugin.rules["public-extension-exports"];
 
 const fixtureDir = path.join(
   __dirname,
@@ -21,7 +21,7 @@ const tester = new RuleTester({
   },
 });
 
-tester.run("exports-require-release-tags", RequireReleaseTags, {
+tester.run("public-extension-exports", PublicExtensionsExports, {
   // extensions can only be public
   valid: [
     {

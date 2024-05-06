@@ -1,4 +1,4 @@
-const extensionExportsConfig = require("./exports-require-release-tags");
+const extensionExportsConfig = require("./public-extension-exports");
 const iTwinjsRecommendedConfig = require("./itwinjs-recommended");
 const jsdocConfig = require("./jsdoc");
 const uiConfig = require("./ui");
