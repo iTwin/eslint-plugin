@@ -156,7 +156,7 @@ const rule = {
             program.getResolvedModule(
               sourceFile,
               moduleSpecifierText
-            ).resolvedModule;
+            )?.resolvedModule;
         }
 
         if (typeof node.source.value !== "string")
