@@ -1,5 +1,11 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 const path = require('path');
 const fs = require('fs');
+const process = require('process');
+const createAsciiTable = require('./create-ascii-table');
 
 module.exports = function(messages, ruleId) {
   const problemFiles = new Map();
@@ -10,43 +16,13 @@ module.exports = function(messages, ruleId) {
   // Ensure the current working directory ends with a path separator
   const cwdWithSeparator = currentWorkingDirectory.endsWith(path.sep) ? currentWorkingDirectory : currentWorkingDirectory + path.sep;
 
-  function createAsciiTable(rows, maxCellWidth) {
-    // Calculate column widths
-    const colWidths = rows[0].map((_, i) => Math.min(Math.max(...rows.map(row => String(row[i]).length)), maxCellWidth));
-
-    // Create row separator
-    const rowSeparator = '+' + colWidths.map(width => '-'.repeat(width + 2)).join('+') + '+';
-
-    // Split cell contents into lines
-    const splitRows = rows.map(row => row.map((cell, i) => {
-        const cellStr = String(cell);
-        const lines = [];
-        for (let j = 0; j < cellStr.length; j += maxCellWidth) {
-            lines.push(cellStr.slice(j, j + maxCellWidth));
-        }
-        return lines;
-    }));
-
-    // Convert rows to strings
-    const rowStrings = splitRows.map(row => {
-        const numLines = Math.max(...row.map(cellLines => cellLines.length));
-        const lines = Array(numLines).fill().map((_, i) =>
-            '|' + row.map((cellLines, j) => ' ' + (cellLines[i] || '').padEnd(colWidths[j]) + ' ').join('|') + '|'
-        );
-        return lines.join('\n');
-    });
-
-    // Join everything together
-    return rowSeparator + '\n' + rowStrings.join('\n' + rowSeparator + '\n') + '\n' + rowSeparator;
-}
-
   messages.forEach((message) => {
     const errorMessage = message.text ?? message.message;
     // regex pattern for error message for no internal violations
     const re = new RegExp('(.*) "(.*)" is (.*).');
     const match = errorMessage.match(re);
     if (match) {
-    const [, kind, name, tag] = match
+      const [, kind, name, tag] = match;
       const filePath = message.location?.file ?? message.filePath;
       const relativeFilePath = filePath.replace(cwdWithSeparator, '');
       const problemFileMapKey = `${relativeFilePath};;${tag}`;
@@ -64,7 +40,7 @@ module.exports = function(messages, ruleId) {
     }
   });
 
-    if (problemFiles.size === 0 || errorTracker.size === 0)
+    if (problemFiles.size === 0 || errorTracker.size === 0 || tagViolationsTracker.size === 0)
       return;
 
     // iterate over the problemFiles and for each value, remove the last comma from locations

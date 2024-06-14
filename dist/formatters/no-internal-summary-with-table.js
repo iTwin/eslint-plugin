@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 "use strict";
 
-const tableCreator = require('./no-internal-summary-table-creator');
+const tableCreator = require('./utils/no-internal-summary-table-creator');
 
 module.exports = function (results) {
   const noInternalRuleId = '@itwin/no-internal';

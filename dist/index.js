@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 const plugin = require("./plugin");
 const configs = require("./configs");
-const noInternalSummaryTableCreator = require("./formatters/no-internal-summary-table-creator");
+const noInternalSummaryTableCreator = require("./formatters/utils/no-internal-summary-table-creator");
 
 module.exports = {
   configs,
