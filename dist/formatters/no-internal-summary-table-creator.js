@@ -1,7 +1,3 @@
-/*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
 const path = require('path');
 const fs = require('fs');
 
@@ -10,7 +6,7 @@ module.exports = function(messages, ruleId) {
   const errorTracker = new Map();
   const tagViolationsTracker = new Map();
   const currentWorkingDirectory = process.cwd();
-  const maxCellWidth = 80;
+  const maxCellWidth = 60;
   // Ensure the current working directory ends with a path separator
   const cwdWithSeparator = currentWorkingDirectory.endsWith(path.sep) ? currentWorkingDirectory : currentWorkingDirectory + path.sep;
 
@@ -55,10 +51,10 @@ module.exports = function(messages, ruleId) {
       const tag = match[3];
       const filePath = message.location?.file ?? message.filePath;
       const relativeFilePath = filePath.replace(cwdWithSeparator, '');
-      const fileDetails = problemFiles.get(relativeFilePath) ?? { locations: "", tags: "" };
+      const problemFileMapKey = `${relativeFilePath};;${tag}`;
+      const fileDetails = problemFiles.get(problemFileMapKey) ?? { locations: "" , count: 0};
       const newLocations = fileDetails.locations + `${message.location?.line ?? message.line}:${message.location?.column ?? message.column},`;
-      const newTags = fileDetails.tags.includes(tag) ? fileDetails.tags : fileDetails.tags + `${tag},`;
-      problemFiles.set(relativeFilePath, { locations: newLocations, tags: newTags });
+      problemFiles.set(problemFileMapKey, { locations: newLocations , count: fileDetails.count + 1});
 
       const key = `${kind};;${name};;${tag}`;
       const currentCount = errorTracker.get(key) ?? 0;
@@ -73,16 +69,18 @@ module.exports = function(messages, ruleId) {
     if (problemFiles.size === 0 || errorTracker.size === 0)
       return;
 
-    // iterate over the problemFiles and for each value, remove the last comma from locations and tags fileds
+    // iterate over the problemFiles and for each value, remove the last comma from locations
     for (const [key, value] of problemFiles.entries()) {
       const locations = value.locations.slice(0, -1);
-      const tags = value.tags.slice(0, -1);
-      problemFiles.set(key, { locations, tags });
+      problemFiles.set(key, { locations, count: value.count});
     }
 
     const filesSummaryRows = [
-      ['File', 'Locations', 'Tags'],
-      ...Array.from(problemFiles.entries()).map(([filePath, { locations, tags }]) => [filePath, locations, tags]),
+      ['File', 'Locations', 'Tag', '# of Occurrences'],
+      ...Array.from(problemFiles.entries()).map(([filePath, { locations, count }]) => {
+        const [relativeFilePath, tag] = filePath.split(';;');
+        return [relativeFilePath, locations, tag, count];
+      })
     ];
     const filesSummaryTable = createAsciiTable(filesSummaryRows, maxCellWidth);
 
@@ -103,7 +101,10 @@ module.exports = function(messages, ruleId) {
     const tagViolationsTable = createAsciiTable(tagViolationsRows, maxCellWidth);
     // create a csv of the 2D arrays problemFiles and errorTracker and save that csv file in the current working directory
     // Convert 2D arrays to CSV format
-    const problemFilesCSV = Array.from(problemFiles.entries()).map(([filePath, { locations, tags }]) => `${filePath},"${locations}","${tags}"`).join('\n');
+    const problemFilesCSV = Array.from(problemFiles.entries()).map(([filePath, { locations, count }]) => {
+      const [relativeFilePath, tag] = filePath.split(';;');
+      return `${relativeFilePath},"${locations}",${tag},${count}`;
+    }).join('\n');
     const errorTrackerCSV = Array.from(errorTracker.entries()).map(([key, value]) => {
       const [kind, name, tag] = key.split(";;");
       return `${kind} ${name},${tag},${value}`;
@@ -111,8 +112,8 @@ module.exports = function(messages, ruleId) {
     const tagViolationsCSV = Array.from(tagViolationsTracker.entries()).map(([tag, value]) => `${tag},${value}`).join('\n');
 
     const allTablesSummaryTitle = `Summary tables for '${ruleId}' lint rule violations:`;
-    const problemFilesTitle = `'${ruleId}' violations summary table by kind and name:`;
-    const errorTrackerTitle = `'${ruleId}' violations summary table by files:`;
+    const problemFilesTitle = `'${ruleId}' violations summary table by files:`;
+    const errorTrackerTitle = `'${ruleId}' violations summary table by kind and name:`;
     const tagViolationsTitle = `'${ruleId}' violations summary table by tags:`;
 
     // Combine problemFilesCSV and errorTrackerCSV
