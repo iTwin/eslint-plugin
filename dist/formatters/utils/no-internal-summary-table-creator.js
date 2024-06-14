@@ -18,11 +18,12 @@ module.exports = function(messages, ruleId) {
 
   messages.forEach((message) => {
     const errorMessage = message.text ?? message.message;
-    // regex pattern for error message for no internal violations
-    const re = new RegExp('(.*) "(.*)" is (.*).');
-    const match = errorMessage.match(re);
-    if (match) {
-      const [, kind, name, tag] = match;
+    // parse the kind, name, and tag from the error message without using a regex pattern
+      const messageSplit = errorMessage.split(' is ');
+      const tag = messageSplit[1].replace('.', '');
+      const secondMessageSplit = messageSplit[0].split(' ');
+      const kind = secondMessageSplit[0];
+      const name = secondMessageSplit[1].replace(/"/g, '');
       const filePath = message.location?.file ?? message.filePath;
       const relativeFilePath = filePath.replace(cwdWithSeparator, '');
       const problemFileMapKey = `${relativeFilePath};;${tag}`;
@@ -37,7 +38,6 @@ module.exports = function(messages, ruleId) {
 
       const tagViolationCount = tagViolationsTracker.get(tag) ?? 0;
       tagViolationsTracker.set(tag, tagViolationCount + 1);
-    }
   });
 
     if (problemFiles.size === 0 || errorTracker.size === 0 || tagViolationsTracker.size === 0)
@@ -91,7 +91,7 @@ module.exports = function(messages, ruleId) {
     const tagViolationsTitle = `'${ruleId}' violations summary table by tags:`;
 
     // Combine problemFilesCSV and errorTrackerCSV
-    const combinedCSV = `${allTablesSummaryTitle}\n\n${errorTrackerTitle}\nKind and Name,Tag,# of Occurrences\n${errorTrackerCSV}\n\n${problemFilesTitle}\nFile,Locations,Tags\n${problemFilesCSV}\n\n${tagViolationsTitle}\nTag,# of Occurrences\n${tagViolationsCSV}\n`;
+    const combinedCSV = `${allTablesSummaryTitle}\n\n${errorTrackerTitle}\nKind and Name,Tag,# of Occurrences\n${errorTrackerCSV}\n\n${problemFilesTitle}\nFile,Locations,Tag,# of Occurrences\n${problemFilesCSV}\n\n${tagViolationsTitle}\nTag,# of Occurrences\n${tagViolationsCSV}\n`;
 
     // Save the CSV file in the current working directory
     fs.writeFileSync('no-internal-summary.csv', combinedCSV);
