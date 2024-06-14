@@ -46,9 +46,7 @@ module.exports = function(messages, ruleId) {
     const re = new RegExp('(.*) "(.*)" is (.*).');
     const match = errorMessage.match(re);
     if (match) {
-      const kind = match[1];
-      const name = match[2];
-      const tag = match[3];
+    const [, kind, name, tag] = match
       const filePath = message.location?.file ?? message.filePath;
       const relativeFilePath = filePath.replace(cwdWithSeparator, '');
       const problemFileMapKey = `${relativeFilePath};;${tag}`;
