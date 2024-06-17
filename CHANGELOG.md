@@ -1,8 +1,16 @@
 # Change Log - @itwin/eslint-plugin
 
-This log was last generated on Wed, 08 May 2024 15:56:58 GMT and should not be manually modified.
+This log was last generated on Mon, 17 Jun 2024 21:01:01 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 4.1.0
+
+Mon, 17 Jun 2024 21:01:01 GMT
+
+### Minor changes
+
+- Add new custom formatter for 'no-internal' rule violations that creates a summary table with report of all violations and writes the table to a csv file. (anmolshres98@users.noreply.github.com)
 
 ## 4.1.0
 

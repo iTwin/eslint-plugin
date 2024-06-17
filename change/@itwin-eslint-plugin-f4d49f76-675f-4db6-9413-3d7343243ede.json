@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "Add new custom formatter for 'no-internal' rule violations that creates a summary table with report of all violations and writes the table to a csv file.",
-  "packageName": "@itwin/eslint-plugin",
-  "email": "anmolshres98@users.noreply.github.com",
-  "dependentChangeType": "patch"
-}
