@@ -151,3 +151,13 @@ This command forwards all arguments to eslint, so it can be further customized a
   },
 
 ```
+In addition to this we also have a custom formatter that can be used to generate a summary table report of the no-internal violations in your codebase.
+
+It creates a easily readable summary table of all your violations. For example:
+![Summary Table](./images/no-internal-summary-table.png)
+
+In addition, this also creates a csv with the same table in the current working directory. You can call it like this:
+```sh
+eslint ./**/*.{ts,tsx} 1>&2 -f ./node_modules/@itwin/eslint-plugin/dist/formatters/no-internal-summary-with-table.js
+```
+If you want to import the table creator directly into your code and acquire the string before printing, you can do so by importing the function `noInternalSummaryTableCreator` from `@itwin/eslint-plugin` package, then pass in the [Message[]](https://github.com/evanw/esbuild/blob/fc37c2fa9de2ad77476a6d4a8f1516196b90187e/lib/shared/types.ts#L180) type objects or directly pass in the [LintResult[]](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/24f12f9d70f49911bae646eb8d864ea48b45fae1/types/eslint/index.d.ts#L1412) objects you get when calling [`eslint.lintFiles()`](https://eslint.org/docs/latest/integrate/nodejs-api#-eslintlintfilespatterns).
