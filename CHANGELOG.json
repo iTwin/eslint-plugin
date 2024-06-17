@@ -2,21 +2,6 @@
   "name": "@itwin/eslint-plugin",
   "entries": [
     {
-      "date": "Mon, 17 Jun 2024 20:27:49 GMT",
-      "version": "4.1.0",
-      "tag": "@itwin/eslint-plugin_v4.1.0",
-      "comments": {
-        "minor": [
-          {
-            "author": "anmolshres98@users.noreply.github.com",
-            "package": "@itwin/eslint-plugin",
-            "commit": "a5372db788c2ad940b3e3641666e869dffda2769",
-            "comment": "Add new custom formatter for 'no-internal' rule violations that creates a summary table with report of all violations and writes the table to a csv file."
-          }
-        ]
-      }
-    },
-    {
       "date": "Wed, 08 May 2024 15:56:58 GMT",
       "version": "4.0.2",
       "tag": "@itwin/eslint-plugin_v4.0.2",
