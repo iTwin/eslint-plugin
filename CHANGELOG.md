@@ -1,6 +1,6 @@
 # Change Log - @itwin/eslint-plugin
 
-This log was last generated on Mon, 17 Jun 2024 20:27:49 GMT and should not be manually modified.
+This log was last generated on Wed, 08 May 2024 15:56:58 GMT and should not be manually modified.
 
 <!-- Start content -->
 
