@@ -111,18 +111,29 @@ module.exports = {
     }
 
     /**
-     * Checks if the package that owns the specified file path matches a checked package pattern regex.s
+     * Checks if the package that owns the specified file path matches a checked package pattern regex.
      * @param {string} filePath
      */
     function owningPackageIsCheckedPackage(filePath) {
       const packageList = workspace.getWorkspaces(filePath);
       
-      // Look through all package infos to find the one containing our packagePath
+      // Look through all package infos to find the one containing our filePath
       let packageObj = packageList.find((pkg) => {
         const packageBaseDir = path.dirname(pkg.packageJson.packageJsonPath);
         return dirContainsPath(packageBaseDir, filePath);
       });
 
+      // We already know this filePath is in the same workspace as the package we are linting
+      // If both are in itwinjs-core repository, we can allow internal tags
+      if (
+        typeof packageObj?.packageJson.repository !== "string" &&
+        packageObj?.packageJson.repository?.url === "https://github.com/iTwin/itwinjs-core.git"
+      ) {
+        console.log("Package is in itwinjs-core, allowing internal tags");
+        return false;
+      }
+
+      // Otherwise, see if package name matches the checked package patterns
       return (packageObj !== undefined) && pathContainsCheckedPackage(packageObj.name);
     }
 
