@@ -7,7 +7,7 @@ const fs = require('fs');
 const process = require('process');
 const createAsciiTable = require('./create-ascii-table');
 
-module.exports = function(messages, ruleId) {
+module.exports = function(messages, ruleId, createCSV = true) {
   const problemFiles = new Map();
   const errorTracker = new Map();
   const tagViolationsTracker = new Map();
@@ -94,7 +94,8 @@ module.exports = function(messages, ruleId) {
     const combinedCSV = `${allTablesSummaryTitle}\n\n${errorTrackerTitle}\nKind and Name,Tag,# of Occurrences\n${errorTrackerCSV}\n\n${problemFilesTitle}\nFile,Locations,Tag,# of Occurrences\n${problemFilesCSV}\n\n${tagViolationsTitle}\nTag,# of Occurrences\n${tagViolationsCSV}\n`;
 
     // Save the CSV file in the current working directory
-    fs.writeFileSync('no-internal-summary.csv', combinedCSV);
+    if (createCSV)
+      fs.writeFileSync('no-internal-summary.csv', combinedCSV);
 
     return `${allTablesSummaryTitle}\n${errorTrackerTitle}\n${summaryTable}\n${problemFilesTitle}\n${filesSummaryTable}\n${tagViolationsTitle}\n${tagViolationsTable}\n`;
 };
