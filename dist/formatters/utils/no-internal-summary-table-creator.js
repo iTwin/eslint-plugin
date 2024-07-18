@@ -18,11 +18,11 @@ const createAsciiTable = require('./create-ascii-table');
  * 
  * @param {Object[]} messages - An array of linting message objects to be processed.
  * @param {string} ruleId - The ID of the linting rule to filter messages by.
- * @param {boolean} [createCSV=true] - A boolean flag indicating whether to create a CSV file (`true`) 
- *                                     or not. Defaults to `true`.
+ * @param {boolean} [createCSV=false] - A boolean flag indicating whether to create a CSV file (`true`) 
+ *                                     or not. Defaults to `false`.
  * @returns {string} The generated summary table as a string.
  */
-module.exports = function(messages, ruleId, createCSV = true) {
+module.exports = function(messages, ruleId, createCSV = false) {
   const problemFiles = new Map();
   const errorTracker = new Map();
   const tagViolationsTracker = new Map();
