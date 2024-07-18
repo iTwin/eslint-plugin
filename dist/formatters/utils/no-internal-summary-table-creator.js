@@ -7,6 +7,21 @@ const fs = require('fs');
 const process = require('process');
 const createAsciiTable = require('./create-ascii-table');
 
+/**
+ * Generates a summary table and optionally a CSV from linting messages for a specific rule.
+ * 
+ * This function processes an array of linting messages, filters them by a specified rule ID,
+ * and then generates a summary table and optionally a CSV file based on these messages. 
+ * 
+ * The summary table is always created and returned while the CSV file is created only if the 
+ * `createCSV` flag is set to `true`.
+ * 
+ * @param {Object[]} messages - An array of linting message objects to be processed.
+ * @param {string} ruleId - The ID of the linting rule to filter messages by.
+ * @param {boolean} [createCSV=true] - A boolean flag indicating whether to create a CSV file (`true`) 
+ *                                     or not. Defaults to `true`.
+ * @returns {string} The generated summary table as a string.
+ */
 module.exports = function(messages, ruleId, createCSV = true) {
   const problemFiles = new Map();
   const errorTracker = new Map();
@@ -41,7 +56,7 @@ module.exports = function(messages, ruleId, createCSV = true) {
   });
 
     if (problemFiles.size === 0 || errorTracker.size === 0 || tagViolationsTracker.size === 0)
-      return;
+      return '';
 
     // iterate over the problemFiles and for each value, remove the last comma from locations
     for (const [key, value] of problemFiles.entries()) {
