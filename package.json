@@ -21,6 +21,7 @@
     "build": "",
     "before-test": "node tests/fixtures/link.js",
     "test": "npm run before-test && mocha \"tests/*.js\"",
+    "test-no-int": "npm run before-test && mocha tests/no-internal.js",
     "cover": "npm -s test",
     "change": "beachball change",
     "check": "beachball check",
@@ -45,6 +46,7 @@
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "findup-sync": "^5.0.0",
     "workspace-tools": "^0.36.4"
   },
   "peerDependencies": {

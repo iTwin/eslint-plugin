@@ -13,6 +13,7 @@ const path = require("path");
 const workspace = require("workspace-tools");
 const util = require("util");
 const { readFileSync } = require("fs");
+const findup = require("findup-sync");
 
 const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.ClassDeclaration]: "class",
@@ -113,45 +114,44 @@ module.exports = {
     }
 
     /**
-     * Checks if both the files are in itwinjs-core repository
-     */
-    function isItwinJsCore(filePath1, filePath2) {
-
-    }
-
-    /**
-     * Checks if the package that owns the specified file path matches a checked package pattern regex.
+     * Returns true if the internal tag is a violation within the package that owns the specified file.
      * @param {string} filePath
      */
     function owningPackageIsCheckedPackage(filePath) {
-      const packageList = workspace.getWorkspaces(filePath);
+      let owningPackageJson;
+      let lintedPackageJson;
       
-      // Look through all package infos to find the one containing our filePath
-      let packageObj = packageList.find((pkg) => {
-        const packageBaseDir = path.dirname(pkg.packageJson.packageJsonPath);
-        return dirContainsPath(packageBaseDir, filePath);
-      });
+      // Find package.json of the file being linted
+      const lintedPackageJsonPath = findup("package.json", { cwd: context.filename });
+      if (lintedPackageJsonPath !== null) {
+        lintedPackageJson = JSON.parse(readFileSync(lintedPackageJsonPath, "utf8"));
+      } else {
+        console.log("Could not find package.json for file being linted");
+      }
 
-      // We already know this filePath is in the same workspace as the package we are linting
-      // If both are in itwinjs-core repository, we can allow internal tags
-      // if (
-      //   typeof packageObj?.packageJson.repository !== "string" &&
-      //   packageObj?.packageJson.repository?.url === "https://github.com/iTwin/itwinjs-core.git"
-      // ) {
-      //   console.log("Package is in itwinjs-core, allowing internal tags");
-      //   return false;
-      // }
+      // Find package.json of the owning package
+      const owningPackageJsonPath = findup("package.json", { cwd: filePath });
+      if (owningPackageJsonPath !== null) {
+        owningPackageJson = JSON.parse(readFileSync(owningPackageJsonPath, "utf8"));
+      } else {
+        console.log("Could not find package.json for file being linted");
+      }
 
-      // console.log(util.inspect(packageObj, { showHidden: false, depth: 3, colors: true }));
-      // console.log("Package name:", packageObj?.name);
-      // console.log();
+      // If both packages are in the itwinjs-core repository, allow internal tags
+      if (
+        typeof owningPackageJson?.repository !== "string" &&
+        owningPackageJson?.repository?.url === "https://github.com/iTwin/itwinjs-core.git" &&
+        owningPackageJson?.repository?.url === lintedPackageJson?.repository?.url
+      ) {
+        return false;
+      }
 
-      // Otherwise, see if package name matches the checked package patterns
-      return (packageObj !== undefined) && pathContainsCheckedPackage(packageObj.name);
+      // Finally, see if package name matches the checked package patterns
+      return (owningPackageJson !== undefined && owningPackageJson.name !== undefined && pathContainsCheckedPackage(owningPackageJson.name));
     }
 
     /**
-     * Returns true if a file is within a package for which the internal tag is a violation.
+     * Returns true if the internal tag is a violation within a file.
      * By default `@itwin` and `@bentley` packages are included, see the `checkedPackagePatterns` option.
      * @param declaration 
      */
@@ -160,13 +160,10 @@ module.exports = {
         return false;
       const fileName = getFileName(declaration.parent);
 
-      // If fileName === context.filename, this declaration is local so allowed, so return false
-      // fileName is in unix format and context.filename is in windows format
-
-      const isWorkspaceLinkedDependency = !dirContainsPath(parserServices.program.getCommonSourceDirectory(), fileName);
+      const isDependency = !dirContainsPath(parserServices.program.getCommonSourceDirectory(), fileName);
 
       // If allowWorkspaceInternal is true or fileName is a local file, internal tags are allowed
-      if (allowWorkspaceInternal || !isWorkspaceLinkedDependency) {
+      if (allowWorkspaceInternal || !isDependency) {
         // console.log("allowWorkspaceinternal:", allowWorkspaceInternal);
         // console.log("isWorkspaceLinkedDependency:", isWorkspaceLinkedDependency);
         // if (!isWorkspaceLinkedDependency) {
@@ -175,37 +172,9 @@ module.exports = {
         // console.log();
         return false;
       }
-
-      if (fileName.includes("node_modules")) {
-        // If in node_modules (installed dependency), check path
-        // console.log("is node_modules:", fileName);
-
-        // eslint fileName always uses unix path separators
-        const packageSegments = fileName.split("node_modules/");
-        // can be undefined
-        const packagePath = packageSegments[packageSegments.length - 1];
-
-        // This may be allowed if both files are owned by itwinjs-core
-        // Parse package.json (maybe not the best way to do this...) and look at repository url
-        const owningPackageDir = fileName.split("lib/")[0];
-        const owningPackageJson = JSON.parse(readFileSync(owningPackageDir + "package.json", "utf8"));
-
-        // TODO This incorrectly assumes linted file is in node_modules
-        const lintedFileDir = context.filename.split("lib\\")[0];
-        const lintedPackageJson = JSON.parse(readFileSync(lintedFileDir + "package.json", "utf8"));
-
-        if (
-          owningPackageJson.repository.url === "https://github.com/iTwin/itwinjs-core.git" &&
-          owningPackageJson.repository.url === lintedPackageJson.repository.url
-        ) {
-          console.log("Both packages in itwinjs-core");
-          return false;
-        }
-
-        return packagePath && pathContainsCheckedPackage(packagePath);
-      }
       
-      // Else allowWorkspaceInternal is false and file is a workspace dep, check package name in package.json
+      // Else allowWorkspaceInternal is false and file is a workspace dep or an installed dep in node_modules/
+      // So we check the package name in package.json
       return owningPackageIsCheckedPackage(fileName);
     }
 
@@ -215,19 +184,13 @@ module.exports = {
       return undefined;
     }
 
-    function checkJsDoc(declaration, node) {
-      // console.log(util.inspect(declaration, { showHidden: false, depth: 3, colors: true }));
-      // console.log();
-      
+    function checkJsDoc(declaration, node) {      
       if (!declaration || !declaration.jsDoc)
         return undefined;
 
       for (const jsDoc of declaration.jsDoc) {
         if (jsDoc.tags) {
           for (const tag of jsDoc.tags) {
-
-            // console.log("TAG:", tag.tagName.escapedText);
-
             if (!bannedTags.includes(tag.tagName.escapedText) || !isCheckedFile(declaration)) {
               continue;
             }
