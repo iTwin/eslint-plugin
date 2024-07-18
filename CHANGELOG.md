@@ -1,8 +1,17 @@
 # Change Log - @itwin/eslint-plugin
 
-This log was last generated on Mon, 17 Jun 2024 21:01:01 GMT and should not be manually modified.
+This log was last generated on Thu, 18 Jul 2024 20:42:48 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 4.1.1
+
+Thu, 18 Jul 2024 20:42:48 GMT
+
+### Patches
+
+- Add optional parameter for creating CSV in no-internal-summary-table-creator.js (anmolshres98@users.noreply.github.com)
+- Don't create csv report by default and add JSDoc for the summary table creator function (anmolshres98@users.noreply.github.com)
 
 ## 4.1.0
 

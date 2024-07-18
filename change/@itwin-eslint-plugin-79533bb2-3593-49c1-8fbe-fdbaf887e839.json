@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "Don't create csv report by default and add JSDoc for the summary table creator function",
-  "packageName": "@itwin/eslint-plugin",
-  "email": "anmolshres98@users.noreply.github.com",
-  "dependentChangeType": "patch"
-}
