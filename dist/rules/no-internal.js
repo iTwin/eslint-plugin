@@ -8,12 +8,10 @@
 "use strict";
 
 const { getParserServices } = require("./utils/parser");
-const ts = require("typescript");
-const path = require("path");
-const workspace = require("workspace-tools");
-const util = require("util");
-const { readFileSync } = require("fs");
 const findup = require("findup-sync");
+const { readFileSync } = require("fs");
+const path = require("path");
+const ts = require("typescript");
 
 const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.ClassDeclaration]: "class",
