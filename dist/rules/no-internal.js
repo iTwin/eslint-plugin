@@ -125,16 +125,12 @@ module.exports = {
       const lintedPackageJsonPath = findup("package.json", { cwd: context.filename });
       if (lintedPackageJsonPath !== null) {
         lintedPackageJson = JSON.parse(readFileSync(lintedPackageJsonPath, "utf8"));
-      } else {
-        console.log("Could not find package.json for file being linted");
       }
 
       // Find package.json of the owning package
       const owningPackageJsonPath = findup("package.json", { cwd: filePath });
       if (owningPackageJsonPath !== null) {
         owningPackageJson = JSON.parse(readFileSync(owningPackageJsonPath, "utf8"));
-      } else {
-        console.log("Could not find package.json for file being linted");
       }
 
       // If both packages are in the itwinjs-core repository, allow internal tags
@@ -159,23 +155,19 @@ module.exports = {
       if (!declaration)
         return false;
       const fileName = getFileName(declaration.parent);
+      const isWorkspaceLinkedDependency = !dirContainsPath(parserServices.program.getCommonSourceDirectory(), fileName);
 
-      const isDependency = !dirContainsPath(parserServices.program.getCommonSourceDirectory(), fileName);
-
-      // If allowWorkspaceInternal is true or fileName is a local file, internal tags are allowed
-      if (allowWorkspaceInternal || !isDependency) {
-        // console.log("allowWorkspaceinternal:", allowWorkspaceInternal);
-        // console.log("isWorkspaceLinkedDependency:", isWorkspaceLinkedDependency);
-        // if (!isWorkspaceLinkedDependency) {
-        //   console.log("is a local file")
-        // }
-        // console.log();
-        return false;
+      if (fileName.includes("node_modules")) {
+        return owningPackageIsCheckedPackage(fileName);
       }
-      
-      // Else allowWorkspaceInternal is false and file is a workspace dep or an installed dep in node_modules/
-      // So we check the package name in package.json
-      return owningPackageIsCheckedPackage(fileName);
+
+      if (allowWorkspaceInternal) {
+        // If allowWorkspaceInternal, internal tags are allowed in workspace dependencies
+        // so no need to check if fileName is local file or workspace dep
+        return false;
+      } else {
+        return isWorkspaceLinkedDependency && owningPackageIsCheckedPackage(fileName);
+      }
     }
 
     function getParentSymbolName(declaration) {
@@ -194,7 +186,7 @@ module.exports = {
             if (!bannedTags.includes(tag.tagName.escapedText) || !isCheckedFile(declaration)) {
               continue;
             }
-            //Violation key to track and report violations on a per-usage basis
+            // Violation key to track and report violations on a per-usage basis
             const violationKey = `${declaration.kind}_${declaration.symbol.escapedName}_${tag}_${node.range[0]}`;
             if (reportedViolationsSet.has(violationKey)) {
               continue;

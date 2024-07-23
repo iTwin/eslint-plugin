@@ -5,19 +5,19 @@
 function getParserServices(context) {
   const errorMessage = "Could not find type information";
   if (
-    !context.parserServices ||
-    !context.parserServices.program ||
-    !context.parserServices.esTreeNodeToTSNodeMap ||
-    !context.parserServices.tsNodeToESTreeNodeMap
+    !context.sourceCode.parserServices ||
+    !context.sourceCode.parserServices.program ||
+    !context.sourceCode.parserServices.esTreeNodeToTSNodeMap ||
+    !context.sourceCode.parserServices.tsNodeToESTreeNodeMap
   ) {
     throw new Error(errorMessage);
   }
-  const hasFullTypeInformation = context.parserServices.hasFullTypeInformation;
+  const hasFullTypeInformation = context.sourceCode.parserServices.hasFullTypeInformation;
   if (hasFullTypeInformation === false) { // consider undefined == true for backwards compatibility
     throw new Error(errorMessage);
   }
 
-  return context.parserServices;
+  return context.sourceCode.parserServices;
 }
 
 module.exports = { getParserServices };
