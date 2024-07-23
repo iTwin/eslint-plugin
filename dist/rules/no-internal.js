@@ -174,7 +174,7 @@ module.exports = {
       return undefined;
     }
 
-    function checkJsDoc(declaration, node) {      
+    function checkJsDoc(declaration, node) {
       if (!declaration || !declaration.jsDoc)
         return undefined;
 

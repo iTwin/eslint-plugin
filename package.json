@@ -21,7 +21,6 @@
     "build": "",
     "before-test": "node tests/fixtures/link.js",
     "test": "npm run before-test && mocha \"tests/*.js\"",
-    "test-no-int": "npm run before-test && mocha tests/no-internal.js",
     "cover": "npm -s test",
     "change": "beachball change",
     "check": "beachball check",
