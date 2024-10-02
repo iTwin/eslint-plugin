@@ -10,9 +10,8 @@ module.exports =
   languageOptions: require("./utils/language-options"),
   plugins: {
     "@typescript-eslint": typescriptEslintPlugin,
-    "import": require("eslint-plugin-import"),
+    // "import": require("eslint-plugin-import"),  // FIXME: Update coming this week
     "prefer-arrow": require("eslint-plugin-prefer-arrow"),
-    "deprecation": require("eslint-plugin-deprecation"),
     "@itwin": require("../plugin")
   },
   rules: {
@@ -43,24 +42,7 @@ module.exports =
       }
     ],
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "@typescript-eslint/indent": [
-      "error",
-      2
-    ],
     "@typescript-eslint/interface-name-prefix": "off",
-    "@typescript-eslint/member-delimiter-style": [
-      "error",
-      {
-        "multiline": {
-          "delimiter": "semi",
-          "requireLast": true
-        },
-        "singleline": {
-          "delimiter": "comma",
-          "requireLast": false
-        }
-      }
-    ],
     "@typescript-eslint/member-ordering": "off",
     "@typescript-eslint/naming-convention": [
       "error",
@@ -170,6 +152,7 @@ module.exports =
       }
     ],
     "@typescript-eslint/return-await": "error",
+    "@typescript-eslint/no-deprecated": "error",
     "@typescript-eslint/no-duplicate-type-constituents": "off",
     "@typescript-eslint/no-this-alias": "error",
     "@typescript-eslint/no-use-before-define": "off",
@@ -188,6 +171,7 @@ module.exports =
         "varsIgnorePattern": "^_",
       }
     ],
+    '@typescript-eslint/no-unused-expressions': 'off',
     "@typescript-eslint/no-var-requires": "error",
     "@typescript-eslint/prefer-for-of": "error",
     "@typescript-eslint/prefer-function-type": "error",
@@ -196,34 +180,52 @@ module.exports =
     "@typescript-eslint/prefer-regexp-exec": "off",
     "@typescript-eslint/prefer-string-starts-ends-with": "off",
     "@typescript-eslint/promise-function-async": "error",
-    "@typescript-eslint/quotes": [
-      "error",
-      "double",
-      {
-        "avoidEscape": true,
-        "allowTemplateLiterals": true
-      }
-    ],
     "@typescript-eslint/require-await": "off",
     "@typescript-eslint/restrict-plus-operands": "off",
     "@typescript-eslint/restrict-template-expressions": "off",
-    "@typescript-eslint/semi": [
-      "error",
-      "always"
-    ],
-    "@typescript-eslint/space-before-function-paren": [
-      "error",
-      {
-        "anonymous": "always",
-        "named": "never",
-        "asyncArrow": "always"
-      }
-    ],
     "@typescript-eslint/triple-slash-reference": "error",
-    "@typescript-eslint/type-annotation-spacing": "error",
     "@typescript-eslint/typedef": "off",
     "@typescript-eslint/unbound-method": "error",
     "@typescript-eslint/unified-signatures": "error",
+    // FIXME: Do we want to migrate to @stylistic/eslint-plugin-ts?
+    // "@typescript-eslint/indent": [
+    //   "error",
+    //   2
+    // ],
+    // "@typescript-eslint/member-delimiter-style": [
+    //   "error",
+    //   {
+    //     "multiline": {
+    //       "delimiter": "semi",
+    //       "requireLast": true
+    //     },
+    //     "singleline": {
+    //       "delimiter": "comma",
+    //       "requireLast": false
+    //     }
+    //   }
+    // ],
+    // "@typescript-eslint/quotes": [
+    //   "error",
+    //   "double",
+    //   {
+    //     "avoidEscape": true,
+    //     "allowTemplateLiterals": true
+    //   }
+    // ],
+    // "@typescript-eslint/semi": [
+    //   "error",
+    //   "always"
+    // ],
+    // "@typescript-eslint/space-before-function-paren": [
+    //   "error",
+    //   {
+    //     "anonymous": "always",
+    //     "named": "never",
+    //     "asyncArrow": "always"
+    //   }
+    // ],
+    // "@typescript-eslint/type-annotation-spacing": "error",
     "arrow-body-style": "off",
     "arrow-parens": "error",
     "brace-style": [
@@ -244,7 +246,7 @@ module.exports =
       "off",
       "multi-line"
     ],
-    "deprecation/deprecation": "error",
+    // "@typescript-eslint/no-deprecated": "error",
     "dot-notation": "off",
     "@typescript-eslint/dot-notation": "error",
     "eol-last": "error",
@@ -262,9 +264,9 @@ module.exports =
       "Undefined"
     ],
     "id-match": "error",
-    "import/no-deprecated": "off", // using deprecation/deprecation instead
-    "import/no-duplicates": "off", // using no-duplicate-imports instead
-    "import/order": "off",
+    // FIXME "import/no-deprecated": "off", // using @typescript-eslint/no-deprecated instead
+    // FIXME "import/no-duplicates": "off", // using no-duplicate-imports instead
+    // FIXME "import/order": "off",
     "indent": "off",  // note you must disable the base rule as it can report incorrect errors
     "max-classes-per-file": "off",
     "max-len": "off",

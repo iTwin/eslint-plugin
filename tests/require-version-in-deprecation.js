@@ -13,9 +13,11 @@ const RequireVersionInDeprecationESLintRule =
 const { supportSkippedAndOnlyInTests } = require("./test-utils");
 
 const ruleTester = new ESLintTester({
-  parser: require.resolve("@typescript-eslint/parser"),
-  parserOptions: {
-    ecmaVersion: 6,
+  languageOptions: {
+    parser: require("@typescript-eslint/parser"),
+    parserOptions: {
+      ecmaVersion: 6,
+    },
   },
 });
 

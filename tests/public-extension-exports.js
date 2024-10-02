@@ -11,13 +11,15 @@ const fixtureDir = path.join(
   "workspace-pkg-1"
 );
 const tester = new RuleTester({
-  parser: require.resolve("@typescript-eslint/parser"),
-  parserOptions: {
-    ecmaVersion: 6,
-    sourceType: "module",
-    tsconfigRootDir: fixtureDir,
-    shouldCreateDefaultProgram: true,
-    project: path.join(fixtureDir, "tsconfig.test.json"),
+  languageOptions: {
+    parser: require("@typescript-eslint/parser"),
+    parserOptions: {
+      ecmaVersion: 6,
+      sourceType: "module",
+      tsconfigRootDir: fixtureDir,
+      shouldCreateDefaultProgram: true,
+      project: path.join(fixtureDir, "tsconfig.test.json"),
+    },
   },
 });
 

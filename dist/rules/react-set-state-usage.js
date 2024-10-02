@@ -19,26 +19,26 @@ module.exports = {
     docs: {
       description: "Require the setState function to be called with function as the first argument and without 'this.props' nor 'this.state' access within the function.",
       category: "TypeScript",
-      schema: [
-        {
-          type: "object",
-          additionalProperties: false,
-          properties: {
-            [OPTION_UPDATER_ONLY]: {
-              type: "boolean"
-            },
-            [OPTION_ALLOW_OBJECT]: {
-              type: "boolean"
-            }
+    },
+    schema: [
+      {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          [OPTION_UPDATER_ONLY]: {
+            type: "boolean"
+          },
+          [OPTION_ALLOW_OBJECT]: {
+            type: "boolean"
           }
         }
-      ]
-    },
+      }
+    ],
     messages: {
       failure: "Do not pass an object into setState. Use functional setState updater instead.",
       failureUpdaterOnly: "Do not use callback parameter in setState. Use componentDidUpdate method instead (\"updater-only\" switch).",
       failureAccessedMember: "Do not access 'this.{{accessedMember}}' in setState. Use arguments from callback function instead.",
-    }
+    },
   },
 
   create(context) {

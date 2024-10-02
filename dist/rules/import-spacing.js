@@ -35,20 +35,6 @@ module.exports = {
     docs: {
       description: "Ensures proper spacing between import statement keywords.",
       category: "TypeScript",
-      schema: [
-        {
-          type: "object",
-          additionalProperties: false,
-          properties: {
-            [OPTION_ALLOW_LINE_BREAKS_INSIDE_BRACKETS]: {
-              type: "boolean"
-            },
-            [OPTION_ALLOW_LINE_BREAKS]: {
-              type: "boolean"
-            },
-          }
-        }
-      ]
     },
     messages: {
       [Rules.ADD_SPACE_AFTER_IMPORT]: "Add space after 'import'",
@@ -60,7 +46,21 @@ module.exports = {
       [Rules.ADD_SPACE_BEFORE_FROM]: "Add space before 'from'",
       [Rules.TOO_MANY_SPACES_BEFORE_FROM]: "Too many spaces before 'from'",
       [Rules.NO_LINE_BREAKS]: "Line breaks are not allowed in import declaration",
-    }
+    },
+    schema: [
+      {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          [OPTION_ALLOW_LINE_BREAKS_INSIDE_BRACKETS]: {
+            type: "boolean"
+          },
+          [OPTION_ALLOW_LINE_BREAKS]: {
+            type: "boolean"
+          },
+        }
+      }
+    ],
   },
 
 
