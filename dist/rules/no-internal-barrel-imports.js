@@ -131,10 +131,8 @@ const rule = {
         }
         : {};
 
-    console.log("CREATED");
     return {
       ImportDeclaration(node) {
-        console.log("IMPORT DECLARATION");
         /** @param {ts.Symbol | undefined} symbol */
         function getRelativeImportPathForExportedSymbol(symbol) {
           if (symbol === undefined) return "";
@@ -169,18 +167,15 @@ const rule = {
         if (!importNodeTs)
           throw Error("equivalent typescript node could not be found");
 
-        console.log(`${importNodeTs.importClause} && ${importNodeTs.importClause?.isTypeOnly}`);
         if (importNodeTs.importClause && importNodeTs.importClause.isTypeOnly)
           return;
 
         const thisModule = importNodeTs.getSourceFile();
-        console.log(thisModule.fileName);
 
         const importInfo = getImportInfo(thisModule, importNodeTs.moduleSpecifier.text);
 
         const importIsPackage =
           importInfo === undefined || importInfo.isExternalLibraryImport;
-        console.log(importIsPackage);
         if (importIsPackage) return;
 
         // path case can be different between the cased import specifier, and the resolved system path
@@ -190,7 +185,6 @@ const rule = {
             ? importInfo.resolvedFileName.toLowerCase()
             : importInfo.resolvedFileName;
 
-        console.log(targetFilePathOfThisImportStmt);
         const importedModule = program.getSourceFileByPath(
           targetFilePathOfThisImportStmt
         );

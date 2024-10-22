@@ -17,7 +17,6 @@ const fixtureDir = path.join(
   "fixtures",
   "no-internal-barrel-imports"
 );
-console.log(`fixtureDir: ${fixtureDir}`);
 
 const ruleTester = new ESLintTester({
   languageOptions: {
@@ -34,7 +33,6 @@ const ruleTester = new ESLintTester({
   },
 });
 
-console.log("Running tests for no-internal-barrel-imports");
 ruleTester.run(
   "no-internal-barrel-imports",
   NoInternalBarrelImportsESLintRule,
