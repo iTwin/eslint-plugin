@@ -134,6 +134,7 @@ const rule = {
     console.log("CREATED");
     return {
       ImportDeclaration(node) {
+        console.log("IMPORT DECLARATION");
         /** @param {ts.Symbol | undefined} symbol */
         function getRelativeImportPathForExportedSymbol(symbol) {
           if (symbol === undefined) return "";
