@@ -171,11 +171,13 @@ const rule = {
           return;
 
         const thisModule = importNodeTs.getSourceFile();
+        console.log(thisModule.fileName);
 
         const importInfo = getImportInfo(thisModule, importNodeTs.moduleSpecifier.text);
 
         const importIsPackage =
           importInfo === undefined || importInfo.isExternalLibraryImport;
+        console.log(importIsPackage);
         if (importIsPackage) return;
 
         // path case can be different between the cased import specifier, and the resolved system path
