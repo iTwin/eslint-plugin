@@ -123,7 +123,6 @@ module.exports =
       }
     ],
     "@typescript-eslint/no-empty-function": "off",
-    "@typescript-eslint/no-empty-interface": "error",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-floating-promises": "error",
     "@typescript-eslint/no-implied-eval": "off",
@@ -172,7 +171,6 @@ module.exports =
       }
     ],
     '@typescript-eslint/no-unused-expressions': 'off',
-    "@typescript-eslint/no-var-requires": "error",
     "@typescript-eslint/prefer-for-of": "error",
     "@typescript-eslint/prefer-function-type": "error",
     "@typescript-eslint/prefer-includes": "off",
@@ -187,59 +185,8 @@ module.exports =
     "@typescript-eslint/typedef": "off",
     "@typescript-eslint/unbound-method": "error",
     "@typescript-eslint/unified-signatures": "error",
-    // FIXME: Do we want to migrate to @stylistic/eslint-plugin-ts?
-    // "@typescript-eslint/indent": [
-    //   "error",
-    //   2
-    // ],
-    // "@typescript-eslint/member-delimiter-style": [
-    //   "error",
-    //   {
-    //     "multiline": {
-    //       "delimiter": "semi",
-    //       "requireLast": true
-    //     },
-    //     "singleline": {
-    //       "delimiter": "comma",
-    //       "requireLast": false
-    //     }
-    //   }
-    // ],
-    // "@typescript-eslint/quotes": [
-    //   "error",
-    //   "double",
-    //   {
-    //     "avoidEscape": true,
-    //     "allowTemplateLiterals": true
-    //   }
-    // ],
-    // "@typescript-eslint/semi": [
-    //   "error",
-    //   "always"
-    // ],
-    // "@typescript-eslint/space-before-function-paren": [
-    //   "error",
-    //   {
-    //     "anonymous": "always",
-    //     "named": "never",
-    //     "asyncArrow": "always"
-    //   }
-    // ],
-    // "@typescript-eslint/type-annotation-spacing": "error",
     "arrow-body-style": "off",
-    "arrow-parens": "error",
-    "brace-style": [
-      "error",
-      "1tbs",
-      {
-        "allowSingleLine": true
-      }
-    ],
     "camelcase": "off", // Using @typescript-eslint/naming-convention instead
-    "comma-dangle": [
-      "error",
-      "always-multiline"
-    ],
     "complexity": "off",
     "constructor-super": "error",
     "curly": [
@@ -249,13 +196,12 @@ module.exports =
     // "@typescript-eslint/no-deprecated": "error",
     "dot-notation": "off",
     "@typescript-eslint/dot-notation": "error",
-    "eol-last": "error",
     "eqeqeq": [
       "error",
       "smart"
     ],
     "guard-for-in": "error",
-    "id-blacklist": [
+    "id-denylist": [
       "error",
       "any",
       "number",
@@ -267,14 +213,7 @@ module.exports =
     "import/no-deprecated": "off", // using @typescript-eslint/no-deprecated instead
     "import/no-duplicates": "off", // using no-duplicate-imports instead
     "import/order": "off",
-    "indent": "off",  // note you must disable the base rule as it can report incorrect errors
     "max-classes-per-file": "off",
-    "max-len": "off",
-    "max-statements-per-line": [
-      "error",
-      { "max": 1 },
-    ],
-    "new-parens": "error",
     "no-bitwise": "off",
     "no-caller": "error",
     "no-cond-assign": "off",
@@ -285,7 +224,6 @@ module.exports =
     "no-eval": "error",
     "no-fallthrough": "error",
     "no-invalid-this": "off",
-    "no-multiple-empty-lines": ["error", { max: 1 }],
     "no-new-wrappers": "error",
     "no-redeclare": "off", // using @typescript-eslint/no-redeclare instead
     "no-restricted-properties": [
@@ -296,12 +234,10 @@ module.exports =
       }
     ],
     "no-restricted-syntax": ["error", { selector: "TSEnumDeclaration[const=true]", message: "const enums are not allowed" }],
-    "no-return-await": "off", // using @typescript-eslint/return-await instead
     "no-shadow": "off", // using @typescript-eslint/no-shadow instead
     "no-sparse-arrays": "error",
     "no-template-curly-in-string": "error",
     "no-throw-literal": "error",
-    "no-trailing-spaces": "error",
     "no-undef-init": "error",
     // TODO: The current implementation does not support the configurations we want to allow.  Need to have it extended...
     "no-underscore-dangle": [
@@ -313,14 +249,8 @@ module.exports =
       }
     ],
     "no-unsafe-finally": "error",
-    "no-unused-expressions": "off",
     "no-unused-labels": "error",
-    "no-unused-vars": "off", // Using @typescript-eslint/no-unused-vars instead
     "no-var": "error",
-    "nonblock-statement-body-position": [
-      "error",
-      "below", // readability aside, you can't set breakpoint in debugger unless statement is on separate line.
-    ],
     "object-shorthand": "error",
     "one-var": [
       "off",
@@ -339,31 +269,12 @@ module.exports =
     "prefer-rest-params": "off",
     "prefer-spread": "off",
     "prefer-template": "error",
-    "quote-props": [
-      "error",
-      "consistent-as-needed"
-    ],
-    "quotes": "off", // Using @typescript-eslint/quotes instead
     "radix": "error",
     "sort-imports": [
       "error",
       {
         "ignoreDeclarationSort": true,
         "ignoreCase": true,
-      }
-    ],
-    "spaced-comment": [
-      "error",
-      "always",
-      {
-        "exceptions": [
-          "-", // Ignore a '-' immediately after '/*' to allow our copyright header standard
-          "=",
-          "*",
-        ],
-        "markers": [
-          "/",
-        ]
       }
     ],
     "use-isnan": "error",
