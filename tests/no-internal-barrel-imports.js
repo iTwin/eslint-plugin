@@ -38,6 +38,7 @@ ruleTester.run(
   NoInternalBarrelImportsESLintRule,
   supportSkippedAndOnlyInTests({
     valid: [
+      { code: `import * as FOO from "./a";` },
       { code: `import * as A from "./a";` },
       { code: `import {b} from "./b";` },
       { code: `import DefaultB from "./b";` },
