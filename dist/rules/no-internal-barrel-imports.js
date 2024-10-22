@@ -131,6 +131,7 @@ const rule = {
         }
         : {};
 
+    console.log("CREATED");
     return {
       ImportDeclaration(node) {
         /** @param {ts.Symbol | undefined} symbol */
@@ -167,6 +168,7 @@ const rule = {
         if (!importNodeTs)
           throw Error("equivalent typescript node could not be found");
 
+        console.log(`${importNodeTs.importClause} && ${importNodeTs.importClause?.isTypeOnly}`);
         if (importNodeTs.importClause && importNodeTs.importClause.isTypeOnly)
           return;
 
