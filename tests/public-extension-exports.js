@@ -14,11 +14,13 @@ const tester = new RuleTester({
   languageOptions: {
     parser: require("@typescript-eslint/parser"),
     parserOptions: {
+      projectService: {
+        allowDefaultProject: ['*.ts*'],
+        defaultProject: path.join(fixtureDir, "tsconfig.test.json"),
+      },
       ecmaVersion: 6,
       sourceType: "module",
       tsconfigRootDir: fixtureDir,
-      shouldCreateDefaultProgram: true,
-      project: path.join(fixtureDir, "tsconfig.test.json"),
     },
   },
 });
