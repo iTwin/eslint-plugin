@@ -1,5 +1,4 @@
 module.exports = {
-  "import-spacing": require("./import-spacing"),
   "import-within-package": require("./import-within-package"),
   "no-internal-barrel-imports": require("./no-internal-barrel-imports"),
   "no-internal": require("./no-internal"),

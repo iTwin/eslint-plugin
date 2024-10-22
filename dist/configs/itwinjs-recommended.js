@@ -279,19 +279,6 @@ module.exports =
     ],
     "use-isnan": "error",
     "valid-typeof": "off",
-    "@itwin/import-spacing": ["error", {
-      "allow-line-breaks": false, // line breaks not allowed
-      "allow-line-breaks-inside-brackets": true, // except inside brackets
-      // valid example: import {
-      //   classA, classB,
-      //   classC
-      // } from "module";
-      //
-      // invalid example: import
-      // { classA, classB }
-      // from
-      // "module";
-    }],
     "@itwin/import-within-package": "error",
     "@itwin/prefer-get": "error",
     "@itwin/require-basic-rpc-values": "off",
