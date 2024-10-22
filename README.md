@@ -16,7 +16,7 @@ npm i @itwin/eslint-plugin --save-dev
 In order for VSCode to use the config file as it is set up, add the following setting to the the VSCode settings (in `.vscode/settings.json`):
 
 ```json
-"eslint.experimental.useFlatConfig": true,
+"eslint.useFlatConfig": true,
 ```
 
 ## Usage
