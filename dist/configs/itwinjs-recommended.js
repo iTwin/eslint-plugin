@@ -10,7 +10,7 @@ module.exports =
   languageOptions: require("./utils/language-options"),
   plugins: {
     "@typescript-eslint": typescriptEslintPlugin,
-    // "import": require("eslint-plugin-import"),  // FIXME: Update coming this week
+    "import": require("eslint-plugin-import"),
     "prefer-arrow": require("eslint-plugin-prefer-arrow"),
     "@itwin": require("../plugin")
   },
@@ -264,9 +264,9 @@ module.exports =
       "Undefined"
     ],
     "id-match": "error",
-    // FIXME "import/no-deprecated": "off", // using @typescript-eslint/no-deprecated instead
-    // FIXME "import/no-duplicates": "off", // using no-duplicate-imports instead
-    // FIXME "import/order": "off",
+    "import/no-deprecated": "off", // using @typescript-eslint/no-deprecated instead
+    "import/no-duplicates": "off", // using no-duplicate-imports instead
+    "import/order": "off",
     "indent": "off",  // note you must disable the base rule as it can report incorrect errors
     "max-classes-per-file": "off",
     "max-len": "off",
