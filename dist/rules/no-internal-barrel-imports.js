@@ -185,6 +185,7 @@ const rule = {
             ? importInfo.resolvedFileName.toLowerCase()
             : importInfo.resolvedFileName;
 
+        console.log(targetFilePathOfThisImportStmt);
         const importedModule = program.getSourceFileByPath(
           targetFilePathOfThisImportStmt
         );
