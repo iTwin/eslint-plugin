@@ -193,7 +193,6 @@ module.exports =
       "off",
       "multi-line"
     ],
-    // "@typescript-eslint/no-deprecated": "error",
     "dot-notation": "off",
     "@typescript-eslint/dot-notation": "error",
     "eqeqeq": [
