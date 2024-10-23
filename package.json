@@ -1,6 +1,6 @@
 {
   "name": "@itwin/eslint-plugin",
-  "version": "4.1.1",
+  "version": "5.0.0-dev.0",
   "description": "ESLint plugin with default configuration and custom rules for iTwin.js projects",
   "license": "MIT",
   "keywords": [
@@ -35,30 +35,30 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "~7.0.1",
-    "@typescript-eslint/parser": "~7.0.1",
-    "eslint-plugin-deprecation": "^2.0.0",
-    "eslint-plugin-import": "^2.29.1",
+    "@typescript-eslint/eslint-plugin": "~8.11.0",
+    "@typescript-eslint/parser": "~8.11.0",
+    "eslint-formatter-visualstudio": "^8.40.0",
+    "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jam3": "^0.2.3",
-    "eslint-plugin-jsdoc": "^48.0.6",
-    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-jsdoc": "^50.3.1",
+    "eslint-plugin-jsx-a11y": "^6.10.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
-    "eslint-plugin-react": "^7.33.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react": "^7.37.1",
+    "eslint-plugin-react-hooks": "^5.0.0",
     "workspace-tools": "^0.36.4"
   },
   "peerDependencies": {
-    "eslint": "^8.56.0",
+    "eslint": "^9.11.1",
     "typescript": "^3.7.0 || ^4.0.0 || ^5.0.0"
   },
   "devDependencies": {
-    "@types/eslint": "~8.56.2",
+    "@types/eslint": "~9.6.1",
     "@types/node": "20.11.16",
     "beachball": "^2.39.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.13.0",
     "husky": "^9.0.11",
     "mocha": "^10.3.0",
-    "typescript": "~5.3.3"
+    "typescript": "~5.6.2"
   },
   "engines": {
     "node": "^18.18.0 || >=20.0.0"

@@ -19,13 +19,17 @@ const fixtureDir = path.join(
 );
 
 const ruleTester = new ESLintTester({
-  parser: require.resolve("@typescript-eslint/parser"),
-  parserOptions: {
-    ecmaVersion: 6,
-    sourceType: "module",
-    tsconfigRootDir: fixtureDir,
-    shouldCreateDefaultProgram: true,
-    project: path.join(fixtureDir, "tsconfig.test.json"),
+  languageOptions: {
+    parser: require("@typescript-eslint/parser"),
+    parserOptions: {
+      projectService: {
+        allowDefaultProject: ['*.ts*'],
+        defaultProject: path.join(fixtureDir, "tsconfig.test.json"),
+      },
+      ecmaVersion: 6,
+      sourceType: "module",
+      tsconfigRootDir: fixtureDir,
+    },
   },
 });
 
@@ -34,6 +38,7 @@ ruleTester.run(
   NoInternalBarrelImportsESLintRule,
   supportSkippedAndOnlyInTests({
     valid: [
+      { code: `import * as FOO from "./a";` },
       { code: `import * as A from "./a";` },
       { code: `import {b} from "./b";` },
       { code: `import DefaultB from "./b";` },
