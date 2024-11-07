@@ -127,6 +127,8 @@ The rule has some options:
   - Default: `internal`, `alpha`
 - `checkedPackagePatterns` - List of regex patterns where the rule will only be enforced for APIs that are from a package whose name matches a pattern in the list.
   - Default: `^@itwin/`, `^@bentley/`
+- `excludeCallersFromPackagePatterns` - List of package patterns to exclude from the rule. If the caller is in a package that matches any of these patterns, the rule will not be enforced..
+  - Default: `Empty`.
 - `dontAllowWorkspaceInternal` - Flag that if set to `true`, the rule will be enforced on usages of APIs from packages that are part of the same workspace/monorepo. If set to `false`, usages of APIs from workspace dependencies will not report an error.
   - Default: `false`
 

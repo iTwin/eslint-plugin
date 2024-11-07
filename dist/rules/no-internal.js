@@ -64,7 +64,15 @@ module.exports = {
           },
           dontAllowWorkspaceInternal: {
             type: "boolean",
-          }
+          },
+          excludeOriginPackagePatterns: {
+            type: "array",
+            uniqueItems: true,
+            items: {
+              type: "string",
+            },
+            description: "List of package patterns to exclude from the rule. If the caller is in a package that matches any of these patterns, the rule will not be enforced."
+          },
         }
       }
     ]
@@ -73,7 +81,9 @@ module.exports = {
   create(context) {
     const bannedTags = (context.options.length > 0 && context.options[0].tag) || ["alpha", "internal"];
     const checkedPackagePatterns = (context.options.length > 0 && context.options[0].checkedPackagePatterns) || ["^@itwin/", "^@bentley/"];
+    const excludeOriginPackagePatterns = (context.options.length > 0 && context.options[0].excludeOriginPackagePatterns) || [];
     const checkedPackageRegexes = checkedPackagePatterns.map((p) => new RegExp(p));
+    const excludedPakageRegexes = excludeOriginPackagePatterns.map((p) => new RegExp(p));
     const allowWorkspaceInternal = !(context.options.length > 0 && context.options[0].dontAllowWorkspaceInternal) || false;
     const parserServices = getParserServices(context);
     const typeChecker = parserServices.program.getTypeChecker();
@@ -109,7 +119,13 @@ module.exports = {
     function pathContainsCheckedPackage(packagePath) {
       return checkedPackageRegexes.some((r) => r.test(packagePath));
     }
-
+    /**
+     * Checks if the path to a package matches a excluded package pattern regex.
+     * @param {string} packagePath
+     */
+    function pathContainsExcludedPackage(packagePath) {
+      return excludedPakageRegexes.some((r) => r.test(packagePath));
+    }
     /**
      * Checks if the package that owns the specified file path matches a checked package pattern regex.s
      * @param {string} filePath
@@ -154,7 +170,26 @@ module.exports = {
       // Else !allowWorkspaceInternal or is a local file, check package name in package.json
       return owningPackageIsCheckedPackage(fileName);
     }
+    /**
+     * Returns true if a file is within a package for which the internal tag is a violation.
+     * Primary purpose of this option is to exclude calls originating from within @iTwin 
+     * and @Bentley packages to internal APIs from being flagged as violations.
+     * By default no packages are included, see the `excludeCallersWithpackagePatterns` option.
+     * @param violationCallerFileName 
+     */
+    function isViolationOccuringInExcludedPackage(violationCallerFileName) {
+      // We are only considering packages in node_modules
+      if (violationCallerFileName.includes('node_modules')) {
+        // If in node_modules (installed dependency), check path
 
+        // eslint fileName always uses unix path separators
+        const packageSegments = violationCallerFileName.split("node_modules/");
+        // can be undefined
+        const packagePath = packageSegments[packageSegments.length - 1];
+        return packagePath && pathContainsExcludedPackage(packagePath);
+      }
+      return false;
+    }
     function getParentSymbolName(declaration) {
       if (declaration.parent && declaration.parent.symbol && !declaration.parent.symbol.escapedName.startsWith('"'))
         return declaration.parent.symbol.escapedName;
@@ -164,6 +199,9 @@ module.exports = {
     function checkJsDoc(declaration, node) {
       if (!declaration || !declaration.jsDoc)
         return undefined;
+      // Get file name for which this check is being performed (which is potentially violating the rule)
+      // Let's ensure that the file name is always in unix format to keep checks ahead consistent
+      const sourceOfOccurance = context.getFilename().replace(/\\/g, '/');
 
       for (const jsDoc of declaration.jsDoc) {
         if (jsDoc.tags) {
@@ -171,8 +209,13 @@ module.exports = {
             if (!bannedTags.includes(tag.tagName.escapedText) || !isCheckedFile(declaration)) {
               continue;
             }
+
+            // Exclude violations where call originated in a package that matches the excludeCallersWithpackagePatterns
+            if (isViolationOccuringInExcludedPackage(sourceOfOccurance)) {
+              continue;
+            }
             //Violation key to track and report violations on a per-usage basis
-            const violationKey = `${declaration.kind}_${declaration.symbol.escapedName}_${tag}_${node.range[0]}`;
+            const violationKey = `${declaration.kind}_${declaration.symbol.escapedName}_${tag.tagName.escapedText}_${node.range[0]}`;
             if (reportedViolationsSet.has(violationKey)) {
               continue;
             }
