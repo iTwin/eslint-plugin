@@ -1,5 +1,5 @@
 {
-  "type": "prerelease",
+  "type": "minor",
   "comment": "disallow non-null assertions using the `!` postfix operator",
   "packageName": "@itwin/eslint-plugin",
   "email": "aruniverse@users.noreply.github.com",
