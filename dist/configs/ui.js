@@ -38,7 +38,6 @@ module.exports =
       }
     ],
     "@itwin/react-set-stage-usage": ["error", { "updater-only": false, "allow-object": true }],
-    "@typescript-eslint/unbound-method": "off",
     "react/prop-types": "off",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "error",
@@ -49,4 +48,3 @@ module.exports =
     }
   }
 }
-
