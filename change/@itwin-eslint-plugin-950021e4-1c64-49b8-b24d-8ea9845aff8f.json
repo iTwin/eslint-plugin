@@ -1,0 +1,7 @@
+{
+  "type": "prerelease",
+  "comment": "Do not disable @typescript-eslint/unbound-method in ui plugin",
+  "packageName": "@itwin/eslint-plugin",
+  "email": "36916096+karolis-zukauskas@users.noreply.github.com",
+  "dependentChangeType": "patch"
+}
