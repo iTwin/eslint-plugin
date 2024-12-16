@@ -1,8 +1,24 @@
 # Change Log - @itwin/eslint-plugin
 
-This log was last generated on Thu, 18 Jul 2024 20:42:48 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Dec 2024 22:46:33 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 5.0.0
+
+Mon, 16 Dec 2024 22:46:33 GMT
+
+### Major changes
+
+- Updated to support ESLint v9 and typescript-eslint v8.11 (33036725+wgoehrig@users.noreply.github.com)
+
+### Minor changes
+
+- disallow non-null assertions using the `!` postfix operator (aruniverse@users.noreply.github.com)
+
+### Changes
+
+- Do not disable @typescript-eslint/unbound-method in ui plugin (36916096+karolis-zukauskas@users.noreply.github.com)
 
 ## 4.1.1
 

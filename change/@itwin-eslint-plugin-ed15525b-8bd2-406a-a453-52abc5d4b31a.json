@@ -1,7 +1,0 @@
-{
-  "type": "major",
-  "comment": "Updated to support ESLint v9 and typescript-eslint v8.11",
-  "packageName": "@itwin/eslint-plugin",
-  "email": "33036725+wgoehrig@users.noreply.github.com",
-  "dependentChangeType": "patch"
-}
