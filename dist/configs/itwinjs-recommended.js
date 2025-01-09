@@ -183,7 +183,7 @@ module.exports =
     "@typescript-eslint/restrict-template-expressions": [
       "warn",
       {
-        "message": "This rule will be set to error in the next major release. Please address the issue before that to avoid errors in the future."
+        "message": "This rule will be set to error in the next major release."
       }
     ],
     "@typescript-eslint/triple-slash-reference": "error",
