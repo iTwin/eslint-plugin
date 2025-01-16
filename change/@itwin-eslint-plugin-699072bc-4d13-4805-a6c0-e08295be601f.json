@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "Update @typescript-eslint/restrict-template-expressions to warn with future error notice",
+  "packageName": "@itwin/eslint-plugin",
+  "email": "anmolshres98@users.noreply.github.com",
+  "dependentChangeType": "patch"
+}
