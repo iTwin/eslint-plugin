@@ -2,6 +2,35 @@
   "name": "@itwin/eslint-plugin",
   "entries": [
     {
+      "date": "Fri, 21 Mar 2025 21:30:49 GMT",
+      "version": "5.1.0",
+      "tag": "@itwin/eslint-plugin_v5.1.0",
+      "comments": {
+        "patch": [
+          {
+            "author": "anmolshres98@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "e592b52d5ad611cc47cc90fb0a94bfb823e2e5e8",
+            "comment": "Update @typescript-eslint/restrict-template-expressions rule to warn with no options"
+          },
+          {
+            "author": "66480813+paulius-valiunas@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "e592b52d5ad611cc47cc90fb0a94bfb823e2e5e8",
+            "comment": "update typescript-eslint"
+          }
+        ],
+        "minor": [
+          {
+            "author": "anmolshres98@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "e592b52d5ad611cc47cc90fb0a94bfb823e2e5e8",
+            "comment": "Update @typescript-eslint/restrict-template-expressions to warn with future error notice"
+          }
+        ]
+      }
+    },
+    {
       "date": "Mon, 16 Dec 2024 22:46:33 GMT",
       "version": "5.0.0",
       "tag": "@itwin/eslint-plugin_v5.0.0",

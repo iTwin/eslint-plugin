@@ -1,8 +1,21 @@
 # Change Log - @itwin/eslint-plugin
 
-This log was last generated on Mon, 16 Dec 2024 22:46:33 GMT and should not be manually modified.
+<!-- This log was last generated on Fri, 21 Mar 2025 21:30:49 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 5.1.0
+
+Fri, 21 Mar 2025 21:30:49 GMT
+
+### Minor changes
+
+- Update @typescript-eslint/restrict-template-expressions to warn with future error notice (anmolshres98@users.noreply.github.com)
+
+### Patches
+
+- Update @typescript-eslint/restrict-template-expressions rule to warn with no options (anmolshres98@users.noreply.github.com)
+- update typescript-eslint (66480813+paulius-valiunas@users.noreply.github.com)
 
 ## 5.0.0
 

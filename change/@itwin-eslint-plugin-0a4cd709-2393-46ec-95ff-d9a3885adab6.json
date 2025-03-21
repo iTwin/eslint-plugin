@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "Update @typescript-eslint/restrict-template-expressions rule to warn with no options",
-  "packageName": "@itwin/eslint-plugin",
-  "email": "anmolshres98@users.noreply.github.com",
-  "dependentChangeType": "patch"
-}
