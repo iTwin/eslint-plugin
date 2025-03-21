@@ -180,12 +180,7 @@ module.exports =
     "@typescript-eslint/promise-function-async": "error",
     "@typescript-eslint/require-await": "off",
     "@typescript-eslint/restrict-plus-operands": "off",
-    "@typescript-eslint/restrict-template-expressions": [
-      "warn",
-      {
-        "message": "This rule will be set to error in the next major release."
-      }
-    ],
+    "@typescript-eslint/restrict-template-expressions": "warn",
     "@typescript-eslint/triple-slash-reference": "error",
     "@typescript-eslint/typedef": "off",
     "@typescript-eslint/unbound-method": "error",
