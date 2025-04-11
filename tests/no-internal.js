@@ -93,6 +93,11 @@ ruleTester.run(
           new Internal().publicMethod();
           new Public();
           new Public().internalMethod();
+          class ExtendedInternal extends Internal {};
+          if (variable instanceof Internal) {}
+          function doSomething(construct: new () => Internal) {}
+          doSomething(Internal);
+          let someVariable: Internal;
         `,
         errors: [
           { message: 'function "internal" is internal.' },
@@ -100,7 +105,12 @@ ruleTester.run(
           { message: 'function "internal" is internal.' },
           { message: 'class "Internal" is internal.' },
           { message: 'class "Internal" is internal.' },
-          { message: 'method "Public.internalMethod" is internal.' }
+          { message: 'method "Public.internalMethod" is internal.' },
+          { message: 'class "Internal" is internal.'},
+          { message: 'class "Internal" is internal.'},
+          { message: 'class "Internal" is internal.'},
+          { message: 'class "Internal" is internal.'},
+          { message: 'class "Internal" is internal.'},
         ]
       },
       {
@@ -115,6 +125,11 @@ ruleTester.run(
           new Internal().publicMethod();
           new Public();
           new Public().internalMethod();
+          class ExtendedInternal extends Internal {};
+          if (variable instanceof Internal) {}
+          function doSomething(construct: new () => Internal) {}
+          doSomething(Internal);
+          let someVariable: Internal;
         `,
         options: [{ "checkedPackagePatterns": ["test-pkg-1"] }],
         errors: [
@@ -124,6 +139,11 @@ ruleTester.run(
           { message: 'class "Internal" is internal.' },
           { message: 'class "Internal" is internal.' },
           { message: 'method "Public.internalMethod" is internal.' },
+          { message: 'class "Internal" is internal.'},
+          { message: 'class "Internal" is internal.'},
+          { message: 'class "Internal" is internal.'},
+          { message: 'class "Internal" is internal.'},
+          { message: 'class "Internal" is internal.'},
         ]
       },
       {

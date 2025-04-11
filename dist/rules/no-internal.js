@@ -231,6 +231,15 @@ module.exports = {
         const resolvedSymbol = typeChecker.getSymbolAtLocation(tsCall.expression);
         if (resolvedSymbol)
           checkWithParent(resolvedSymbol.valueDeclaration, node);
+
+        if (!tsCall.arguments) return;
+
+        for (const arg of tsCall.arguments) {
+          const argType = typeChecker.getTypeAtLocation(arg);
+          if (argType && argType.symbol) {
+            checkWithParent(argType.symbol.valueDeclaration, node);
+          }
+        }
       },
 
       NewExpression(node) {
@@ -294,13 +303,38 @@ module.exports = {
       },
 
       TSTypeReference(node) {
-        const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
-        if (!tsCall)
+        const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
+        if (!tsNode) return;
+
+        const resolvedType = typeChecker.getTypeAtLocation(tsNode);
+        if (resolvedType && resolvedType.symbol) {
+          checkWithParent(resolvedType.symbol.valueDeclaration, node);
+        }
+      },
+
+      ClassDeclaration(node) {
+        const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
+        if (!tsNode || !tsNode.heritageClauses) return;
+
+        for (const clause of tsNode.heritageClauses) {
+          for (const type of clause.types) {
+            const resolvedType = typeChecker.getTypeAtLocation(type.expression);
+            if (resolvedType && resolvedType.symbol) {
+              checkWithParent(resolvedType.symbol.valueDeclaration, node);
+            }
+          }
+        }
+      },
+
+      BinaryExpression(node) {
+        const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
+        if (!tsNode || tsNode.operatorToken.kind !== ts.SyntaxKind.InstanceOfKeyword)
           return;
 
-        const resolved = typeChecker.getTypeAtLocation(tsCall);
-        if (resolved)
-          checkWithParent(resolved.declaration, node);
+        const resolvedType = typeChecker.getTypeAtLocation(tsNode.right);
+        if (resolvedType && resolvedType.symbol) {
+          checkWithParent(resolvedType.symbol.valueDeclaration, node);
+        }
       },
     };
   }
