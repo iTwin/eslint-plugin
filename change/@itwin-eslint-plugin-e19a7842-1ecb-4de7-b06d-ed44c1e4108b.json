@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "Update `no-internal` rule checks to address some blind-spots",
+  "packageName": "@itwin/eslint-plugin",
+  "email": "anmolshres98@users.noreply.github.com",
+  "dependentChangeType": "patch"
+}
