@@ -34,6 +34,45 @@ const ruleTester = new ESLintTester({
   },
 });
 
+const commonErrorMessages = {
+  functionInternal: 'function "internal" is internal.',
+  classInternal: 'class "Internal" is internal.',
+  methodInternal: 'method "Public.internalMethod" is internal.',
+};
+
+const getInternalInvalidTestCode = (importFrom) => dedent`
+  import { internal, public, Internal, Public } from "${importFrom}";
+  public();
+  internal();
+  internal();
+  internal();
+  new Internal();
+  new Internal().publicMethod();
+  new Public();
+  new Public().internalMethod();
+  class ExtendedInternal extends Internal {};
+  class ImplementsInternal implements Internal {};
+  if (variable instanceof Internal) {}
+  function doSomething(construct: new () => Internal) {}
+  doSomething(Internal);
+  let someVariable: Internal;
+`;
+
+const internalInvalidErrorMessages = [
+  { message: commonErrorMessages.functionInternal },
+  { message: commonErrorMessages.functionInternal },
+  { message: commonErrorMessages.functionInternal },
+  { message: commonErrorMessages.classInternal },
+  { message: commonErrorMessages.classInternal },
+  { message: commonErrorMessages.methodInternal },
+  { message: commonErrorMessages.classInternal },
+  { message: commonErrorMessages.classInternal },
+  { message: commonErrorMessages.classInternal },
+  { message: commonErrorMessages.classInternal },
+  { message: commonErrorMessages.classInternal },
+  { message: commonErrorMessages.classInternal },
+];
+
 ruleTester.run(
   "no-internal",
   NoInternalESLintRule,
@@ -82,69 +121,14 @@ ruleTester.run(
     ],
     invalid: [
       {
-        // itwin scope
-        code: dedent`
-          import { internal, public, Internal, Public } from "@itwin/test-pkg-2";
-          public();
-          internal();
-          internal();
-          internal();
-          new Internal();
-          new Internal().publicMethod();
-          new Public();
-          new Public().internalMethod();
-          class ExtendedInternal extends Internal {};
-          if (variable instanceof Internal) {}
-          function doSomething(construct: new () => Internal) {}
-          doSomething(Internal);
-          let someVariable: Internal;
-        `,
-        errors: [
-          { message: 'function "internal" is internal.' },
-          { message: 'function "internal" is internal.' },
-          { message: 'function "internal" is internal.' },
-          { message: 'class "Internal" is internal.' },
-          { message: 'class "Internal" is internal.' },
-          { message: 'method "Public.internalMethod" is internal.' },
-          { message: 'class "Internal" is internal.'},
-          { message: 'class "Internal" is internal.'},
-          { message: 'class "Internal" is internal.'},
-          { message: 'class "Internal" is internal.'},
-          { message: 'class "Internal" is internal.'},
-        ]
+        code: getInternalInvalidTestCode("@itwin/test-pkg-2"),
+        errors: internalInvalidErrorMessages,
       },
       {
         // package name is specified to disallow @internal
-        code: dedent`
-          import { internal, public, Internal, Public } from "test-pkg-1";
-          public();
-          internal();
-          internal();
-          internal();
-          new Internal();
-          new Internal().publicMethod();
-          new Public();
-          new Public().internalMethod();
-          class ExtendedInternal extends Internal {};
-          if (variable instanceof Internal) {}
-          function doSomething(construct: new () => Internal) {}
-          doSomething(Internal);
-          let someVariable: Internal;
-        `,
+        code: getInternalInvalidTestCode("test-pkg-1"),
         options: [{ "checkedPackagePatterns": ["test-pkg-1"] }],
-        errors: [
-          { message: 'function "internal" is internal.' },
-          { message: 'function "internal" is internal.' },
-          { message: 'function "internal" is internal.' },
-          { message: 'class "Internal" is internal.' },
-          { message: 'class "Internal" is internal.' },
-          { message: 'method "Public.internalMethod" is internal.' },
-          { message: 'class "Internal" is internal.'},
-          { message: 'class "Internal" is internal.'},
-          { message: 'class "Internal" is internal.'},
-          { message: 'class "Internal" is internal.'},
-          { message: 'class "Internal" is internal.'},
-        ]
+        errors: internalInvalidErrorMessages,
       },
       {
         // other package in workspace & package name is specified to disallow @internal
@@ -159,9 +143,9 @@ ruleTester.run(
           "checkedPackagePatterns": ["workspace-pkg-2"]
         }],
         errors: [
-          { message: 'function "internal" is internal.' },
-          { message: 'method "Public.internalMethod" is internal.' },
-          { message: 'method "Public.internalMethod" is internal.' }
+          { message: commonErrorMessages.functionInternal },
+          { message: commonErrorMessages.methodInternal },
+          { message: commonErrorMessages.methodInternal }
         ]
       },
       {
@@ -173,8 +157,8 @@ ruleTester.run(
         `,
         options: [{ "dontAllowWorkspaceInternal": true }],
         errors: [
-          { message: 'function "internal" is internal.' },
-          { message: 'method "Public.internalMethod" is internal.' }
+          { message: commonErrorMessages.functionInternal },
+          { message: commonErrorMessages.methodInternal }
         ]
       },
     ],

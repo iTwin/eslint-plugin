@@ -23,11 +23,20 @@ module.exports = {
     };
   },
 
-  /** @param {TemplateStringsArray} strings */
-  dedent(strings) {
-    const textAssumingNoInterpolations = strings[0];
-    const codeLines = textAssumingNoInterpolations.split("\n");
-    if (codeLines.length <= 1) return textAssumingNoInterpolations;
+  /**
+   * Removes leading indentation from template literals.
+   * Supports interpolations by combining strings and values.
+   * 
+   * @param {TemplateStringsArray} strings - The template literal strings.
+   * @param {...any} values - The interpolated values.
+   * @returns {string} - The dedented string.
+   */
+  dedent(strings, ...values) {
+    const fullString = strings.reduce((result, str, i) => {
+      return result + str + (values[i] || "");
+    }, "");
+    const codeLines = fullString.split("\n");
+    if (codeLines.length <= 1) return fullString;
     const leftPadding = codeLines[1].match(/[\t ]+/)?.[0];
     if (!leftPadding) return codeLines.slice(1, -1).join("\n");
     return codeLines
