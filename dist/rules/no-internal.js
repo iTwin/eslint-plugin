@@ -336,6 +336,20 @@ module.exports = {
           checkWithParent(resolvedType.symbol.valueDeclaration, node);
         }
       },
+
+      ImportDeclaration(node) {
+        const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
+        if (!tsNode) return;
+
+        const resolvedModule = typeChecker.getSymbolAtLocation(tsNode.moduleSpecifier);
+        if (resolvedModule && resolvedModule.exports) {
+          resolvedModule.exports.forEach((exportSymbol) => {
+            if (exportSymbol.valueDeclaration) {
+              checkWithParent(exportSymbol.valueDeclaration, node);
+            }
+          });
+        }
+      },
     };
   }
 }

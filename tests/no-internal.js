@@ -60,6 +60,8 @@ const getInternalInvalidTestCode = (importFrom) => dedent`
 
 const internalInvalidErrorMessages = [
   { message: commonErrorMessages.functionInternal },
+  { message: commonErrorMessages.classInternal },
+  { message: commonErrorMessages.functionInternal },
   { message: commonErrorMessages.functionInternal },
   { message: commonErrorMessages.functionInternal },
   { message: commonErrorMessages.classInternal },
@@ -144,6 +146,7 @@ ruleTester.run(
         }],
         errors: [
           { message: commonErrorMessages.functionInternal },
+          { message: commonErrorMessages.functionInternal },
           { message: commonErrorMessages.methodInternal },
           { message: commonErrorMessages.methodInternal }
         ]
@@ -157,6 +160,7 @@ ruleTester.run(
         `,
         options: [{ "dontAllowWorkspaceInternal": true }],
         errors: [
+          { message: commonErrorMessages.functionInternal },
           { message: commonErrorMessages.functionInternal },
           { message: commonErrorMessages.methodInternal }
         ]
