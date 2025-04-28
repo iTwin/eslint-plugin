@@ -236,7 +236,7 @@ module.exports = {
 
         for (const arg of tsCall.arguments) {
           const argType = typeChecker.getTypeAtLocation(arg);
-          if (argType && argType.symbol) {
+          if (argType) {
             checkWithParent(argType.symbol.valueDeclaration, node);
           }
         }
@@ -248,7 +248,7 @@ module.exports = {
           return;
 
         const resolvedClass = typeChecker.getTypeAtLocation(tsCall);
-        if (resolvedClass && resolvedClass.symbol)
+        if (resolvedClass)
           checkWithParent(resolvedClass.symbol.valueDeclaration, node);
 
         const resolvedConstructor = typeChecker.getResolvedSignature(tsCall);
@@ -307,7 +307,7 @@ module.exports = {
         if (!tsNode) return;
 
         const resolvedType = typeChecker.getTypeAtLocation(tsNode);
-        if (resolvedType && resolvedType.symbol) {
+        if (resolvedType) {
           checkWithParent(resolvedType.symbol.valueDeclaration, node);
         }
       },
@@ -319,7 +319,7 @@ module.exports = {
         for (const clause of tsNode.heritageClauses) {
           for (const type of clause.types) {
             const resolvedType = typeChecker.getTypeAtLocation(type.expression);
-            if (resolvedType && resolvedType.symbol) {
+            if (resolvedType) {
               checkWithParent(resolvedType.symbol.valueDeclaration, node);
             }
           }
@@ -332,7 +332,7 @@ module.exports = {
           return;
 
         const resolvedType = typeChecker.getTypeAtLocation(tsNode.right);
-        if (resolvedType && resolvedType.symbol) {
+        if (resolvedType) {
           checkWithParent(resolvedType.symbol.valueDeclaration, node);
         }
       },
