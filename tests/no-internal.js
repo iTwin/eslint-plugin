@@ -38,10 +38,11 @@ const commonErrorMessages = {
   functionInternal: 'function "internal" is internal.',
   classInternal: 'class "Internal" is internal.',
   methodInternal: 'method "Public.internalMethod" is internal.',
+  variableInternal: 'variable "internalVariable" is internal.',
 };
 
 const getInternalInvalidTestCode = (importFrom) => dedent`
-  import { internal, public, Internal, Public } from "${importFrom}";
+  import { internal, public, Internal, Public, internalVariable } from "${importFrom}";
   public();
   internal();
   internal();
@@ -56,11 +57,13 @@ const getInternalInvalidTestCode = (importFrom) => dedent`
   function doSomething(construct: new () => Internal) {}
   doSomething(Internal);
   let someVariable: Internal;
+  const _x = internalVariable;
 `;
 
 const internalInvalidErrorMessages = [
   { message: commonErrorMessages.functionInternal },
   { message: commonErrorMessages.classInternal },
+  { message: commonErrorMessages.variableInternal},
   { message: commonErrorMessages.functionInternal },
   { message: commonErrorMessages.functionInternal },
   { message: commonErrorMessages.functionInternal },

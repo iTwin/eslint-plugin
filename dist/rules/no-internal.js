@@ -26,6 +26,7 @@ const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.PropertySignature]: "property",
   [ts.SyntaxKind.Constructor]: "constructor",
   [ts.SyntaxKind.EnumMember]: "enum member",
+  [ts.SyntaxKind.VariableDeclaration]: "variable",
 }
 
 /**
@@ -162,42 +163,45 @@ module.exports = {
     }
 
     function checkJsDoc(declaration, node) {
-      if (!declaration || !declaration.jsDoc)
+      if (!declaration)
         return undefined;
 
-      for (const jsDoc of declaration.jsDoc) {
-        if (jsDoc.tags) {
-          for (const tag of jsDoc.tags) {
-            if (!bannedTags.includes(tag.tagName.escapedText) || !isCheckedFile(declaration)) {
-              continue;
-            }
-            //Violation key to track and report violations on a per-usage basis
-            const violationKey = `${declaration.kind}_${declaration.symbol.escapedName}_${tag}_${node.range[0]}`;
-            if (reportedViolationsSet.has(violationKey)) {
-              continue;
-            }
-            reportedViolationsSet.add(violationKey);
-            let name;
-            if (declaration.kind === ts.SyntaxKind.Constructor)
-              name = declaration.parent.symbol.escapedName;
-            else {
-              name = declaration.symbol.escapedName;
-              const parentSymbol = getParentSymbolName(declaration);
-              if (parentSymbol)
-                name = `${parentSymbol}.${name}`;
-            }
+      // Use TypeScript's utility to get JSDoc tags
+      const jsDocTags = ts.getJSDocTags(declaration);
+      if (!jsDocTags || jsDocTags.length === 0) return;
 
-            context.report({
-              node,
-              messageId: "forbidden",
-              data: {
-                kind: syntaxKindFriendlyNames.hasOwnProperty(declaration.kind) ? syntaxKindFriendlyNames[declaration.kind] : "unknown object type " + declaration.kind,
-                name,
-                tag: tag.tagName.escapedText,
-              }
-            });
+      for (const tag of jsDocTags) {
+        if (!bannedTags.includes(tag.tagName.escapedText) || !isCheckedFile(declaration)) {
+          continue;
+        }
+
+        // Violation key to track and report violations on a per-usage basis
+        const violationKey = `${declaration.kind}_${declaration.symbol?.escapedName}_${tag.tagName.text}_${node.range[0]}`;
+        if (reportedViolationsSet.has(violationKey)) {
+          continue;
+        }
+        reportedViolationsSet.add(violationKey);
+
+        let name;
+        if (declaration.kind === ts.SyntaxKind.Constructor) {
+          name = declaration.parent.symbol.escapedName;
+        } else {
+          name = declaration.symbol?.escapedName;
+          const parentSymbol = getParentSymbolName(declaration);
+          if (parentSymbol) {
+            name = `${parentSymbol}.${name}`;
           }
         }
+
+        context.report({
+          node,
+          messageId: "forbidden",
+          data: {
+            kind: syntaxKindFriendlyNames.hasOwnProperty(declaration.kind) ? syntaxKindFriendlyNames[declaration.kind] : "unknown object type " + declaration.kind,
+            name,
+            tag: tag.tagName.escapedText,
+          }
+        });
       }
     }
 
@@ -342,12 +346,20 @@ module.exports = {
         if (!tsNode) return;
 
         const resolvedModule = typeChecker.getSymbolAtLocation(tsNode.moduleSpecifier);
-        if (resolvedModule && resolvedModule.exports) {
-          resolvedModule.exports.forEach((exportSymbol) => {
-            if (exportSymbol.valueDeclaration) {
-              checkWithParent(exportSymbol.valueDeclaration, node);
+        if (!resolvedModule || !resolvedModule.exports) return;
+
+        // Iterate over the named imports and default import
+        if (node.specifiers) {
+          for (const specifier of node.specifiers) {
+            if (specifier.type === "ImportSpecifier" || specifier.type === "ImportDefaultSpecifier" || specifier.type === "ImportNamespaceSpecifier") {
+              const importedName = specifier.local.name;
+              const exportSymbol = resolvedModule.exports.get(importedName);
+
+              if (exportSymbol && exportSymbol.valueDeclaration) {
+                checkWithParent(exportSymbol.valueDeclaration, specifier);
+              }
             }
-          });
+          }
         }
       },
     };
