@@ -352,7 +352,7 @@ module.exports = {
         if (node.specifiers) {
           for (const specifier of node.specifiers) {
             if (specifier.type === "ImportSpecifier" || specifier.type === "ImportDefaultSpecifier" || specifier.type === "ImportNamespaceSpecifier") {
-              const importedName = specifier.local.name;
+              const importedName = specifier.imported?.name || specifier.local.name;
               const exportSymbol = resolvedModule.exports.get(importedName);
 
               if (exportSymbol && exportSymbol.valueDeclaration) {
