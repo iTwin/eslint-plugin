@@ -348,12 +348,16 @@ module.exports = {
         const resolvedModule = typeChecker.getSymbolAtLocation(tsNode.moduleSpecifier);
         if (!resolvedModule || !resolvedModule.exports) return;
 
-        // Iterate over the named imports and default import
         if (node.specifiers) {
           for (const specifier of node.specifiers) {
             if (specifier.type === "ImportSpecifier" || specifier.type === "ImportDefaultSpecifier" || specifier.type === "ImportNamespaceSpecifier") {
-              const importedName = specifier.imported?.name || specifier.local.name;
-              const exportSymbol = resolvedModule.exports.get(importedName);
+              let exportSymbol;
+              if (specifier.type === "ImportDefaultSpecifier") {
+                exportSymbol = typeChecker.getAliasedSymbol(resolvedModule.exports.get("default")); 
+              }
+              else {
+                exportSymbol = resolvedModule.exports.get(specifier.imported?.name);
+              }
 
               if (exportSymbol && exportSymbol.valueDeclaration) {
                 checkWithParent(exportSymbol.valueDeclaration, specifier);
