@@ -44,6 +44,7 @@ const commonErrorMessages = {
 const getInternalInvalidTestCode = (importFrom) => dedent`
   import { internal, public, Internal, Public, internalVariable } from "${importFrom}";
   import * as Internals from "${importFrom}";
+  import { internal as publicFunction } from "${importFrom}";
   Internals.internal();
   Internals.Internal();
   Internals.internalVariable;
@@ -68,6 +69,7 @@ const internalInvalidErrorMessages = [
   { message: commonErrorMessages.functionInternal },
   { message: commonErrorMessages.classInternal },
   { message: commonErrorMessages.variableInternal},
+  { message: commonErrorMessages.functionInternal},
   { message: commonErrorMessages.functionInternal },
   { message: commonErrorMessages.classInternal },
   { message: commonErrorMessages.variableInternal},
