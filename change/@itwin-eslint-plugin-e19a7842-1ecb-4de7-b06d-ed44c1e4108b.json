@@ -1,7 +1,0 @@
-{
-  "type": "minor",
-  "comment": "Update `no-internal` rule check to run when extending internal class, setting internal class as parameter type or variable type, passing internal class constructor as argument, and in `instanceof` expression. Additionally, report all instances at time of import.",
-  "packageName": "@itwin/eslint-plugin",
-  "email": "anmolshres98@users.noreply.github.com",
-  "dependentChangeType": "patch"
-}

@@ -2,6 +2,21 @@
   "name": "@itwin/eslint-plugin",
   "entries": [
     {
+      "date": "Wed, 07 May 2025 14:47:01 GMT",
+      "version": "5.2.0",
+      "tag": "@itwin/eslint-plugin_v5.2.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "anmolshres98@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "5a633051b5643bef92bbcda674a5b2ac0df3ee47",
+            "comment": "Update `no-internal` rule check to run when extending internal class, setting internal class as parameter type or variable type, passing internal class constructor as argument, and in `instanceof` expression. Additionally, report all instances at time of import."
+          }
+        ]
+      }
+    },
+    {
       "date": "Fri, 21 Mar 2025 21:30:49 GMT",
       "version": "5.1.0",
       "tag": "@itwin/eslint-plugin_v5.1.0",

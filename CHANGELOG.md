@@ -1,8 +1,16 @@
 # Change Log - @itwin/eslint-plugin
 
-<!-- This log was last generated on Fri, 21 Mar 2025 21:30:49 GMT and should not be manually modified. -->
+<!-- This log was last generated on Wed, 07 May 2025 14:47:01 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 5.2.0
+
+Wed, 07 May 2025 14:47:01 GMT
+
+### Minor changes
+
+- Update `no-internal` rule check to run when extending internal class, setting internal class as parameter type or variable type, passing internal class constructor as argument, and in `instanceof` expression. Additionally, report all instances at time of import. (anmolshres98@users.noreply.github.com)
 
 ## 5.1.0
 
