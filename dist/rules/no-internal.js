@@ -117,7 +117,7 @@ module.exports = {
      */
     function owningPackageIsCheckedPackage(filePath) {
       const packageList = workspace.getWorkspaces(filePath);
-      
+
       // Look through all package infos to find the one containing our packagePath
       let packageObj = packageList.find((pkg) => {
         const packageBaseDir = path.dirname(pkg.packageJson.packageJsonPath);
@@ -130,7 +130,7 @@ module.exports = {
     /**
      * Returns true if a file is within a package for which the internal tag is a violation.
      * By default `@itwin` and `@bentley` packages are included, see the `checkedPackagePatterns` option.
-     * @param declaration 
+     * @param declaration
      */
     function isCheckedFile(declaration) {
       if (!declaration)
@@ -151,7 +151,7 @@ module.exports = {
 
       if (allowWorkspaceInternal || !isWorkspaceLinkedDependency)
         return false;
-      
+
       // Else !allowWorkspaceInternal or is a local file, check package name in package.json
       return owningPackageIsCheckedPackage(fileName);
     }
@@ -219,7 +219,7 @@ module.exports = {
         checkJsDoc(declaration.parent, node);
       }
     }
-    
+
 
     return {
       CallExpression(node) {
@@ -240,7 +240,7 @@ module.exports = {
 
         for (const arg of tsCall.arguments) {
           const argType = typeChecker.getTypeAtLocation(arg);
-          if (argType) {
+          if (argType && argType.symbol) {
             checkWithParent(argType.symbol.valueDeclaration, node);
           }
         }
@@ -252,7 +252,7 @@ module.exports = {
           return;
 
         const resolvedClass = typeChecker.getTypeAtLocation(tsCall);
-        if (resolvedClass)
+        if (resolvedClass && resolvedClass.symbol)
           checkWithParent(resolvedClass.symbol.valueDeclaration, node);
 
         const resolvedConstructor = typeChecker.getResolvedSignature(tsCall);
@@ -311,7 +311,7 @@ module.exports = {
         if (!tsNode) return;
 
         const resolvedType = typeChecker.getTypeAtLocation(tsNode);
-        if (resolvedType) {
+        if (resolvedType && resolvedType.symbol) {
           checkWithParent(resolvedType.symbol.valueDeclaration, node);
         }
       },
@@ -323,7 +323,7 @@ module.exports = {
         for (const clause of tsNode.heritageClauses) {
           for (const type of clause.types) {
             const resolvedType = typeChecker.getTypeAtLocation(type.expression);
-            if (resolvedType) {
+            if (resolvedType && resolvedType.symbol) {
               checkWithParent(resolvedType.symbol.valueDeclaration, node);
             }
           }
@@ -336,7 +336,7 @@ module.exports = {
           return;
 
         const resolvedType = typeChecker.getTypeAtLocation(tsNode.right);
-        if (resolvedType) {
+        if (resolvedType && resolvedType.symbol) {
           checkWithParent(resolvedType.symbol.valueDeclaration, node);
         }
       },
@@ -353,7 +353,11 @@ module.exports = {
             if (specifier.type === "ImportSpecifier" || specifier.type === "ImportDefaultSpecifier" || specifier.type === "ImportNamespaceSpecifier") {
               let exportSymbol;
               if (specifier.type === "ImportDefaultSpecifier") {
-                exportSymbol = typeChecker.getAliasedSymbol(resolvedModule.exports.get("default")); 
+                const defaultExport = resolvedModule.exports.get("default") || resolvedModule.exports.get("export=");
+                // call to getAliasedSymbol() will throw if the symbol is not an alias
+                // this can happen if e.g. the default import is from a json file - `import data from "data.json";`
+                if (!defaultExport || !(defaultExport.flags & ts.SymbolFlags.Alias)) continue;
+                exportSymbol = typeChecker.getAliasedSymbol(defaultExport);
               }
               else {
                 exportSymbol = resolvedModule.exports.get(specifier.imported?.name);
