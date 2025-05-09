@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "Fix processing of 'no-internal' rule throwing error on default import statements",
-  "packageName": "@itwin/eslint-plugin",
-  "email": "anmolshres98@users.noreply.github.com",
-  "dependentChangeType": "patch"
-}

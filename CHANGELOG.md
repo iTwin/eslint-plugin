@@ -1,8 +1,16 @@
 # Change Log - @itwin/eslint-plugin
 
-<!-- This log was last generated on Wed, 07 May 2025 14:47:01 GMT and should not be manually modified. -->
+<!-- This log was last generated on Fri, 09 May 2025 15:11:14 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 5.2.1
+
+Fri, 09 May 2025 15:11:14 GMT
+
+### Patches
+
+- Fix processing of 'no-internal' rule throwing error on default import statements (anmolshres98@users.noreply.github.com)
 
 ## 5.2.0
 

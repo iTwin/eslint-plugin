@@ -2,6 +2,21 @@
   "name": "@itwin/eslint-plugin",
   "entries": [
     {
+      "date": "Fri, 09 May 2025 15:11:14 GMT",
+      "version": "5.2.1",
+      "tag": "@itwin/eslint-plugin_v5.2.1",
+      "comments": {
+        "patch": [
+          {
+            "author": "anmolshres98@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "553f5c3cbcbb602e3762dcfc2d9e010a11599d19",
+            "comment": "Fix processing of 'no-internal' rule throwing error on default import statements"
+          }
+        ]
+      }
+    },
+    {
       "date": "Wed, 07 May 2025 14:47:01 GMT",
       "version": "5.2.0",
       "tag": "@itwin/eslint-plugin_v5.2.0",
