@@ -323,7 +323,7 @@ module.exports = {
         for (const clause of tsNode.heritageClauses) {
           for (const type of clause.types) {
             const resolvedType = typeChecker.getTypeAtLocation(type.expression);
-            if (resolvedType) {
+            if (resolvedType && resolvedType.symbol) {
               checkWithParent(resolvedType.symbol.valueDeclaration, node);
             }
           }
@@ -336,7 +336,7 @@ module.exports = {
           return;
 
         const resolvedType = typeChecker.getTypeAtLocation(tsNode.right);
-        if (resolvedType) {
+        if (resolvedType && resolvedType.symbol) {
           checkWithParent(resolvedType.symbol.valueDeclaration, node);
         }
       },
