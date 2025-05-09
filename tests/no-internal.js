@@ -99,6 +99,21 @@ ruleTester.run(
         code: `import * as Local from "./local-internal"; Local.internal(); new Local.Internal();`
       },
       {
+        // JSON default import - should not throw errors
+        code: `import jsonData from "./test-data.json"; console.log(jsonData.name);`,
+        name: "JSON import should not throw"
+      },
+      {
+        // Non-alias default export - should not throw errors
+        code: `import defaultString from "./non-alias-export"; console.log(defaultString);`,
+        name: "Non-alias default export should not throw"
+      },
+      {
+        // export= module import - should not throw errors 
+        code: `import moduleWithExportEquals from "./export-equals-module"; console.log(moduleWithExportEquals.getValue());`,
+        name: "export= module import should not throw"
+      },
+      {
         // local import and package name is specified
         code: `import * as Local from "./local-internal"; Local.internal(); new Local.Internal();`,
         options: [{ "checkedPackagePatterns": ["workspace-pkg-1"] }],
