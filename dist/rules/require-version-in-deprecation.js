@@ -4,12 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 /**
- * @import { Rule, Scope } from "eslint"
+ * @import { Rule, Scope, AST } from "eslint"
  */
 
 //Custom rule that enforces version and description for @deprecated
 
 "use strict";
+
+const { DateTime } = require("luxon");
 
 const regexParts = {
   expired: "might be removed in next major version",
@@ -21,7 +23,7 @@ const deprecatedCommentRegex = new RegExp(
     /@deprecated(?=[\W])(?: in (?<version>\d+(?:\.(?:\d|x)+){1,2}))?/.source,
     `(?: - (?<when>(?:${regexParts.expired})|(?:${regexParts.notUntil} (?<date>[0-9]{4}(?:-[0-9]{2}){2}))))?`,
     /(?:(?<separator>\.[^\S\r\n])?(?:[^\S\r\n]*)?(?<description>(?=[\S]).{5,}))?/.source,
-  ].join(),
+  ].join(""),
   "gdu"
 );
 
@@ -33,8 +35,9 @@ const messages = {
   oldDate: `Expired deprecation date was found and should be replaced with "${regexParts.expired}"`,
   noDate: `@deprecated should be followed by either "${regexParts.notUntil} {YYYY-MM-dd}" or "${regexParts.expired}"`,
   noVersion: `@deprecated should be followed by "in {major}.{minor}`,
-  noSeparator: "Deprecation reason should be separated from any preceding text by `. `",
-  badDescription: `Deprecation reason should match regex ${validDescriptionRegex.source}`,
+  noSeparator:
+    "Deprecation reason should be separated from any preceding text by `. ` ONLY if there is a version or other information before the description",
+  badDescription: `Deprecation reason should match regex ${validDescriptionRegex.source.replace("\\\\", "\\")}`,
 };
 
 /** @type {typeof messages} */
@@ -48,12 +51,17 @@ function firstUpper(str) {
   return `${str[0].toUpperCase()}${str.substring(1)}`;
 }
 
-/** @param {Date} date */
-function formatDate(date) {
-  return `${date.getUTCFullYear()}-${("0" + (date.getUTCMonth() + 1)).slice(-2)}-${("0" + (date.getUTCDate() + 1)).slice(-2)}`;
+/**
+ * @param {Rule.RuleFixer} fixer
+ * @param {AST.Program["comments"][0]} comment
+ * @param {string} newText
+ */
+function wrapComment(fixer, comment, newText) {
+  // @ts-expect-error -- comments are not considered nodes but this still works
+  return fixer.replaceText(comment, comment.type === "Block" ? `/*${newText}*/` : `//${newText}`);
 }
 
-/** @type {Rule.RuleModule} */
+/** @type {Rule.RuleModule & {messageIds: typeof messageIds}} */
 module.exports = {
   meta: {
     type: "problem",
@@ -108,14 +116,14 @@ module.exports = {
                 messageId: messageIds.noVersion,
                 fix: (() => {
                   return (fixer) =>
-                    fixer.replaceText(comment, `@deprecated in ${context.options[0].addVersion}${comment.value.substring("@deprecated".length)}`);
+                    wrapComment(fixer, comment, `@deprecated in ${context.options[0].addVersion}${comment.value.substring("@deprecated".length)}`);
                 })(),
               });
             }
 
             // TODO: what if the version is there but not specific enough? e.g. 5.x should be replaced with 5.1
 
-            const currentDate = new Date();
+            const currentDate = DateTime.now();
 
             // This will not work if the version is missing. However, eslint should run the rule in multiple passes if any fixes are applied.
             // So if the above fix is applied, next time it runs, the version will be there.
@@ -129,16 +137,17 @@ module.exports = {
                   if (match.indices?.groups?.version === undefined) return undefined;
                   const versionIndices = match.indices.groups.version;
                   return (fixer) =>
-                    fixer.replaceText(
+                    wrapComment(
+                      fixer,
                       comment,
                       // prettier-ignore
-                      `${comment.value.substring(0, versionIndices[1])} - ${regexParts.notUntil} ${formatDate(currentDate)}${comment.value.substring(versionIndices[1])}`
+                      `${comment.value.substring(0, versionIndices[1])} - ${regexParts.notUntil} ${currentDate.plus({year: 1}).toFormat("yyyy-MM-dd")}${comment.value.substring(versionIndices[1])}`
                     );
                 })(),
               });
             }
 
-            if (context.options[0]?.removeOldDates && match.groups?.date && new Date(match.groups.date) < currentDate) {
+            if (context.options[0]?.removeOldDates && match.groups?.date && DateTime.fromFormat(match.groups.date, "yyyy-MM-dd") < currentDate) {
               // remove old date
               context.report({
                 // @ts-expect-error -- comments are not considered nodes but this still works
@@ -148,7 +157,8 @@ module.exports = {
                   if (match.indices?.groups?.when === undefined) return undefined;
                   const whenIndices = match.indices.groups.when;
                   return (fixer) =>
-                    fixer.replaceText(
+                    wrapComment(
+                      fixer,
                       comment,
                       `${comment.value.substring(0, whenIndices[0])}${regexParts.expired}${comment.value.substring(whenIndices[1])}`
                     );
@@ -156,17 +166,12 @@ module.exports = {
               });
             }
 
-            if (match.groups?.description && !validDescriptionRegex.test(match.groups.description)) {
-              context.report({
-                // @ts-expect-error -- comments are not considered nodes but this still works
-                node: commment,
-                messageId: messageIds.badDescription,
-              });
-            }
-
-            if ((match.groups?.version || match.groups?.when) && !match.groups?.separator && match.groups?.description) {
+            if (
+              ((match.groups?.version || match.groups?.when) && !match.groups?.separator && match.groups?.description) ||
+              (!(match.groups?.version || match.groups?.when) && match.groups?.separator && match.groups?.description)
+            ) {
               const description = match.groups.description;
-              // add separator
+              // add/remove separator
               context.report({
                 // @ts-expect-error -- comments are not considered nodes but this still works
                 node: comment,
@@ -174,8 +179,23 @@ module.exports = {
                 fix: (() => {
                   if (match.indices?.groups?.description === undefined) return undefined;
                   const descriptionIndices = match.indices.groups.description;
-                  return (fixer) => fixer.replaceText(comment, `${comment.value.substring(0, descriptionIndices[0])}. ${firstUpper(description)}`);
+                  if (match.groups?.separator)
+                    return (fixer) =>
+                      wrapComment(
+                        fixer,
+                        comment,
+                        `${comment.value.substring(0, descriptionIndices[0]).trimEnd().replace(/\.$/, "")} ${firstUpper(description)}`
+                      );
+                  else
+                    return (fixer) =>
+                      wrapComment(fixer, comment, `${comment.value.substring(0, descriptionIndices[0]).trimEnd()}. ${firstUpper(description)}`);
                 })(),
+              });
+            } else if (match.groups?.description && !validDescriptionRegex.test(match.groups.description)) {
+              context.report({
+                // @ts-expect-error -- comments are not considered nodes but this still works
+                node: comment,
+                messageId: messageIds.badDescription,
               });
             }
           }
@@ -183,4 +203,5 @@ module.exports = {
       },
     };
   },
+  messageIds,
 };

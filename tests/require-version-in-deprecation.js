@@ -1,15 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 "use strict";
 
-const path = require("path");
 const ESLintTester = require("eslint").RuleTester;
 const BentleyESLintPlugin = require("../dist");
-const RequireVersionInDeprecationESLintRule =
-  BentleyESLintPlugin.rules["require-version-in-deprecation"];
+const rule = BentleyESLintPlugin.rules["require-version-in-deprecation"];
 const { supportSkippedAndOnlyInTests } = require("./test-utils");
 
 const ruleTester = new ESLintTester({
@@ -23,52 +21,48 @@ const ruleTester = new ESLintTester({
 
 ruleTester.run(
   "require-version-in-deprecation",
-  RequireVersionInDeprecationESLintRule,
+  rule,
   supportSkippedAndOnlyInTests({
     valid: [
       {
         code: `/**
       * @beta
       * @deprecated in 3.x. Use XYZ instead, see https://www.google.com/ for more details.
-      */`
+      */`,
       },
       {
         code: `/**
-        * @deprecated in 3.x, use XYZ instead
+        * @deprecated in 3.x. Use XYZ instead
         * @beta
-        */`
+        */`,
       },
+      { code: `// @deprecated in 3.6. Use XYZ instead.` },
+      { code: `/* @deprecated in 12.x. Use xyz instead. */` },
       {
-        code: `// @deprecated in 3.6 Use XYZ instead.`
-      },
-      {
-        code: `/* @deprecated in 12.x. Use xyz instead. */`
-      },
-      {
-        code: `// @deprecated in 2.19, use xyz instead
-        function canWeUseFunctions() {}`
+        code: `// @deprecated in 2.19.  Use xyz instead
+        function canWeUseFunctions() {}`,
       },
       {
         code: `// @deprecated in 3.6. Use xyz instead.
-        class canWeUseAClass {};`
+        class canWeUseAClass {};`,
       },
       {
-        code: `/* @deprecated in 2.x, Use XYZ instead */
-        let canWeUseArrowFunction = () => {};`
+        code: `/* @deprecated in 2.x. Use XYZ instead */
+        let canWeUseArrowFunction = () => {};`,
       },
       {
         code: `/**
         * @deprecated in 3.x. Please use XYZ.
         */
-        export interface canWeUseInterface {}`
+        export interface canWeUseInterface {}`,
       },
       {
         code: `/* @deprecated in 2.x. Use xyz instead. */
-        namespace canWeUseNamespaces {}`
+        namespace canWeUseNamespaces {}`,
       },
       {
         code: `// @deprecated in 3.6. Use XYZ instead.
-        export enum canWeUseEnum {}`
+        export enum canWeUseEnum {}`,
       },
       {
         code: `
@@ -82,12 +76,11 @@ ruleTester.run(
         }
         `,
       },
-      {
-        code: `// @deprecated in 2.x. Use [[InternalDocRef]] instead`
-      },
-      {
-        code: `/** @deprecated in 3.x. Use [ExternalDocRef]($package) instead */`
-      },
+      { code: `// @deprecated in 2.x. Use [[InternalDocRef]] instead` },
+      { code: `/** @deprecated in 3.x. Use [ExternalDocRef]($package) instead */` },
+      { code: `/** @deprecated in 2.1 - will not be removed until 2022-01-01. Use [[methodB]] instead */` },
+      { code: `/** @deprecated - will not be removed until 2022-01-01. Use [[methodB]] instead */` },
+      { code: `/** @deprecated Use [[methodB]] instead */` },
     ],
     invalid: [
       {
@@ -95,68 +88,43 @@ ruleTester.run(
         * @beta
         * @deprecated
         */`,
-        errors: [{ messageId: "requireVersionAndSentence" }],
+        errors: [{ messageId: rule.messageIds.noDescription }],
       },
       {
-        code: `// @deprecated`,
-        errors: [{ messageId: "requireVersionAndSentence" }],
+        code: `/**
+        * @deprecated Use [[A]] instead
+        * @deprecated Use [[B]] instead
+        */`,
+        errors: [{ messageId: rule.messageIds.doubleDeprecation }],
       },
       {
-        code: `// @deprecated in 3.x.`,
-        errors: [{ messageId: "requireVersionAndSentence" }],
+        code: `// @deprecated in 3.x.x.x. Use [[A]]`,
+        // The error can be a bit misleading. Since versions can only have 3 parts, the rule assumes that the last `.x` is part of the description.
+        // However, it does give the developer a hint about what exactly is going wrong by splitting the version and inserting a space.
+        errors: [{ messageId: rule.messageIds.noSeparator }],
+        output: "// @deprecated in 3.x.x. .x. Use [[A]]",
+        // this test is only for illustration. There's no need to guarantee the exact same behavior when updating the rule.
+        skip: true,
       },
       {
-        code: `/* @deprecated */`,
-        errors: [{ messageId: "requireVersionAndSentence" }],
+        code: `/** @deprecated. Use [[methodB]] instead */`,
+        errors: [{ messageId: rule.messageIds.noSeparator }],
+        output: `/** @deprecated Use [[methodB]] instead */`,
       },
       {
-        code: `/* @deprecated in 2.6.*/
-        function shouldFailSinceNoSentence() {}`,
-        errors: [{ messageId: "requireVersionAndSentence" }],
+        code: `/** @deprecated in 3.2 use [[methodB]] instead */`,
+        errors: [{ messageId: rule.messageIds.noSeparator }],
+        output: `/** @deprecated in 3.2. Use [[methodB]] instead */`,
       },
       {
-        code: `// @deprecated in 3.x
-        let shouldFailSinceNoSentenceGiven = () => {};`,
-        errors: [{ messageId: "requireVersionAndSentence" }],
+        code: `/** @deprecated in 3.2 - use [[methodB]] instead */`,
+        errors: [{ messageId: rule.messageIds.noSeparator }],
+        output: `/** @deprecated in 3.2. - use [[methodB]] instead */`,
       },
       {
-        code: `// @deprecated
-        class shouldFailSinceNoVersionOrSentenceGiven {};`,
-        errors: [{ messageId: "requireVersionAndSentence" }],
-      },
-      {
-        code: `/** @deprecated in 3.6.
-        * I am giving the description here.
-        */
-         `,
-        errors: [{ messageId: "requireVersionAndSentence" }],
-      },
-      {
-        code: `
-          /** @deprecated in 3.6. Ok.*/
-          function descriptionTooShort() {}
-        `,
-        errors: [{ messageId: "requireVersionAndSentence" }],
-      },
-      {
-        code: `
-          /** @deprecated in 3.6.                                                        */
-          function whitespaceIsNotADescription() {}
-        `,
-        errors: [{ messageId: "requireVersionAndSentence" }],
-      },
-      {
-        code: `
-        interface BackendHubAccess {
-          /**
-           * download a v1 checkpoint
-           * @deprecated in 3.x.
-           * @internal
-           */
-          downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
-        }
-        `,
-        errors: [{ messageId: "requireVersionAndSentence" }],
+        // testing output from the above test case...
+        code: `/** @deprecated in 3.2. - use [[methodB]] instead */`,
+        errors: [{ messageId: rule.messageIds.badDescription }],
       },
     ],
   })
