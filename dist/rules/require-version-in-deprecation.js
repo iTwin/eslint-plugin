@@ -38,6 +38,7 @@ const messages = {
   noSeparator:
     "Deprecation reason should be separated from any preceding text by `. ` ONLY if there is a version or other information before the description",
   badDescription: `Deprecation reason should match regex ${validDescriptionRegex.source.replace("\\\\", "\\")}`,
+  badVersion: "Version numbers should be complete - no 'x' allowed",
 };
 
 /** @type {typeof messages} */
@@ -131,9 +132,17 @@ module.exports = {
               }
             }
 
-            // TODO: what if the version is there but not specific enough? e.g. 5.x should be replaced with 5.1
+            if (match.groups?.version?.includes("x")) {
+              context.report({
+                // @ts-expect-error -- comments are not considered nodes but this still works
+                node: comment,
+                messageId: messageIds.badVersion,
+              });
+            }
 
-            const currentDate = DateTime.now();
+            const now = DateTime.now();
+            const currentDate = now.toFormat("yyyy-MM-dd");
+            const targetDate = now.plus({ year: 1 }).toFormat("yyyy-MM-dd");
 
             // This will not work if the version is missing. However, eslint should run the rule in multiple passes if any fixes are applied.
             // So if the above fix is applied, next time it runs, the version will be there.
@@ -151,13 +160,13 @@ module.exports = {
                       fixer,
                       comment,
                       // prettier-ignore
-                      `${comment.value.substring(0, versionIndices[1])} - ${regexParts.notUntil} ${currentDate.plus({year: 1}).toFormat("yyyy-MM-dd")}${comment.value.substring(versionIndices[1])}`,
+                      `${comment.value.substring(0, versionIndices[1])} - ${regexParts.notUntil} ${targetDate}${comment.value.substring(versionIndices[1])}`,
                     );
                 })(),
               });
             }
 
-            if (context.options[0]?.removeOldDates && match.groups?.date && DateTime.fromFormat(match.groups.date, "yyyy-MM-dd") < currentDate) {
+            if (context.options[0]?.removeOldDates && match.groups?.date && match.groups.date < currentDate) {
               // remove old date
               context.report({
                 // @ts-expect-error -- comments are not considered nodes but this still works

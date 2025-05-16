@@ -29,17 +29,17 @@ ruleTester.run(
       {
         code: `/**
       * @beta
-      * @deprecated in 3.x. Use XYZ instead, see https://www.google.com/ for more details.
+      * @deprecated in 3.0. Use XYZ instead, see https://www.google.com/ for more details.
       */`,
       },
       {
         code: `/**
-        * @deprecated in 3.x. Use XYZ instead
+        * @deprecated in 3.0. Use XYZ instead
         * @beta
         */`,
       },
       { code: `// @deprecated in 3.6. Use XYZ instead.` },
-      { code: `/* @deprecated in 12.x. Use xyz instead. */` },
+      { code: `/* @deprecated in 12.0. Use xyz instead. */` },
       {
         code: `// @deprecated in 2.19.  Use xyz instead
         function canWeUseFunctions() {}`,
@@ -49,17 +49,17 @@ ruleTester.run(
         class canWeUseAClass {};`,
       },
       {
-        code: `/* @deprecated in 2.x. Use XYZ instead */
+        code: `/* @deprecated in 2.0. Use XYZ instead */
         let canWeUseArrowFunction = () => {};`,
       },
       {
         code: `/**
-        * @deprecated in 3.x. Please use XYZ.
+        * @deprecated in 3.0. Please use XYZ.
         */
         export interface canWeUseInterface {}`,
       },
       {
-        code: `/* @deprecated in 2.x. Use xyz instead. */
+        code: `/* @deprecated in 2.0. Use xyz instead. */
         namespace canWeUseNamespaces {}`,
       },
       {
@@ -71,15 +71,15 @@ ruleTester.run(
         interface BackendHubAccess {
           /**
            * download a v1 checkpoint
-           * @deprecated in 3.x. Here's a description.
+           * @deprecated in 3.0. Here's a description.
            * @internal
            */
           downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
         }
         `,
       },
-      { code: `// @deprecated in 2.x. Use [[InternalDocRef]] instead` },
-      { code: `/** @deprecated in 3.x. Use [ExternalDocRef]($package) instead */` },
+      { code: `// @deprecated in 2.0. Use [[InternalDocRef]] instead` },
+      { code: `/** @deprecated in 3.0. Use [ExternalDocRef]($package) instead */` },
       { code: `/** @deprecated in 2.1 - will not be removed until 2022-01-01. Use [[methodB]] instead */` },
       { code: `/** @deprecated Use [[methodB]] instead */` },
       { code: `/** @deprecated in 3.2. Use [[methodB]] instead */` },
@@ -133,6 +133,51 @@ ruleTester.run(
       {
         code: `/** @deprecated - will not be removed until 2022-01-01. Use [[methodB]] instead */`,
         errors: messageIds([rule.messageIds.noVersion]),
+      },
+      {
+        code: `/**
+      * @beta
+      * @deprecated in 3.x. Use XYZ instead, see https://www.google.com/ for more details.
+      */`,
+        errors: messageIds([rule.messageIds.badVersion]),
+      },
+      {
+        code: `/**
+        * @deprecated in 3.x. Use XYZ instead
+        * @beta
+        */`,
+        errors: messageIds([rule.messageIds.badVersion]),
+      },
+      { code: `/* @deprecated in 12.x. Use xyz instead. */`, errors: messageIds([rule.messageIds.badVersion]) },
+      {
+        code: `/* @deprecated in 2.x. Use XYZ instead */
+        let canWeUseArrowFunction = () => {};`,
+        errors: messageIds([rule.messageIds.badVersion]),
+      },
+      {
+        code: `/**
+        * @deprecated in 3.x. Please use XYZ.
+        */
+        export interface canWeUseInterface {}`,
+        errors: messageIds([rule.messageIds.badVersion]),
+      },
+      {
+        code: `/* @deprecated in 2.x. Use xyz instead. */
+        namespace canWeUseNamespaces {}`,
+        errors: messageIds([rule.messageIds.badVersion]),
+      },
+      {
+        code: `
+        interface BackendHubAccess {
+          /**
+           * download a v1 checkpoint
+           * @deprecated in 3.x. Here's a description.
+           * @internal
+           */
+          downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
+        }
+        `,
+        errors: messageIds([rule.messageIds.badVersion]),
       },
     ],
   }),
