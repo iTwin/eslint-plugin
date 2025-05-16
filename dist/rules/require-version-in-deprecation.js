@@ -24,7 +24,7 @@ const deprecatedCommentRegex = new RegExp(
     `(?: - (?<when>(?:${regexParts.expired})|(?:${regexParts.notUntil} (?<date>[0-9]{4}(?:-[0-9]{2}){2}))))?`,
     /(?:(?<separator>\.[^\S\r\n])?(?:[^\S\r\n]*)?(?<description>(?=[\S]).{5,}))?/.source,
   ].join(""),
-  "gdu"
+  "gdu",
 );
 
 const validDescriptionRegex = /^[\w\]`]/;
@@ -99,7 +99,7 @@ module.exports = {
               });
             }
             found++;
-            if (!match?.groups?.description) {
+            if (!match.groups?.description) {
               context.report({
                 // @ts-expect-error -- comments are not considered nodes but this still works
                 node: comment,
@@ -108,17 +108,27 @@ module.exports = {
               continue; // no point in applying any fixes after this - the description will have to be added manually anyway.
             }
 
-            if (context.options[0]?.addVersion && !match.groups?.version) {
-              // add version
-              context.report({
-                // @ts-expect-error -- comments are not considered nodes but this still works
-                node: comment,
-                messageId: messageIds.noVersion,
-                fix: (() => {
-                  return (fixer) =>
-                    wrapComment(fixer, comment, `@deprecated in ${context.options[0].addVersion}${comment.value.substring("@deprecated".length)}`);
-                })(),
-              });
+            if (!match.groups?.version) {
+              // the version is missing
+              if (context.options[0]?.addVersion || match.groups?.when) {
+                // either the options require having a version, or the deprecation date is already there, in both cases the version should also be there.
+                context.report({
+                  // @ts-expect-error -- comments are not considered nodes but this still works
+                  node: comment,
+                  messageId: messageIds.noVersion,
+                  fix: (() => {
+                    if (context.options[0]?.addVersion)
+                      // only if the addVersion option is enabled, add the current version. Otherwise, log a problem without a fix.
+                      return (fixer) =>
+                        wrapComment(
+                          fixer,
+                          comment,
+                          // prettier-ignore
+                          `${comment.value.substring(0, match.index)}@deprecated in ${context.options[0].addVersion}${comment.value.substring(match.index + "@deprecated".length)}`,
+                        );
+                  })(),
+                });
+              }
             }
 
             // TODO: what if the version is there but not specific enough? e.g. 5.x should be replaced with 5.1
@@ -141,7 +151,7 @@ module.exports = {
                       fixer,
                       comment,
                       // prettier-ignore
-                      `${comment.value.substring(0, versionIndices[1])} - ${regexParts.notUntil} ${currentDate.plus({year: 1}).toFormat("yyyy-MM-dd")}${comment.value.substring(versionIndices[1])}`
+                      `${comment.value.substring(0, versionIndices[1])} - ${regexParts.notUntil} ${currentDate.plus({year: 1}).toFormat("yyyy-MM-dd")}${comment.value.substring(versionIndices[1])}`,
                     );
                 })(),
               });
@@ -160,7 +170,7 @@ module.exports = {
                     wrapComment(
                       fixer,
                       comment,
-                      `${comment.value.substring(0, whenIndices[0])}${regexParts.expired}${comment.value.substring(whenIndices[1])}`
+                      `${comment.value.substring(0, whenIndices[0])}${regexParts.expired}${comment.value.substring(whenIndices[1])}`,
                     );
                 })(),
               });
@@ -170,7 +180,6 @@ module.exports = {
               ((match.groups?.version || match.groups?.when) && !match.groups?.separator && match.groups?.description) ||
               (!(match.groups?.version || match.groups?.when) && match.groups?.separator && match.groups?.description)
             ) {
-              const description = match.groups.description;
               // add/remove separator
               context.report({
                 // @ts-expect-error -- comments are not considered nodes but this still works
@@ -184,18 +193,40 @@ module.exports = {
                       wrapComment(
                         fixer,
                         comment,
-                        `${comment.value.substring(0, descriptionIndices[0]).trimEnd().replace(/\.$/, "")} ${firstUpper(description)}`
+                        `${comment.value.substring(0, descriptionIndices[0]).trimEnd().replace(/\.$/, "")} ${firstUpper(
+                          comment.value.substring(descriptionIndices[0]),
+                        )}`,
                       );
                   else
                     return (fixer) =>
-                      wrapComment(fixer, comment, `${comment.value.substring(0, descriptionIndices[0]).trimEnd()}. ${firstUpper(description)}`);
+                      wrapComment(
+                        fixer,
+                        comment,
+                        `${comment.value.substring(0, descriptionIndices[0]).trimEnd()}. ${firstUpper(
+                          comment.value.substring(descriptionIndices[0]),
+                        )}`,
+                      );
                 })(),
               });
             } else if (match.groups?.description && !validDescriptionRegex.test(match.groups.description)) {
+              const description = match.groups.description;
               context.report({
                 // @ts-expect-error -- comments are not considered nodes but this still works
                 node: comment,
                 messageId: messageIds.badDescription,
+                fix: (() => {
+                  const descriptionIndices = match.indices?.groups?.description;
+                  if (!descriptionIndices) return undefined;
+                  if (description.startsWith("-"))
+                    return (fixer) =>
+                      wrapComment(
+                        fixer,
+                        comment,
+                        `${comment.value.substring(0, descriptionIndices[0])}${firstUpper(
+                          comment.value.substring(descriptionIndices[0]).replace(/^-\s*/, ""),
+                        )}`,
+                      );
+                })(),
               });
             }
           }

@@ -55,4 +55,13 @@ module.exports = {
       .map((l) => l.substring(leftPadding.length))
       .join("\n");
   },
+
+  /**
+   * wraps an array of message ids in the format that RuleTester expects
+   * @param {string[]} messages
+   * @returns {RuleTester.TestCaseError[]}
+   */
+  wrapMessageIds(messages) {
+    return messages.map((msg) => ({ messageId: msg }));
+  },
 };
