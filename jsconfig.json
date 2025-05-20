@@ -2,8 +2,8 @@
   "compilerOptions": {
     "checkJs": true,
     "noEmit": true,
-    "target": "es6", // need for using for...of on iterables
-    "lib": ["es6"],
+    "target": "es2022", // need for using for...of on iterables and named groups in regex
+    "lib": ["es2022"],
     "strict": true,
     "useUnknownInCatchVariables": false,
     "noImplicitAny": false,
