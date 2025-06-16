@@ -15,7 +15,7 @@ const { DateTime } = require("luxon");
 
 const regexParts = {
   expired: "might be removed in next major version",
-  notUntil: "will not be removed until",
+  notUntil: "will not be removed until after",
 };
 
 const deprecatedCommentRegex = new RegExp(
