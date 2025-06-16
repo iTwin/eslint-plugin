@@ -80,7 +80,7 @@ ruleTester.run(
       },
       { code: `// @deprecated in 2.0. Use [[InternalDocRef]] instead` },
       { code: `/** @deprecated in 3.0. Use [ExternalDocRef]($package) instead */` },
-      { code: `/** @deprecated in 2.1 - will not be removed until 2022-01-01. Use [[methodB]] instead */` },
+      { code: `/** @deprecated in 2.1 - will not be removed until after 2022-01-01. Use [[methodB]] instead */` },
       { code: `/** @deprecated Use [[methodB]] instead */` },
       { code: `/** @deprecated in 3.2. Use [[methodB]] instead */` },
       { code: `/** @deprecated in 3.2. use [[methodB]] instead */` },
@@ -126,7 +126,7 @@ ruleTester.run(
         output: `/** @deprecated in 3.2. Use [[methodB]] instead */`,
       },
       {
-        code: `/** @deprecated - will not be removed until 2022-01-01. Use [[methodB]] instead */`,
+        code: `/** @deprecated - will not be removed until after 2022-01-01. Use [[methodB]] instead */`,
         errors: messageIds([rule.messageIds.noVersion]),
       },
       {
@@ -183,7 +183,7 @@ ruleTester.run(
   rule,
   supportSkippedAndOnlyInTests({
     valid: [
-      { code: `/** @deprecated in 2.1 - will not be removed until 3022-01-01. Use [[methodB]] instead */` },
+      { code: `/** @deprecated in 2.1 - will not be removed until after 3022-01-01. Use [[methodB]] instead */` },
       { code: `/** @deprecated Use [[methodB]] instead */` },
       { code: `/** @deprecated in 3.2. Use [[methodB]] instead */` },
       { code: `/** @deprecated in 2.1 - might be removed in next major version. Use [[methodB]] instead */` },
@@ -222,12 +222,12 @@ ruleTester.run(
         output: `/** @deprecated in 3.2. Use [[methodB]] instead */`,
       },
       {
-        code: `/** @deprecated in 2.1 - will not be removed until 2022-01-01. Use [[methodB]] instead */`,
+        code: `/** @deprecated in 2.1 - will not be removed until after 2022-01-01. Use [[methodB]] instead */`,
         errors: messageIds([rule.messageIds.oldDate]),
         output: `/** @deprecated in 2.1 - might be removed in next major version. Use [[methodB]] instead */`,
       },
       {
-        code: `/** @deprecated - will not be removed until 2022-01-01. Use [[methodB]] instead */`,
+        code: `/** @deprecated - will not be removed until after 2022-01-01. Use [[methodB]] instead */`,
         errors: messageIds([rule.messageIds.noVersion, rule.messageIds.oldDate]),
         output: `/** @deprecated - might be removed in next major version. Use [[methodB]] instead */`,
       },
@@ -236,7 +236,7 @@ ruleTester.run(
         errors: messageIds([rule.messageIds.noVersion]),
       },
       {
-        code: `/** @deprecated - will not be removed until 3022-01-01. Use [[methodB]] instead */`,
+        code: `/** @deprecated - will not be removed until after 3022-01-01. Use [[methodB]] instead */`,
         errors: messageIds([rule.messageIds.noVersion]),
       },
     ].map((testCase) => ({ ...testCase, options: [{ removeOldDates: true }] })),
@@ -250,12 +250,12 @@ ruleTester.run(
   rule,
   supportSkippedAndOnlyInTests({
     valid: [
-      { code: `/** @deprecated in 2.1 - will not be removed until 3022-01-01. Use [[methodB]] instead */` },
-      { code: `/** @deprecated in 10.0 - will not be removed until ${targetDate}. Use [[methodB]] instead */` },
-      { code: `/** @deprecated in 3.2 - will not be removed until ${targetDate}. Use [[methodB]] instead */` },
+      { code: `/** @deprecated in 2.1 - will not be removed until after 3022-01-01. Use [[methodB]] instead */` },
+      { code: `/** @deprecated in 10.0 - will not be removed until after ${targetDate}. Use [[methodB]] instead */` },
+      { code: `/** @deprecated in 3.2 - will not be removed until after ${targetDate}. Use [[methodB]] instead */` },
       {
         code: `/** 
-                * @deprecated in 3.0 - will not be removed until ${targetDate}. Use [[B]]
+                * @deprecated in 3.0 - will not be removed until after ${targetDate}. Use [[B]]
                 * @public
                 */`,
       },
@@ -284,42 +284,42 @@ ruleTester.run(
           rule.messageIds.noDate,
         ]),
         output: `/**
-        * @deprecated in 10.0 - will not be removed until ${targetDate}. Use [[A]] instead
+        * @deprecated in 10.0 - will not be removed until after ${targetDate}. Use [[A]] instead
         * @deprecated Use [[B]] instead
         */`,
       },
       {
         code: `/**
-        * @deprecated in 10.0 - will not be removed until ${targetDate}. Use [[A]] instead
+        * @deprecated in 10.0 - will not be removed until after ${targetDate}. Use [[A]] instead
         * @deprecated Use [[B]] instead
         */`,
         errors: messageIds([rule.messageIds.doubleDeprecation, rule.messageIds.noVersion, rule.messageIds.noDate]),
         output: `/**
-        * @deprecated in 10.0 - will not be removed until ${targetDate}. Use [[A]] instead
-        * @deprecated in 10.0 - will not be removed until ${targetDate}. Use [[B]] instead
+        * @deprecated in 10.0 - will not be removed until after ${targetDate}. Use [[A]] instead
+        * @deprecated in 10.0 - will not be removed until after ${targetDate}. Use [[B]] instead
         */`,
       },
       {
         code: `/**
-        * @deprecated in 10.0 - will not be removed until ${targetDate}. Use [[A]] instead
-        * @deprecated in 10.0 - will not be removed until ${targetDate}. Use [[B]] instead
+        * @deprecated in 10.0 - will not be removed until after ${targetDate}. Use [[A]] instead
+        * @deprecated in 10.0 - will not be removed until after ${targetDate}. Use [[B]] instead
         */`,
         errors: messageIds([rule.messageIds.doubleDeprecation]),
       },
       {
         code: `/** @deprecated. Use [[methodB]] instead */`,
         errors: messageIds([rule.messageIds.noVersion, rule.messageIds.noDate, rule.messageIds.noSeparator]),
-        output: `/** @deprecated in 10.0 - will not be removed until ${targetDate}. Use [[methodB]] instead */`,
+        output: `/** @deprecated in 10.0 - will not be removed until after ${targetDate}. Use [[methodB]] instead */`,
       },
       {
         code: `/** @deprecated in 10.0 use [[methodB]] instead */`,
         errors: messageIds([rule.messageIds.noDate, rule.messageIds.noSeparator]),
-        output: `/** @deprecated in 10.0 - will not be removed until ${targetDate}. Use [[methodB]] instead */`,
+        output: `/** @deprecated in 10.0 - will not be removed until after ${targetDate}. Use [[methodB]] instead */`,
       },
       {
         code: `/** @deprecated in 10.0 - use [[methodB]] instead */`,
         errors: messageIds([rule.messageIds.noDate, rule.messageIds.noSeparator, rule.messageIds.badDescription]),
-        output: `/** @deprecated in 10.0 - will not be removed until ${targetDate}. Use [[methodB]] instead */`,
+        output: `/** @deprecated in 10.0 - will not be removed until after ${targetDate}. Use [[methodB]] instead */`,
       },
       {
         code: `/** 
@@ -328,7 +328,7 @@ ruleTester.run(
                 */`,
         errors: messageIds([rule.messageIds.noDate, rule.messageIds.noSeparator, rule.messageIds.badDescription]),
         output: `/** 
-                * @deprecated in 3.0 - will not be removed until ${targetDate}. Use [[B]]
+                * @deprecated in 3.0 - will not be removed until after ${targetDate}. Use [[B]]
                 * @public
                 */`,
       },
