@@ -53,7 +53,7 @@ module.exports = {
             uniqueItems: true,
             items: {
               type: "string",
-              enum: ["public", "beta", "alpha", "internal"]
+              enum: ["public", "preview", "beta", "alpha", "internal"]
             }
           },
           checkedPackagePatterns: {
