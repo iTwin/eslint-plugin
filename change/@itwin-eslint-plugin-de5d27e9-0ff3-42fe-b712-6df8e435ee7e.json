@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "Add preview tag to no-internal rule",
+  "packageName": "@itwin/eslint-plugin",
+  "email": "66480813+paulius-valiunas@users.noreply.github.com",
+  "dependentChangeType": "patch"
+}
