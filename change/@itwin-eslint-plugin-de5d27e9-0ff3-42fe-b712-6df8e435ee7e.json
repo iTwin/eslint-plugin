@@ -1,6 +1,6 @@
 {
   "type": "minor",
-  "comment": "Add preview tag to no-internal rule",
+  "comment": "Enable no-internal rule to check for preview tags",
   "packageName": "@itwin/eslint-plugin",
   "email": "66480813+paulius-valiunas@users.noreply.github.com",
   "dependentChangeType": "patch"
