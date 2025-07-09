@@ -1,0 +1,7 @@
+{
+  "type": "major",
+  "comment": "Drop node 18 support and update `eslint-plugin-jsdoc` to 51.x",
+  "packageName": "@itwin/eslint-plugin",
+  "email": "anmolshres98@users.noreply.github.com",
+  "dependentChangeType": "patch"
+}
