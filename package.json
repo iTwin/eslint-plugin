@@ -35,17 +35,17 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^8.26.1",
-    "@typescript-eslint/parser": "^8.26.1",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
     "eslint-formatter-visualstudio": "^8.40.0",
-    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jam3": "^0.2.3",
-    "eslint-plugin-jsdoc": "^51.2.1",
+    "eslint-plugin-jsdoc": "^51.4.1",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-prefer-arrow": "^1.2.3",
-    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "luxon": "^3.6.1",
+    "luxon": "^3.7.1",
     "workspace-tools": "^0.36.4"
   },
   "peerDependencies": {
@@ -54,8 +54,8 @@
   },
   "devDependencies": {
     "@types/node": "20.11.16",
-    "beachball": "^2.51.0",
-    "eslint": "^9.26.0",
+    "beachball": "^2.54.0",
+    "eslint": "^9.31.0",
     "husky": "^9.1.7",
     "mocha": "^10.8.2",
     "typescript": "~5.6.3"
