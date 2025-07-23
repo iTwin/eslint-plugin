@@ -144,8 +144,14 @@ module.exports = {
             });
           }
 
-          const ancestors = sourceCode.getAncestors(mainNode);
-          isPreview = ancestors.some((ancestor) => hasPreviewComment(ancestor));
+          if (context.options[0]?.addVersion && !match.groups?.when) {
+            // add date
+            addDate = true;
+
+            // check for parents with @preview tag only if needed to add the date
+            const ancestors = sourceCode.getAncestors(mainNode);
+            isPreview = ancestors.some((ancestor) => hasPreviewComment(ancestor));
+          }
 
           const now = DateTime.now();
           const currentDate = now.toFormat("yyyy-MM-dd");
@@ -154,11 +160,6 @@ module.exports = {
             targetDate = now.plus({ month: 3 }).toFormat("yyyy-MM-dd");
           } else {
             targetDate = now.plus({ year: 1 }).toFormat("yyyy-MM-dd");
-          }
-
-          if (context.options[0]?.addVersion && !match.groups?.when) {
-            // add date
-            addDate = true;
           }
 
           if (context.options[0]?.removeOldDates && match.groups?.date && match.groups.date < currentDate) {
