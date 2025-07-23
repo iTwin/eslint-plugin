@@ -26,5 +26,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Security audit
+        run: pnpm audit
+
       - name: Run Tests
         run: pnpm run cover
