@@ -473,7 +473,7 @@ ruleTester.run(
         code: `
         // @preview
         class A {
-          // @deprecated in 1.0.0 - will not be removed until after ${previewTargetDate}. Use [[B]]
+          // @deprecated in 10.0 - will not be removed until after ${previewTargetDate}. Use [[B]]
           public B: int;
         }`,
       },
@@ -481,7 +481,7 @@ ruleTester.run(
         code: `
         // @preview
         export enum ModelTypes {
-          // @deprecated in 1.0.0 - will not be removed until after ${previewTargetDate}. Use [[B]]
+          // @deprecated in 10.0 - will not be removed until after ${previewTargetDate}. Use [[B]]
           Test = 1,
         }`,
       },
@@ -489,23 +489,23 @@ ruleTester.run(
         code: `
         // @preview
         interface ModelType {
-          // @deprecated in 1.0.0 - will not be removed until after ${previewTargetDate}. Use [[B]]
+          // @deprecated in 10.0 - will not be removed until after ${previewTargetDate}. Use [[B]]
           test: string;
         }`,
       },
       {
         code: `
-        // @deprecated in 1.0.0 - will not be removed until after ${previewTargetDate}. Use [[B]]
+        // @deprecated in 10.0 - will not be removed until after ${previewTargetDate}. Use [[B]]
         // @preview
         export type testType = () => {};`,
       },
       {
         code: `
         /**
-         * @deprecated in 1.0.0 - will not be removed until after ${previewTargetDate}. Use [[B]]
+         * @deprecated in 10.0 - will not be removed until after ${previewTargetDate}. Use [[B]]
          * @preview
          */
-        export type testType = () => {};`,
+        type testType = () => {};`,
       },
     ].map((testCase) => ({
       ...testCase,
@@ -513,12 +513,75 @@ ruleTester.run(
     })),
     invalid: [
       {
-        code: `/**
-        * @beta
-        * @deprecated
-        */
-        enum TestEnum {}`,
-        errors: messageIds([rule.messageIds.noDescription]),
+        code: `
+        // @preview
+        class A {
+          // @deprecated in 10.0.0. Use [[B]]
+          public B: int;
+        }`,
+        errors: messageIds([rule.messageIds.noDate]),
+        output: `
+        // @preview
+        class A {
+          // @deprecated in 10.0.0 - will not be removed until after ${previewTargetDate}. Use [[B]]
+          public B: int;
+        }`,
+      },
+      {
+        code: `
+        // @preview
+        export enum ModelTypes {
+          // @deprecated in 10.0. Use [[B]]
+          Test = 1,
+        }`,
+        errors: messageIds([rule.messageIds.noDate]),
+        output: `
+        // @preview
+        export enum ModelTypes {
+          // @deprecated in 10.0 - will not be removed until after ${previewTargetDate}. Use [[B]]
+          Test = 1,
+        }`,
+      },
+      {
+        code: `
+        // @preview
+        interface ModelType {
+          // @deprecated in 10.0. Use [[B]]
+          test: string;
+        }`,
+        errors: messageIds([rule.messageIds.noDate]),
+        output: `
+        // @preview
+        interface ModelType {
+          // @deprecated in 10.0 - will not be removed until after ${previewTargetDate}. Use [[B]]
+          test: string;
+        }`,
+      },
+      {
+        code: `
+        // @deprecated in 10.0. Use [[B]]
+        // @preview
+        export type testType = () => {};`,
+        errors: messageIds([rule.messageIds.noDate]),
+        output: `
+        // @deprecated in 10.0 - will not be removed until after ${previewTargetDate}. Use [[B]]
+        // @preview
+        export type testType = () => {};`,
+      },
+      {
+        code: `
+        /**
+         * @deprecated in 10.0. Use [[B]]
+         * @preview
+         */
+        type testType = () => {};`,
+        errors: messageIds([rule.messageIds.noDate]),
+        output: `
+        /**
+         * @deprecated in 10.0 - will not be removed until after ${previewTargetDate}. Use [[B]]
+         * @preview
+         */
+        type testType = () => {};`,
       },
     ].map((testCase) => ({ ...testCase, options: [{ addVersion: "10.0" }] })),
   }),
