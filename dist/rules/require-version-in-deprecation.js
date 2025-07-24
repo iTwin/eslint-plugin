@@ -27,8 +27,6 @@ const deprecatedCommentRegex = new RegExp(
   "gdu",
 );
 
-const previewRegex = new RegExp("@preview");
-
 const validDescriptionRegex = /^[\w\]`]/;
 
 const messages = {
@@ -86,11 +84,11 @@ module.exports = {
     ],
   },
   create(context) {
-    let sourceCode = context.sourceCode;
+    const sourceCode = context.sourceCode;
 
     function hasPreviewComment(node) {
       const comments = sourceCode.getCommentsBefore(node);
-      return comments.some((comment) => previewRegex.test(comment.value));
+      return comments.some((comment) => comment.value.includes("@preview"));
     }
 
     /**
@@ -172,26 +170,27 @@ module.exports = {
           if ((match.groups?.version || match.groups?.when) && !match.groups?.separator && match.groups?.description) addSeparator = true;
           else if (!(match.groups?.version || match.groups?.when) && match.groups?.separator && match.groups?.description) removeSeparator = true;
 
-          const oldDescription = match.groups?.description?.trimStart() ?? "";
-          const newDescription = firstUpper(oldDescription.replace(/^-\s*/, ""));
-          const newComment =
-            comment.value.substring(0, match.index) +
-            "@deprecated" +
-            (noVersion && context.options[0]?.addVersion
+          const preDeprecationComment = comment.value.substring(0, match.index);
+          const version =
+            noVersion && context.options[0]?.addVersion
               ? ` in ${context.options[0].addVersion}`
               : match.groups?.version
               ? ` in ${match.groups.version}`
-              : "") +
-            (addDate
-              ? ` - ${regexParts.notUntil} ${targetDate}`
-              : oldDate
-              ? ` - ${regexParts.expired}`
-              : match.groups?.when
-              ? ` - ${match.groups.when}`
-              : "") +
-            (addDate || oldDate || match.groups?.when || noVersion || match.groups?.version ? "." : "") +
-            ` ${newDescription}` +
-            comment.value.substring(match.index + match[0].length);
+              : "";
+          const date = addDate
+            ? ` - ${regexParts.notUntil} ${targetDate}`
+            : oldDate
+            ? ` - ${regexParts.expired}`
+            : match.groups?.when
+            ? ` - ${match.groups.when}`
+            : "";
+          const descriptionSeparator = addDate || oldDate || match.groups?.when || noVersion || match.groups?.version ? "." : "";
+          const oldDescription = match.groups?.description?.trimStart() ?? "";
+          const newDescription = firstUpper(oldDescription.replace(/^-\s*/, ""));
+          const postDeprecationComment = comment.value.substring(match.index + match[0].length);
+
+          const newComment =
+            preDeprecationComment + "@deprecated" + version + date + descriptionSeparator + ` ${newDescription}` + postDeprecationComment;
 
           /** @param {Rule.RuleFixer} fixer */
           const fix = newComment !== comment.value ? (fixer) => wrapComment(fixer, comment, newComment) : undefined;
