@@ -184,7 +184,12 @@ module.exports =
     "@typescript-eslint/triple-slash-reference": "error",
     "@typescript-eslint/typedef": "off",
     "@typescript-eslint/unbound-method": "error",
-    "@typescript-eslint/unified-signatures": "error",
+    "@typescript-eslint/unified-signatures": [
+      "error",
+      {
+        "ignoreOverloadsWithDifferentJSDoc": true,
+      },
+    ],
     "arrow-body-style": "off",
     "camelcase": "off", // Using @typescript-eslint/naming-convention instead
     "complexity": "off",

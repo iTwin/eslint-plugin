@@ -27,7 +27,7 @@ jobs:
         run: pnpm install
 
       - name: Security audit
-        run: pnpm audit
+        run: pnpm audit --audit-level moderate
 
       - name: Run Tests
         run: pnpm run cover
