@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "enable ignoreOverloadsWithDifferentJSDoc for @typescript-eslint/unified-signatures rule",
-  "packageName": "@itwin/eslint-plugin",
-  "email": "108895074+MichaelSwigerAtBentley@users.noreply.github.com",
-  "dependentChangeType": "patch"
-}

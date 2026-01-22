@@ -1,8 +1,26 @@
 # Change Log - @itwin/eslint-plugin
 
-<!-- This log was last generated on Fri, 09 May 2025 15:11:14 GMT and should not be manually modified. -->
+<!-- This log was last generated on Thu, 22 Jan 2026 21:03:22 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 6.0.0
+
+Thu, 22 Jan 2026 21:03:22 GMT
+
+### Major changes
+
+- Drop node 18 support and update `eslint-plugin-jsdoc` to 51.x (anmolshres98@users.noreply.github.com)
+
+### Minor changes
+
+- Enable no-internal rule to check for preview tags (66480813+paulius-valiunas@users.noreply.github.com)
+- update require-version-in-deprecation for new deprecation policy (66480813+paulius-valiunas@users.noreply.github.com)
+
+### Patches
+
+- enable ignoreOverloadsWithDifferentJSDoc for @typescript-eslint/unified-signatures rule (108895074+MichaelSwigerAtBentley@users.noreply.github.com)
+- change wording in the require-version-in-deprecation rule to be more gramatically correct (66480813+paulius-valiunas@users.noreply.github.com)
 
 ## 5.2.1
 

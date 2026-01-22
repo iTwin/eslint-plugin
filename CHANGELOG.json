@@ -2,6 +2,49 @@
   "name": "@itwin/eslint-plugin",
   "entries": [
     {
+      "date": "Thu, 22 Jan 2026 21:03:22 GMT",
+      "version": "6.0.0",
+      "tag": "@itwin/eslint-plugin_v6.0.0",
+      "comments": {
+        "major": [
+          {
+            "author": "anmolshres98@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "4c33fc7959a2bef1064afc12e28922500971fb0c",
+            "comment": "Drop node 18 support and update `eslint-plugin-jsdoc` to 51.x"
+          }
+        ],
+        "patch": [
+          {
+            "author": "108895074+MichaelSwigerAtBentley@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "4c33fc7959a2bef1064afc12e28922500971fb0c",
+            "comment": "enable ignoreOverloadsWithDifferentJSDoc for @typescript-eslint/unified-signatures rule"
+          },
+          {
+            "author": "66480813+paulius-valiunas@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "4c33fc7959a2bef1064afc12e28922500971fb0c",
+            "comment": "change wording in the require-version-in-deprecation rule to be more gramatically correct"
+          }
+        ],
+        "minor": [
+          {
+            "author": "66480813+paulius-valiunas@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "4c33fc7959a2bef1064afc12e28922500971fb0c",
+            "comment": "Enable no-internal rule to check for preview tags"
+          },
+          {
+            "author": "66480813+paulius-valiunas@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "4c33fc7959a2bef1064afc12e28922500971fb0c",
+            "comment": "update require-version-in-deprecation for new deprecation policy"
+          }
+        ]
+      }
+    },
+    {
       "date": "Fri, 09 May 2025 15:11:14 GMT",
       "version": "5.2.1",
       "tag": "@itwin/eslint-plugin_v5.2.1",
