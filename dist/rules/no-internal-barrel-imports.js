@@ -141,22 +141,23 @@ const rule = {
           return fileToImportPath(thisModule.fileName, fileOfExport.fileName);
         }
 
-        /** 
-        * @param {ts.SourceFile} sourceFile 
-        * @param {string} moduleSpecifierText 
-        * @returns {ts.ResolvedModuleFull | undefined}
-        */
-        function getImportInfo(sourceFile, moduleSpecifierText) {
-          // For ts v5.3.0 and up `ts.getResolvedModule` was removed in https://github.com/microsoft/TypeScript/pull/55790 but was added to `ts.program` in https://github.com/microsoft/TypeScript/pull/55818
-          // Hence this check is needed to support all ts versions
-          return ts.getResolvedModule ? ts.getResolvedModule(
-            sourceFile,
-            moduleSpecifierText
-          ) :
-            program.getResolvedModule(
-              sourceFile,
-              moduleSpecifierText
-            )?.resolvedModule;
+        /**
+         * @param {ts.ImportDeclaration | ts.ExportDeclaration} tsNode
+         * @returns {ts.ResolvedModuleFull | undefined}
+         */
+        function getImportInfo(tsNode) {
+          const moduleSpecifier = tsNode.moduleSpecifier;
+          if (!moduleSpecifier) return undefined;
+          // TS 6+: use getResolvedModuleFromModuleSpecifier which takes the AST node
+          if (program.getResolvedModuleFromModuleSpecifier) {
+            return program.getResolvedModuleFromModuleSpecifier(moduleSpecifier)?.resolvedModule;
+          }
+          // TS <5.3: ts.getResolvedModule exists as a standalone function
+          if (ts.getResolvedModule) {
+            return ts.getResolvedModule(tsNode.getSourceFile(), moduleSpecifier.text);
+          }
+          // TS 5.3-5.x: ts.getResolvedModule was removed, use program.getResolvedModule
+          return program.getResolvedModule(tsNode.getSourceFile(), moduleSpecifier.text)?.resolvedModule;
         }
 
         if (typeof node.source.value !== "string")
@@ -172,7 +173,7 @@ const rule = {
 
         const thisModule = importNodeTs.getSourceFile();
 
-        const importInfo = getImportInfo(thisModule, importNodeTs.moduleSpecifier.text);
+        const importInfo = getImportInfo(importNodeTs);
 
         const importIsPackage =
           importInfo === undefined || importInfo.isExternalLibraryImport;
@@ -239,7 +240,7 @@ const rule = {
             child.moduleSpecifier !== undefined &&
             !child.isTypeOnly;
           if (!potentialReExport) return;
-          const transitiveImportInfo = getImportInfo(importedModule, child.moduleSpecifier.text);
+          const transitiveImportInfo = getImportInfo(child);
           const reExportsExternalPackage =
             transitiveImportInfo === undefined ||
             transitiveImportInfo.isExternalLibraryImport;
