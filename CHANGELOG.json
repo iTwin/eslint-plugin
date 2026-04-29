@@ -2,6 +2,21 @@
   "name": "@itwin/eslint-plugin",
   "entries": [
     {
+      "date": "Wed, 29 Apr 2026 07:47:11 GMT",
+      "version": "6.1.0",
+      "tag": "@itwin/eslint-plugin_v6.1.0",
+      "comments": {
+        "minor": [
+          {
+            "author": "24278440+saskliutas@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "e29c292bd279b2c8f232b42e7c81d8eed30582c4",
+            "comment": "Add support for TypeScript 6"
+          }
+        ]
+      }
+    },
+    {
       "date": "Thu, 22 Jan 2026 21:03:22 GMT",
       "version": "6.0.0",
       "tag": "@itwin/eslint-plugin_v6.0.0",

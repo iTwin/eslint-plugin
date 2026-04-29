@@ -1,8 +1,16 @@
 # Change Log - @itwin/eslint-plugin
 
-<!-- This log was last generated on Thu, 22 Jan 2026 21:03:22 GMT and should not be manually modified. -->
+<!-- This log was last generated on Wed, 29 Apr 2026 07:47:11 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 6.1.0
+
+Wed, 29 Apr 2026 07:47:11 GMT
+
+### Minor changes
+
+- Add support for TypeScript 6 (24278440+saskliutas@users.noreply.github.com)
 
 ## 6.0.0
 
