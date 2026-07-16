@@ -61,13 +61,8 @@
     "typescript": "~6.0.3"
   },
   "engines": {
-    "node": "^20.11.0 || ^22.0.0 || ^24.0.0"
+    "node": "^20.11.0 || ^22.0.0 || ^24.0.0",
+    "pnpnm": "^11.0.0"
   },
-  "pnpm": {
-    "overrides": {
-      "mocha>serialize-javascript": ">=7.0.3",
-      "mocha>diff": ">=8.0.3"
-    }
-  },
-  "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39"
+  "packageManager": "pnpm@11.13.1+sha512.b2fc7683b8a6525414e7d13e1ba28caaddde96bf66ec540bfaeb7e702b81f3e0be4d1f295edf7f9fe0396740a8dce4509c582ddf79891f4543fea32d37645f25"
 }
