@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 // Minimal replacement for `getWorkspaces` from `workspace-tools`, which pulled in
-// micromatch/fast-glob/braces. Mirrors workspace-tools@0.36 behavior: manager detection,
-// PREFERRED_WORKSPACE_MANAGER override, and per-process caching of roots and package paths.
+// micromatch/fast-glob/braces. Mirrors workspace-tools@0.36 manager detection (including the
+// PREFERRED_WORKSPACE_MANAGER override) and package discovery.
 
 "use strict";
 
@@ -24,13 +24,8 @@ const managerFiles = {
   npm: "package-lock.json",
 };
 
-const managerAndRootCache = new Map();
-const packagePathsCache = new Map();
-
-function logVerboseWarning(description, err) {
-  if (process.env.VERBOSE)
-    console.warn(`${description}${err ? ":\n" : ""}`, (err && err.stack) || err || "");
-}
+/** Workspace packages per workspace root, read once per process. */
+const packagesByRoot = new Map();
 
 /** Search up from `cwd` for any of `fileNames`, returning the full path of the first match. */
 function searchUp(fileNames, cwd) {
@@ -52,21 +47,15 @@ function getPreferredWorkspaceManager() {
 
 /** @returns {{ manager: string, root: string } | undefined} */
 function getWorkspaceManagerAndRoot(cwd) {
-  if (managerAndRootCache.has(cwd))
-    return managerAndRootCache.get(cwd);
-
   const preferred = getPreferredWorkspaceManager();
   const managerFile = searchUp(preferred ? [managerFiles[preferred]] : Object.values(managerFiles), cwd);
-  let result;
-  if (managerFile) {
-    const fileName = path.basename(managerFile);
-    result = {
-      manager: Object.keys(managerFiles).find((name) => managerFiles[name] === fileName),
-      root: path.dirname(managerFile),
-    };
-  }
-  managerAndRootCache.set(cwd, result);
-  return result;
+  if (!managerFile)
+    return undefined;
+  const fileName = path.basename(managerFile);
+  return {
+    manager: Object.keys(managerFiles).find((name) => managerFiles[name] === fileName),
+    root: path.dirname(managerFile),
+  };
 }
 
 /** Parse JSON with comments/trailing commas (rush.json, lerna.json). */
@@ -80,20 +69,14 @@ function readJsonc(file) {
 
 /** Resolve package folder globs (e.g. package.json `workspaces`) to absolute package directories. */
 function getPackagePaths(root, packageGlobs) {
-  if (packagePathsCache.has(root))
-    return packagePathsCache.get(root);
-
   const { globSync } = require("tinyglobby");
   const patterns = packageGlobs.map((glob) => path.join(glob, "package.json").replace(/\\/g, "/"));
-  const result = globSync(patterns, {
+  return globSync(patterns, {
     cwd: root,
     absolute: true,
     ignore: ["**/node_modules/**", "**/__fixtures__/**"],
     expandDirectories: false,
   }).map((packageJsonPath) => path.normalize(path.dirname(packageJsonPath)));
-
-  packagePathsCache.set(root, result);
-  return result;
 }
 
 function getPackageJsonWorkspaceGlobs(root) {
@@ -131,42 +114,38 @@ function getWorkspacePackagePaths(manager, root) {
   return [];
 }
 
+/** @returns {Array<{ name: string, path: string }>} */
+function readWorkspacePackages(manager, root) {
+  let packagePaths;
+  try {
+    packagePaths = getWorkspacePackagePaths(manager, root);
+  } catch {
+    return [];
+  }
+  return packagePaths.flatMap((packagePath) => {
+    try {
+      const { name } = JSON.parse(fs.readFileSync(path.join(packagePath, "package.json"), "utf-8"));
+      return [{ name, path: packagePath }];
+    } catch {
+      return [];
+    }
+  });
+}
+
 /**
- * Get the name, path and package.json contents for each package in the workspace containing `cwd`.
+ * Get the name and directory of each package in the workspace containing `cwd`.
  * Returns an empty array if no workspace is found or it can't be read.
  * @param {string} cwd
- * @returns {Array<{ name: string, path: string, packageJson: { packageJsonPath: string, [key: string]: any } }>}
+ * @returns {Array<{ name: string, path: string }>}
  */
 function getWorkspaces(cwd) {
   const managerAndRoot = getWorkspaceManagerAndRoot(cwd);
   if (!managerAndRoot)
     return [];
-
-  let packagePaths;
-  try {
-    packagePaths = getWorkspacePackagePaths(managerAndRoot.manager, managerAndRoot.root);
-  } catch (err) {
-    logVerboseWarning(`Error getting ${managerAndRoot.manager} workspace package paths for ${cwd}`, err);
-    return [];
-  }
-
-  return packagePaths
-    .map((workspacePath) => {
-      const packageJsonPath = path.join(workspacePath, "package.json");
-      let packageJson;
-      try {
-        packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
-      } catch (err) {
-        logVerboseWarning(`Error reading or parsing ${packageJsonPath} while getting workspace package info`, err);
-        return null;
-      }
-      return {
-        name: packageJson.name,
-        path: workspacePath,
-        packageJson: { packageJsonPath, ...packageJson },
-      };
-    })
-    .filter(Boolean);
+  const { manager, root } = managerAndRoot;
+  if (!packagesByRoot.has(root))
+    packagesByRoot.set(root, readWorkspacePackages(manager, root));
+  return packagesByRoot.get(root);
 }
 
 module.exports = { getWorkspaces };
