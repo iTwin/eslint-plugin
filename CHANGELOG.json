@@ -2,6 +2,21 @@
   "name": "@itwin/eslint-plugin",
   "entries": [
     {
+      "date": "Mon, 05 Oct 2026 15:26:57 GMT",
+      "version": "6.1.1",
+      "tag": "@itwin/eslint-plugin_v6.1.1",
+      "comments": {
+        "patch": [
+          {
+            "author": "50554904+hl662@users.noreply.github.com",
+            "package": "@itwin/eslint-plugin",
+            "commit": "734efc8dae6a53f5756cda1f1510472ae7bce3f7",
+            "comment": "Replace workspace-tools with an internal workspace lookup to drop the vulnerable braces dependency (GHSA-vfj7-8cjw-p6xm)"
+          }
+        ]
+      }
+    },
+    {
       "date": "Wed, 29 Apr 2026 07:47:11 GMT",
       "version": "6.1.0",
       "tag": "@itwin/eslint-plugin_v6.1.0",

@@ -1,8 +1,16 @@
 # Change Log - @itwin/eslint-plugin
 
-<!-- This log was last generated on Wed, 29 Apr 2026 07:47:11 GMT and should not be manually modified. -->
+<!-- This log was last generated on Mon, 05 Oct 2026 15:26:57 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 6.1.1
+
+Mon, 05 Oct 2026 15:26:57 GMT
+
+### Patches
+
+- Replace workspace-tools with an internal workspace lookup to drop the vulnerable braces dependency (GHSA-vfj7-8cjw-p6xm) (50554904+hl662@users.noreply.github.com)
 
 ## 6.1.0
 
