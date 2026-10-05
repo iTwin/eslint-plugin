@@ -10,7 +10,7 @@
 const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
 const path = require("path");
-const workspace = require("workspace-tools");
+const workspace = require("./utils/workspace");
 
 const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.ClassDeclaration]: "class",
@@ -119,10 +119,7 @@ module.exports = {
       const packageList = workspace.getWorkspaces(filePath);
 
       // Look through all package infos to find the one containing our packagePath
-      let packageObj = packageList.find((pkg) => {
-        const packageBaseDir = path.dirname(pkg.packageJson.packageJsonPath);
-        return dirContainsPath(packageBaseDir, filePath);
-      });
+      const packageObj = packageList.find((pkg) => dirContainsPath(pkg.path, filePath));
 
       return (packageObj !== undefined) && pathContainsCheckedPackage(packageObj.name);
     }

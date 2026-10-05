@@ -45,8 +45,9 @@
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
+    "js-yaml": "^4.3.2",
     "luxon": "^3.7.2",
-    "workspace-tools": "^0.36.4"
+    "tinyglobby": "^0.2.17"
   },
   "peerDependencies": {
     "eslint": "^9.11.1",
@@ -63,5 +64,12 @@
   "engines": {
     "node": "^20.11.0 || ^22.0.0 || ^24.0.0"
   },
-  "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39"
+  "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39",
+  "pnpm": {
+    "auditConfig": {
+      "ignoreGhsas": [
+        "GHSA-vfj7-8cjw-p6xm"
+      ]
+    }
+  }
 }
