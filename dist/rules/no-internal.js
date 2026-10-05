@@ -10,7 +10,7 @@
 const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
 const path = require("path");
-const workspace = require("workspace-tools");
+const workspace = require("./utils/workspace");
 
 const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.ClassDeclaration]: "class",
