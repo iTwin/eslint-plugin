@@ -7,7 +7,15 @@
 // micromatch/fast-glob/braces. Mirrors workspace-tools@0.36 manager detection (including the
 // PREFERRED_WORKSPACE_MANAGER override) and package discovery.
 //
-// Portions adapted from workspace-tools (https://github.com/microsoft/workspace-tools):
+// Portions adapted from workspace-tools@0.36.4 (https://github.com/microsoft/workspace-tools),
+// under https://github.com/microsoft/workspace-tools/blob/ff985dcecd66fc90114e0ba618cdb684ce04b34f/packages/workspace-tools/src/
+//   - searchUp:                        paths.ts
+//   - managerFiles, getPreferredWorkspaceManager, getWorkspaceManagerAndRoot:
+//                                      workspaces/implementations/getWorkspaceManagerAndRoot.ts
+//   - getPackagePaths:                 getPackagePaths.ts
+//   - getPackageJsonWorkspaceGlobs:    workspaces/implementations/packageJsonWorkspaces.ts
+//   - getWorkspacePackagePaths:        workspaces/implementations/{rush,lerna,pnpm,packageJsonWorkspaces}.ts
+//   - readWorkspacePackages:           workspaces/getWorkspacePackageInfo.ts
 //
 // MIT License
 //
