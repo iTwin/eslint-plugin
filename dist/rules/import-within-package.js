@@ -50,11 +50,11 @@ module.exports = {
         const pathComponents = node.source.value.split("/");
 
         if (pathComponents[0] === "..") {
-          const packageJsonPath = findPackageJson(path.resolve(path.dirname(context.getFilename())));
+          const packageJsonPath = findPackageJson(path.resolve(path.dirname(context.filename)));
 
           if (packageJsonPath) {
             const packageDir = path.dirname(packageJsonPath);
-            const localPath = context.getFilename().substring(packageDir.length + 1);
+            const localPath = context.filename.substring(packageDir.length + 1);
             const localComponents = localPath.split(path.sep);
 
             const allowed = localComponents.length - 1;
