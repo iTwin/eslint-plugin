@@ -6,6 +6,7 @@
 const jam3Plugin = require("eslint-plugin-jam3");
 const jsxA11yPlugin = require("eslint-plugin-jsx-a11y");
 const reactPlugin = require("eslint-plugin-react");
+const reactPluginForEslint10 = require("./utils/react-plugin");
 
 const itwinjsRecommended = require("./itwinjs-recommended");
 
@@ -17,7 +18,7 @@ module.exports =
     "jam3": jam3Plugin,
     "jsx-a11y": jsxA11yPlugin,
     "react-hooks": require("eslint-plugin-react-hooks"),
-    "react": reactPlugin,
+    "react": reactPluginForEslint10,
     "@itwin": require("../plugin")
   },
   rules: {

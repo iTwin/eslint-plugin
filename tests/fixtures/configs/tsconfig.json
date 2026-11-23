@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "module": "commonjs",
+    "strict": true,
+    "skipLibCheck": true,
+    "types": []
+  },
+  "include": ["*.tsx"]
+}

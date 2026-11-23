@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "Add support for ESLint 10",
+  "packageName": "@itwin/eslint-plugin",
+  "email": "ofri-peretz@users.noreply.github.com",
+  "dependentChangeType": "patch"
+}

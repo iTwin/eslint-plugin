@@ -14,6 +14,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        eslint: [9, 10]
+    name: build (eslint ${{ matrix.eslint }})
     steps:
       - uses: actions/checkout@v3
 
@@ -28,6 +32,10 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+
+      - name: Use ESLint 10
+        if: matrix.eslint == 10
+        run: pnpm add --save-dev eslint@10
 
       - name: Run Tests
         run: pnpm run cover

@@ -6,7 +6,7 @@
 module.exports =
 {
   plugins: {
-    "import": require("eslint-plugin-import"),
+    "import": require("eslint-plugin-import-x"),
   },
   languageOptions: require("./utils/language-options"),
   rules: {
