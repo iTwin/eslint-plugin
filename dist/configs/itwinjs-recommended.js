@@ -10,7 +10,7 @@ module.exports =
   languageOptions: require("./utils/language-options"),
   plugins: {
     "@typescript-eslint": typescriptEslintPlugin,
-    "import": require("eslint-plugin-import-x"),
+    "import": require("eslint-plugin-import-next"),
     "prefer-arrow": require("eslint-plugin-prefer-arrow"),
     "@itwin": require("../plugin")
   },
